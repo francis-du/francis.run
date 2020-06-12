@@ -1,0 +1,89 @@
+baseURL = "https://francis.run/"
+languageCode = "en"
+title = "Francis Du"
+copyright = "© Copyright Francis"
+paginate = 6
+
+pygmentsstyle = "vs"
+pygmentscodefences = true
+pygmentscodefencesguesssyntax = true
+
+googleAnalytics = "UA-169239941-1"
+disqusShortname = "francis-run"
+dataDir = "data"
+contentDir= "content"
+
+enableEmoji = true
+enableGitInfo = true
+enableInlineShortcodes = true
+enableRobotsTXT = true
+hasCJKLanguage= true
+
+[params]
+	subtitle = "Co-organizer [@GDG Beijing](https://www.meetup.com/GDG-Beijing/)"
+	avatar = "https://avatars1.githubusercontent.com/u/25944814?s=64&u=0a52ff4023a15638b39985fa626ab4a00f9d6eab&v=4"
+	disableDisqusTypes = ["page"]
+	featherIconsCDN = true
+	mode = "dark"
+	# customCSS = "css/custom.css"  # Custom CSS applied to default styles.
+	# customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
+	# customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
+
+# Nav.
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "Blog"
+url = "/blog"
+weight = 2
+
+[[menu.main]]
+name = "Events"
+url = "/events"
+weight = 3
+
+[[menu.main]]
+name = "Album"
+url = "/album"
+weight = 4
+
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 5
+
+[[menu.main]]
+name = "About"
+url = "/about"
+weight = 6
+
+[[params.social]]
+name = "LinkedIn"
+icon = "linkedin"
+url = "https://www.linkedin.com/in/francis-du/"
+
+[[params.social]]
+name = "Github"
+icon = "github"
+url = "https://github.com/francis-du"
+
+[[params.social]]
+name = "Twitter"
+icon = "twitter"
+url = "https://twitter.com/francis_run"
+
+[[params.social]]
+name = "Email"
+icon = "mail"
+url = "mailto:francis@francisdu.com"
+
+[[params.social]]
+name = "RSS"
+icon = "rss"
+url = "/index.xml"
+
+[taxonomies]
+   tag = "tags"
