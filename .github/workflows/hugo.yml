@@ -22,6 +22,8 @@ jobs:
 
       - name: Build
         run: hugo --minify
+        
+      - name: Copy CNAME
         run: cp ./CNAME ./public
 
       - name: Deploy
