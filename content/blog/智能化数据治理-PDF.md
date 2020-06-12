@@ -15,5 +15,3 @@ tags:
 我这个PDF不知道哪里来的，反正是邮箱收到的，索性就分享出来了，可以下载下来看看。
 
 [点击下载 >>](http://s-event.cn/EDM/video/IntelligentDataGovernnceForDummies.pdf)
-
-![智能化数据治理](/images/article/datagovernacepdf.png)

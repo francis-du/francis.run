@@ -4,7 +4,6 @@ date: 2019-07-25 17:51:02
 categories: DataLake
 author: Francis
 tags:
-  - Data Lake
   - ETL
   - PPT
 ---
@@ -21,4 +20,4 @@ Kylo提供灵活的数据处理框架(利用`Apache NiFi`)，用于构建批处�
 Think Big为全球最大的组织提供大数据和分析咨询服务。Think Big 一直是
 开源 Hadoop 生态系统的主要受益者，并选择开源Kylo以回馈社区并提升价值。
 
-<iframe src="https://show.zohopublic.com/publish/f9a2695a55bc96af14dc3a2c51d9da714f491?viewtype=1" height="536" width="890" name="Kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A-2019-04-19-%E6%9D%9C%E6%99%93%E6%B1%9F" scrolling=no frameBorder="0" style="border:1px solid #AABBCC" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+{{< zohoshow f9a2695a55bc96af14dc3a2c51d9da714f491 >}}

@@ -5,7 +5,6 @@ categories: Kyligence
 author: Francis
 tags:
   - Kyligence
-  - 商业报告
   - PPT
 ---
 
@@ -21,4 +20,4 @@ Kyligence Cloud 是Kyligence云计算的核心产品，已在亚马逊 AWS 云�
 微软Azure云平台、阿里云云平台等上线，可提供快捷高效的数据分析解决方案
 以支持企业日益增长的云端分析业务。
 
-<iframe src="https://show.zohopublic.com/publish/f9a264f657ed2a8ea47a8b0936771cd877c84?viewtype=1" height="536" width="890" name="Kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A-By%20Francis-2019-03-10" scrolling=no frameBorder="0" style="border:1px solid #AABBCC" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+{{< zohoshow f9a264f657ed2a8ea47a8b0936771cd877c84 >}}

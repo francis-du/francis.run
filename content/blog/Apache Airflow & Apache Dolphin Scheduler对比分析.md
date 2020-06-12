@@ -4,9 +4,7 @@ date: 2019-10-17 15:06:21
 categories: Scheduler
 author: Francis
 tags:
-  - 软件
   - PPT
-  - 调度
 ---
 
 [Apache Airflow](http://airflow.apache.org/) : 是由Airbnb公司开源
@@ -21,4 +19,4 @@ Airflow通过DAG来定义整个工作流，具有非常强大的表达能力。
 扩展的可视化DAG工作流任务调度系统。致力于解决数据处理流程中错综复杂的依赖关系，
 使调度系统在数据处理流程中开箱即用
 
-<iframe src="https://show.zohopublic.com/publish/h37wb1fa958ebe7724b928ac6e4c8db93930c?viewtype=1" height="536" width="890" name="%E3%80%90%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A%E3%80%91Apache%20Airflow%26Apache%20DolphinScheduler-By%20Francis-201909%2015-" scrolling=no frameBorder="0" style="border:1px solid #AABBCC" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+{{< zohoshow h37wb1fa958ebe7724b928ac6e4c8db93930c >}}

@@ -4,7 +4,6 @@ date: 2019-07-16 14:37:28
 categories: Database
 author: Francis
 tags:
-  - 软件
   - 数据库
   - PPT
 ---
@@ -21,4 +20,4 @@ tags:
 用户总会选择适合自己的来用。目前在 HTAP 领域也有其他的产品，我个人也有试用过一些，
 以后会整理出来进行分享。目前仅对这两款产品做一个简单的分析，仅供参考。
 
-<iframe src="https://show.zohopublic.com/publish/f9a26dec6f5c59a70462a95a19bc9ab75f343?viewtype=1" height="536" width="890" name="TiDB%E5%92%8CSpliceMachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94-By%20Francis-20181009" scrolling=no frameBorder="0" style="border:1px solid #AABBCC" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+{{< zohoshow f9a26dec6f5c59a70462a95a19bc9ab75f343 >}}

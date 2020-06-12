@@ -4,7 +4,6 @@ date: 2019-07-14 21:34:25
 categories: CDP
 author: Francis
 tags:
-  - CDP
   - PPT
 ---
 
@@ -14,5 +13,4 @@ tags:
 式也比较方便，我用的是 [Zoho Show](https://show.zoho.com) 
 嵌入代码到 Markdown 里，感兴趣的小伙伴可以去试试。
 
-<iframe src="https://show.zohopublic.com/publish/f9a26ef96bc56963d452b8ce26a8517a7e08e/params?toolbar=true&menu=false&loop=true&viewtype=1" width="890" height="536" style="border:1px solid #aabbcc;max-width: 100%;" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-</iframe>
+{{< zohoshow f9a26ef96bc56963d452b8ce26a8517a7e08e >}}

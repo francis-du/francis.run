@@ -4,9 +4,7 @@ date: 2019-07-28 22:01:41
 categories: CDP
 author: Cloudera中国
 tags:
-  - CDP
   - Cloudera
-  - Video
 ---
 
 数据驱动的业务需要数据仓库来处理数千个新用户和数百个新用例。 

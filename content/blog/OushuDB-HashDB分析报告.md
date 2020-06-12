@@ -5,7 +5,6 @@ categories: Database
 author: Francis
 tags:
   - 数据库
-  - 商业报告
   - PPT
 ---
 
@@ -31,4 +30,4 @@ Oushu DB是由Apache HAWQ创始团队打造的新一代数据仓库(New Data War
 用户不但可以通过点击鼠标轻松的启动、停止数据仓库服务，还可以实现数据仓库扩容、
 节点性能监控等功能。
 
-<iframe src="https://show.zohopublic.com/publish/f9a26b7fb7ac70348432d949cf961954f6ccd?viewtype=1" height="536" width="890" name="OushuDB%26HashDB%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A-By%20Francis" scrolling=no frameBorder="0" style="border:1px solid #AABBCC" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+{{< zohoshow f9a26b7fb7ac70348432d949cf961954f6ccd >}}

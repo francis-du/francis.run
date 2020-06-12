@@ -4,9 +4,7 @@ date: 2019-07-26 09:08:58
 categories: CDP
 author: Cloudera中国
 tags:
-  - CDP
   - Cloudera
-  - Video
 ---
 
 Cloudera 和 Hortonworks 合并后产品首次亮相。来了解下 Cloudera数据平台（CDP）：
