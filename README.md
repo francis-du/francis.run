@@ -1,3 +1,3 @@
 # [https://francis.run](https://francis.run)
 
-![github pages](https://github.com/francis-du/hugo/workflows/github%20pages/badge.svg)
+[![hugo](https://github.com/francis-du/francis.run/workflows/hugo/badge.svg)](https://github.com/francis-du/francis.run/actions?query=workflow%3Ahugo)
