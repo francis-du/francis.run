@@ -5,4 +5,4 @@ type: "page"
 author: franics
 ---
 
-> 人必有痴，而后有成！
+![About Me](https://media-exp1.licdn.com/media/AAYUBAR3AAgAAQAAAAAAABsbMA7qO6lrTlGp3mF-STnNMA.png)
