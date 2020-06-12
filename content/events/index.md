@@ -7,7 +7,7 @@ author: franics
 
 ## GDG Beijing March 8 Event
 
-{{< tweet 877500564405444608 >}}
+{{< tweet 1236152636916678656 >}}
 
 ## GDG Beijing DevFest 2019
 
