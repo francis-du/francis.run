@@ -1,1 +1,211 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs on Francis Du</title><link>https://francis.run/blog/</link><description>Recent content in Blogs on Francis Du</description><generator>Hugo -- gohugo.io</generator><language>en</language><copyright>© Copyright Francis</copyright><lastBuildDate>Thu, 17 Oct 2019 15:06:21 +0000</lastBuildDate><atom:link href="https://francis.run/blog/index.xml" rel="self" type="application/rss+xml"/><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</guid><description>Apache Airflow : 是由Airbnb公司开源 的一款调度工具，项目于2014年启动，2015年开源，于2016年进入Apache孵化 器进行孵化，目前已经从孵</description></item><item><title>Cloudera Data warehouse on CDP</title><link>https://francis.run/blog/cloudera-data-warehouse-on-cdp/</link><pubDate>Sun, 28 Jul 2019 22:01:41 +0000</pubDate><guid>https://francis.run/blog/cloudera-data-warehouse-on-cdp/</guid><description>数据驱动的业务需要数据仓库来处理数千个新用户和数百个新用例。 满足这种不断增长的需求的最佳方法之一是利用混合云环境。 Cloudera 数据平台（CDP）上的 Cloudera</description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>克隆源码 git clone git@github.com:apache/hbase.git 选择分支 git checkout branch-2.2(自己选一个分支) 修改脚本 如果你的操作系统是Windows，请修改脚本 hbase\hbase-common\src\saveVersion.sh 这里的${hostna</description></item><item><title>Cloudera数据平台(CDP)最新预览</title><link>https://francis.run/blog/cloudera%E6%95%B0%E6%8D%AE%E5%B9%B3%E5%8F%B0-cdp-%E6%9C%80%E6%96%B0%E9%A2%84%E8%A7%88/</link><pubDate>Fri, 26 Jul 2019 09:08:58 +0000</pubDate><guid>https://francis.run/blog/cloudera%E6%95%B0%E6%8D%AE%E5%B9%B3%E5%8F%B0-cdp-%E6%9C%80%E6%96%B0%E9%A2%84%E8%A7%88/</guid><description>Cloudera 和 Hortonworks 合并后产品首次亮相。来了解下 Cloudera数据平台（CDP）： CDP在混合和多云环境中提供强大的自助服务分析，以及先进、细粒度的安全</description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷， 也是Apache HAWQ的创始人。是一家AI和大数据软件提供商，</description></item><item><title>Treadata`s Kylo分析报告</title><link>https://francis.run/blog/treadata-s-kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:51:02 +0000</pubDate><guid>https://francis.run/blog/treadata-s-kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>Kylo 是希腊语中的意思是“流动” ，它是一个基于 Apache Hadoop 和 Apache Spark 构建的功能丰富的数据湖平台管理工具。 Kylo 提供 Turnkey(一站式解决方案)、业务友好的数</description></item><item><title>Kyligence 安装及初步分析报告</title><link>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:36:08 +0000</pubDate><guid>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>Kyligence 于2016年3月成立于上海， 中文名为上海跬智信息技术有限公司，是由首个来自中国的Apache软 件基金会开源项目Apache Kylin 核心团队组建的</description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/alluxio%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>Alluxio 是一个开源的高容错的分布式内存文件系统，目前在很多公司中使用， 主要用来做大数据平台的缓存等。本文的主要内容是关于 Alluxio 的安装和简单的分析，仅供</description></item><item><title>TiDB和Splice Machine的初步对比</title><link>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0000</pubDate><guid>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</guid><description>Splice Machine 和 TiDB 都是优秀的开源 HTAP 数据库， 一个针对大数据技术栈更加友好，完全不脱离大数据组件，比如 Hadoop/HBase/Spark 。 另一个脱离了大数据技术栈，走自主研发(TiKV)</description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0000</pubDate><guid>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description/></item><item><title>Cloudera 商业云战略及CDP平台介绍</title><link>https://francis.run/blog/cloudera-%E5%95%86%E4%B8%9A%E4%BA%91%E6%88%98%E7%95%A5%E5%8F%8Acdp%E5%B9%B3%E5%8F%B0%E4%BB%8B%E7%BB%8D/</link><pubDate>Sun, 14 Jul 2019 21:34:25 +0000</pubDate><guid>https://francis.run/blog/cloudera-%E5%95%86%E4%B8%9A%E4%BA%91%E6%88%98%E7%95%A5%E5%8F%8Acdp%E5%B9%B3%E5%8F%B0%E4%BB%8B%E7%BB%8D/</guid><description>今年年初写的，最近在写一些大数据行业的分析报告，目前有数据库、 各种 ETL 软件以及各种商业软件的试用报告。最近会找一些脱敏之后 然后发出来，给需要的</description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0000</pubDate><guid>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>最近在工作中有用到Stream Sets公司开源DataOps工具Data Connector， 因此有了以下分析报告，该 PPT 主要是分为三部分来介绍</description></item><item><title>智能化数据治理</title><link>https://francis.run/blog/%E6%99%BA%E8%83%BD%E5%8C%96%E6%95%B0%E6%8D%AE%E6%B2%BB%E7%90%86-pdf/</link><pubDate>Thu, 25 Apr 2019 13:17:32 +0000</pubDate><guid>https://francis.run/blog/%E6%99%BA%E8%83%BD%E5%8C%96%E6%95%B0%E6%8D%AE%E6%B2%BB%E7%90%86-pdf/</guid><description>最近在学习一些关于数据治理的一些东西，比如Teradata 开源的 Kylo,它是一个数据湖的管理工具，感兴趣的 可以看下Kylos Github]</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blog/</link><atom:link href="https://francis.run/blog/index.xml" rel="self" type="application/rss+xml"/><description>Blogs</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright Francis</copyright><lastBuildDate>Thu, 17 Oct 2019 15:06:21 +0000</lastBuildDate><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</guid><description>&lt;p>&lt;a href="http://airflow.apache.org/">Apache Airflow&lt;/a> : 是由Airbnb公司开源
+的一款调度工具，项目于2014年启动，2015年开源，于2016年进入Apache孵化
+器进行孵化，目前已经从孵化器毕业为Apache顶级项目之一.
+Apache Airflow是一个以编程方式创作，安排和监控工作流的平台。Apache
+Airflow通过DAG来定义整个工作流，具有非常强大的表达能力。&lt;/p>
+&lt;p>&lt;a href="https://dolphinscheduler.apache.org/">Apache Dolphin Scheduler&lt;/a> :
+原名Easy Scheduler，由易观于2019年开源，之后9月份改名为Dolphin Scheduler，
+并进入Apache孵化器进行孵化。 Apache Dolphin Scheduler是一个分布式易
+扩展的可视化DAG工作流任务调度系统。致力于解决数据处理流程中错综复杂的依赖关系，
+使调度系统在数据处理流程中开箱即用&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/h37wb1fa958ebe7724b928ac6e4c8db93930c/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>Cloudera Data warehouse on CDP</title><link>https://francis.run/blog/cloudera-data-warehouse-on-cdp/</link><pubDate>Sun, 28 Jul 2019 22:01:41 +0000</pubDate><guid>https://francis.run/blog/cloudera-data-warehouse-on-cdp/</guid><description>&lt;p>数据驱动的业务需要数据仓库来处理数千个新用户和数百个新用例。
+满足这种不断增长的需求的最佳方法之一是利用混合云环境。
+Cloudera 数据平台（CDP）上的 Cloudera 数据仓库是一种新的
+公共云服务，可以用快两倍的速度处理比以前多两倍的用户。
+在本次webinar中，我们将向您展示Cloudera数据仓库如何：&lt;/p>
+&lt;blockquote>
+&lt;ol>
+&lt;li>评估当前的本地工作负载并决定哪些可以上云&lt;/li>
+&lt;li>将数据和工作负载无缝转换到公共云&lt;/li>
+&lt;li>自动扩展和自动暂停以从云中获得最大收益而不会产生失控成本&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;!-- raw HTML omitted --></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;ol>
+&lt;li>克隆源码&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-fallback" data-lang="fallback">git clone git@github.com:apache/hbase.git
+&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
+&lt;li>选择分支&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-fallback" data-lang="fallback">git checkout branch-2.2(自己选一个分支)
+&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="3">
+&lt;li>修改脚本
+如果你的操作系统是Windows，请修改脚本 &lt;code>hbase\hbase-common\src\saveVersion.sh&lt;/code>
+这里的&lt;code>${hostname}&lt;/code> &lt;code>${user}&lt;/code> 都改成你的用户名，或者写死，随便都可以。
+原因是因为在 cygwin 环境下执行此脚本的时候会多获取一个回车，
+会导自动生成的Version.java类无法编译。&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#008000">// 要修改的地方
+&lt;/span>&lt;span style="color:#008000">&lt;/span>Line 45 url=&lt;span style="color:#a31515">&amp;#34;git://${hostname}{cwd}&amp;#34;&lt;/span>
+Line 76 &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String user = &lt;span style="color:#a31515">&amp;#34;${user}&amp;#34;&lt;/span>;
+&lt;span style="color:#008000">// 自动生成的 Version 类
+&lt;/span>&lt;span style="color:#008000">&lt;/span>&lt;span style="color:#008000">/*
+&lt;/span>&lt;span style="color:#008000"> * Generated by src/saveVersion.sh
+&lt;/span>&lt;span style="color:#008000"> */&lt;/span>
+&lt;span style="color:#00f">package&lt;/span> org.apache.hadoop.hbase;
+&lt;span style="color:#00f">import&lt;/span> org.apache.yetus.audience.InterfaceAudience;
+@InterfaceAudience.Private
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">class&lt;/span> &lt;span style="color:#2b91af">Version&lt;/span> {
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String version = &lt;span style="color:#a31515">&amp;#34;2.2.1-SNAPSHOT&amp;#34;&lt;/span>;
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String revision = &lt;span style="color:#a31515">&amp;#34;ac0375685291b72f45a800ebb1cca02901042bb7&amp;#34;&lt;/span>;
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String user = &lt;span style="color:#a31515">&amp;#34;francis&amp;#34;&lt;/span>;
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String date = &lt;span style="color:#a31515">&amp;#34;Sun Jul 28 17:23:04 2019&amp;#34;&lt;/span>;
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String url = &lt;span style="color:#a31515">&amp;#34;git://francis/cygdrive/d/Java/hbase&amp;#34;&lt;/span>;
+&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String srcChecksum = &lt;span style="color:#a31515">&amp;#34;88f3dc17f75ffda6176faa649593b54e&amp;#34;&lt;/span>;
+}
+&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="4">
+&lt;li>修改pom
+     如果你的操作系统是Windows，请修改pom文件 &lt;code>hbase\hbase-common\pom.xml&lt;/code>&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-java" data-lang="java">&lt;span style="color:#008000">// 把这里的 bash 改成 sh，否则你的 windows 无法执行以上脚本
+&lt;/span>&lt;span style="color:#008000">&lt;/span>Line 95 &amp;lt;exec executable=&lt;span style="color:#a31515">&amp;#34;sh&amp;#34;&lt;/span> failonerror=&lt;span style="color:#a31515">&amp;#34;true&amp;#34;&lt;/span>&amp;gt;
+&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="5">
+&lt;li>编译源码&lt;/li>
+&lt;/ol>
+&lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-fallback" data-lang="fallback">mvn clean install -DskipTests assembly:single
+&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="6">
+&lt;li>调试配置&lt;/li>
+&lt;/ol>
+&lt;ul>
+&lt;li>配置并启动 HMaster&lt;/li>
+&lt;/ul>
+&lt;p>&lt;code>配置 HMaster 启动参数：如果不配置 log4j, HMaster无法启动&lt;/code>&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;p>&lt;code>HMaster 启动成功&lt;/code>&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;p>&lt;code>进入HBase Web UI 查看 http://localhost:16010,启动HMaster之后会默认给你启动一个Hregionserver.&lt;/code>&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;ul>
+&lt;li>配置并启动 HHbase Shell&lt;/li>
+&lt;/ul>
+&lt;p>&lt;code>配置 HBase Shell 启动参数&lt;/code>&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;p>&lt;code>HBase Shell 启动成功&lt;/code>&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->&lt;/p></description></item><item><title>Cloudera数据平台(CDP)最新预览</title><link>https://francis.run/blog/cloudera%E6%95%B0%E6%8D%AE%E5%B9%B3%E5%8F%B0-cdp-%E6%9C%80%E6%96%B0%E9%A2%84%E8%A7%88/</link><pubDate>Fri, 26 Jul 2019 09:08:58 +0000</pubDate><guid>https://francis.run/blog/cloudera%E6%95%B0%E6%8D%AE%E5%B9%B3%E5%8F%B0-cdp-%E6%9C%80%E6%96%B0%E9%A2%84%E8%A7%88/</guid><description>&lt;p>Cloudera 和 Hortonworks 合并后产品首次亮相。来了解下 Cloudera数据平台（CDP）：
+CDP在混合和多云环境中提供强大的自助服务分析，以及先进、细粒度的安全和治理。
+在下方视频中，我们将重点介绍关键用例并展示独特的CDP功能，包括：&lt;/p>
+&lt;blockquote>
+&lt;ol>
+&lt;li>智能迁移 - 基于策略的控制，可自动执行本地文件系统和云对象存储之间的数据移动，以实现一次性迁移以及数据和元数据的持续增量移动&lt;/li>
+&lt;li>云爆发 - 通过将工作负载自动爆发到云来针对不可预测性情况并作为数据中心的容量补充&lt;/li>
+&lt;li>自适应扩展 - 根据需求智能调整云资源：添加或暂停，来控制容易失控的云成本&lt;/li>
+&lt;/ol>
+&lt;/blockquote>
+&lt;!-- raw HTML omitted --></description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
+也是&lt;code>Apache HAWQ&lt;/code>的创始人。是一家AI和大数据软件提供商，旗下有产品
+Oushu DB(数据仓库)，LittleBoy(人工智能平台)，Lava(云平台)三款产品。
+是微软加速器成员企业，专注于为国内外企业提供云平台上的数据管理服务。
+Oushu DB是由Apache HAWQ创始团队打造的新一代数据仓库(New Data Warehouse)。
+该产品采用了存储与计算分离技术架构，具有MPP的所有优点，还具有弹性，
+支持混合工作负载和高扩展性等优点。 同时支持公有云与私有云. 遵循ANSI-SQL标准，
+兼容Oracle，Greenplum Database和PostgreSQL，提供PB级数据交互式查询能力，
+提供对主要BI工具的描述性分析和AI支持。OushuDB已在金融、电信、制造、
+医疗和互联网等行业得到广泛的部署和应用。  试用OushuDB公有云版本&lt;/p>
+&lt;p>酷克数据：北京酷克数据科技有限公司始建于2016年03月24日，由前 Apache HAWQ
+创始团队成员创立，核心团队由来自 Pivotal，Teradata，IBM，Yahoo! 等公司资
+深的分布式数据库、云计算和 Hadoop 专家组成，已获得顶级风险投资基金的投资。
+我们专注于 SQL on Cloud 云端数据仓库，致力于降低企业进行大数据分析的门槛，
+推动数据民主化。HashData主要基于云计算，提供一个低成本、高性能、可扩展又简
+单易用的数据仓库服务。HashData 数据仓库服务在提供标准SQL的同时，能够访问如
+对象存储、HDFS等多种外部数据源，并且支持CSV、Parquet、Avro等多种数据存储格式。
+让您能够方便快捷地将HashData与其他组件互联互通、协同工作。提供基于Web的管理界面。
+用户不但可以通过点击鼠标轻松的启动、停止数据仓库服务，还可以实现数据仓库扩容、
+节点性能监控等功能。&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a26b7fb7ac70348432d949cf961954f6ccd/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>Treadata`s Kylo分析报告</title><link>https://francis.run/blog/treadata-s-kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:51:02 +0000</pubDate><guid>https://francis.run/blog/treadata-s-kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://kylo.io/">Kylo&lt;/a> 是希腊语中的意思是“流动” ，它是一个基于
+Apache Hadoop 和 Apache Spark 构建的功能丰富的数据湖平台管理工具。
+Kylo 提供 &lt;code>Turnkey&lt;/code>(一站式解决方案)、业务友好的数据湖解决方案，
+并支持自助数据摄取和数据准备以及数据发掘。 Kylo 的 Web 应用层提供
+面向业务用户的功能，包括数据分析师，数据管理员，数据科学家和IT运营
+人员。Kylo 集成了有关元数据获取、安全性和数据质量的最佳实践。此外，
+Kylo提供灵活的数据处理框架(利用&lt;code>Apache NiFi&lt;/code>)，用于构建批处理或流
+传输管道模板，以及在不影响治理要求的情况下实现自助服务功能。 Kylo
+由 &lt;code>Think Big&lt;/code>(被 &lt;code>Teradata&lt;/code> 收购)开发，并在全球十几家大公司中使用。
+Think Big为全球最大的组织提供大数据和分析咨询服务。Think Big 一直是
+开源 Hadoop 生态系统的主要受益者，并选择开源Kylo以回馈社区并提升价值。&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a2695a55bc96af14dc3a2c51d9da714f491/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>Kyligence 安装及初步分析报告</title><link>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:36:08 +0000</pubDate><guid>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://kyligence.io/">Kyligence&lt;/a> 于2016年3月成立于上海，
+中文名为上海跬智信息技术有限公司，是由首个来自中国的Apache软
+件基金会开源项目Apache Kylin 核心团队组建的数据科技公司。
+Kyligence 提供的 Kyligence Enterprise 是基于 Apache Kylin
+的企业级智能大数据分析平台，为用户提供PB级数据集上的亚秒级查询能力，
+并引入了大量机器学习技术，提供自动建模功能智能化能力，大大提升了大
+数据分析生产力。&lt;/p>
+&lt;p>Kyligence Cloud 是Kyligence云计算的核心产品，已在亚马逊 AWS 云平台、
+微软Azure云平台、阿里云云平台等上线，可提供快捷高效的数据分析解决方案
+以支持企业日益增长的云端分析业务。&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a264f657ed2a8ea47a8b0936771cd877c84/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/alluxio%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://www.alluxio.io">Alluxio&lt;/a>
+是一个开源的高容错的分布式内存文件系统，目前在很多公司中使用，
+主要用来做大数据平台的缓存等。本文的主要内容是关于 Alluxio 的安装和简单的分析，仅供参考。&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a269fae9a09139842c8855c5a0949dcb6c8/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>TiDB和Splice Machine的初步对比</title><link>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0000</pubDate><guid>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</guid><description>&lt;p>&lt;a href="https://github.com/splicemachine/spliceengine">Splice Machine&lt;/a> 和
+&lt;a href="https://github.com/pingcap/tidb">TiDB&lt;/a> 都是优秀的开源 HTAP 数据库，
+一个针对大数据技术栈更加友好，完全不脱离大数据组件，比如 Hadoop/HBase/Spark 。
+另一个脱离了大数据技术栈，走自主研发(TiKV)。相比 TiDB 而言，Splice Machine
+具有更加完整的关系型数据库功能。奈何 Splice Machine 在国内的用户比较少，
+导致了其知名度不如 TiDB 。TiDB 在国内拥有活跃的社区，版本更新迭代相当的快，
+目前 TiDB 的客户主要在互联网行业，其中银行、金融行业的超大型客户比较少，
+因此其稳定性需要时间来验证。Splice Machine 在国外已经有很大规模的应用场景了，
+比如国外知名的信用卡商 Visa 等超大型用户。两款产品各有优缺点，因此我们不做评价，
+用户总会选择适合自己的来用。目前在 HTAP 领域也有其他的产品，我个人也有试用过一些，
+以后会整理出来进行分享。目前仅对这两款产品做一个简单的分析，仅供参考。&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a26dec6f5c59a70462a95a19bc9ab75f343/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0000</pubDate><guid>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a26ae2a0de74aed4985b0cba463d9a17d8f/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>Cloudera 商业云战略及CDP平台介绍</title><link>https://francis.run/blog/cloudera-%E5%95%86%E4%B8%9A%E4%BA%91%E6%88%98%E7%95%A5%E5%8F%8Acdp%E5%B9%B3%E5%8F%B0%E4%BB%8B%E7%BB%8D/</link><pubDate>Sun, 14 Jul 2019 21:34:25 +0000</pubDate><guid>https://francis.run/blog/cloudera-%E5%95%86%E4%B8%9A%E4%BA%91%E6%88%98%E7%95%A5%E5%8F%8Acdp%E5%B9%B3%E5%8F%B0%E4%BB%8B%E7%BB%8D/</guid><description>&lt;p>今年年初写的，最近在写一些大数据行业的分析报告，目前有数据库、
+各种 ETL 软件以及各种商业软件的试用报告。最近会找一些脱敏之后
+然后发出来，给需要的朋友，或者和朋友做交流用在线的 PPT 播放方
+式也比较方便，我用的是 &lt;a href="https://show.zoho.com">Zoho Show&lt;/a>
+嵌入代码到 Markdown 里，感兴趣的小伙伴可以去试试。&lt;/p>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a26ef96bc56963d452b8ce26a8517a7e08e/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0000</pubDate><guid>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
+因此有了以下分析报告，该 PPT 主要是分为三部分来介绍&lt;code>Stream Set Open Sorce Data Connector&lt;/code>:&lt;/p>
+&lt;ol>
+&lt;li>第一部分主要介绍了&lt;code>Stream Sets&lt;/code>公司以及创始人&lt;/li>
+&lt;li>第二部分主要介绍了&lt;code>Stream Sets&lt;/code>公司的一些产品&lt;/li>
+&lt;li>第三部分主要介绍了&lt;code>DataOps&lt;/code>的概念&lt;/li>
+&lt;li>第四部分是一个 Demo ,这个是在公司内网环境下的，因此在这里没法看&lt;/li>
+&lt;/ol>
+&lt;div class="embed zohoshow">
+&lt;iframe src="https://show.zohopublic.com/publish/f9a26ab7e918c082c42eeb3a405004e856391/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
+width="890" height="520" style="border:1px solid #000;max-width: 100%;"
+allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
+&lt;/iframe>
+&lt;/div></description></item><item><title>智能化数据治理</title><link>https://francis.run/blog/%E6%99%BA%E8%83%BD%E5%8C%96%E6%95%B0%E6%8D%AE%E6%B2%BB%E7%90%86-pdf/</link><pubDate>Thu, 25 Apr 2019 13:17:32 +0000</pubDate><guid>https://francis.run/blog/%E6%99%BA%E8%83%BD%E5%8C%96%E6%95%B0%E6%8D%AE%E6%B2%BB%E7%90%86-pdf/</guid><description>&lt;p>最近在学习一些关于数据治理的一些东西，比如Teradata 开源的
+&lt;a href="https://kylo.io">Kylo&lt;/a>,它是一个数据湖的管理工具，感兴趣的
+可以看下&lt;a href="https://kylo.readthedocs.io/en/v0.10.0/">Kylo&lt;code>s Github](https://github.com/Teradata/kylo)、 [Kylo&lt;/code>s Doc&lt;/a>。
+我这个PDF不知道哪里来的，反正是邮箱收到的，索性就分享出来了，可以下载下来看看。&lt;/p>
+&lt;p>&lt;a href="http://s-event.cn/EDM/video/IntelligentDataGovernnceForDummies.pdf">点击下载 &amp;raquo;&lt;/a>&lt;/p></description></item></channel></rss>
