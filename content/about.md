@@ -5,4 +5,4 @@ type: "page"
 author: franics
 ---
 
-![About Me](https://media-exp1.licdn.com/media/AAYUBAR3AAgAAQAAAAAAABsbMA7qO6lrTlGp3mF-STnNMA.png)
+![About Me](../images/resume.png)
