@@ -29,6 +29,9 @@ hasCJKLanguage= true
 	# customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
 	# customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
 
+[author]
+    name = "Francis Du"
+	
 # Nav.
 [[menu.main]]
 name = "Home"
@@ -79,6 +82,11 @@ url = "https://twitter.com/francis_run"
 name = "Email"
 icon = "mail"
 url = "mailto:francis@francisdu.com"
+
+[[params.social]]
+name = "dev"
+icon = "link"
+url = "https://dev.to/francisdu"
 
 [[params.social]]
 name = "RSS"
