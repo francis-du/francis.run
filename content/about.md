@@ -5,4 +5,4 @@ type: "page"
 author: franics
 ---
 
-![About Me](../images/resume.png)
+![About Me](../img/resume.png)
