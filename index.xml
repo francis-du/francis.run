@@ -1,39 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright Francis</copyright><lastBuildDate>Fri, 03 Jul 2020 18:32:07 +0800</lastBuildDate><item><title>生命的思考</title><link>https://francis.run/blog/%E7%94%9F%E5%91%BD%E7%9A%84%E6%80%9D%E8%80%83/</link><pubDate>Fri, 03 Jul 2020 18:32:07 +0800</pubDate><guid>https://francis.run/blog/%E7%94%9F%E5%91%BD%E7%9A%84%E6%80%9D%E8%80%83/</guid><description>&lt;p>&lt;img src="https://i.ytimg.com/vi/ecXY3-Yhkiw/maxresdefault.jpg" alt="">&lt;/p>
-&lt;p>造物主创造我们我觉得不是为了创造美好的，也不是为了让我们改变世界，
-我觉得是来惩罚ta自己的，我们每一个人的灵魂都是ta的一部分，ta把自
-己分成了无数颗粒，包括每一个星球，每一个星系，每一个宇宙，宇宙中
-的每一个灵魂。都时时刻刻遭受着惩罚，所有的人、物、灵魂都同源都是
-造物主的一部分，形成了一个完美的循环，不停的 Rerun，永无休止。我
-们所谓的美好，只是这个循环中那么几个瞬间的美好，只是为了安慰你继
-续坚持走下去。每个人的起点、终点都是一样的，从一个受精卵来，最终
-化为有机物，跟我们身边的无机物有机物一样，最终什么都没留下。&lt;/p>
-&lt;p>&lt;img src="http://img.qdaily.com/article/article_show/20180930165625zxSXYwmGD3kOPC0a.jpg" alt="">&lt;/p>
-&lt;p>其实人类本质都是来自同一个灵魂体，就是我们的造物主，对，就是我们
-自己创造了自己，我们终归会成为一个共同体，英文称之为 community。
-只是每个颗粒觉醒的程度不同，所以我们在世的人无法回到我们的根源，
-英文称之为 root。我们的造物主至每时每刻跟我们每个人一样遭受着这
-个宇宙中的所有痛苦。我们所经历的美好，只是我们 rerun 的时候停下
-来休息的时候的自我安慰，这是造物主对我们唯一的奖励。等我们所有的
-人、物有一天都觉醒了，这个秩序的世界就会崩塌，最终我们将会以一个
-共同体的方式，重新回溯为一个新的能量体。然后这个能量体将会重新解
-体，然后再 rerun。这很简单，很规律，就是一个从 0-1，然后从1-0的
-简单公式。&lt;/p>
-&lt;p>&lt;img src="https://pic4.zhimg.com/v2-7317c50dbd334b5adab40c2dc1b3cf39_1440w.jpg" alt="">&lt;/p>
-&lt;p>人就是造物主分裂之后的的每一个颗粒住进了一堆碳水化合物里。你觉的
-你特殊？动物觉得ta不特殊吗？，动物觉得ta特殊，植物觉得ta不特殊吗?
-动植物觉得ta特殊，难道石头、土壤以及其他无机物你怎么知道他们没有
-这么觉得呢？我们本身就是 一体，不是嘛？所以对于生命的定义，是狭义
-的，不是相对的。之所以我们对生命的的认识只是动物或植物等有机生命
-体，是因为动物是最低等的一种生命体，尤其人类，生命这个词是人类发
-明的，仅代表自己同类或相似类的一个代名词，真真意义上的生命，就是
-我们这个宇宙，甚至其他宇宙所有的物体，就是那个0和1。为什么说动物
-或者人类是最低等的一种生命体？随便抓起身边的一个小石子，ta都要比
-我们人类总寿命还要长？所以，你，觉得你特殊吗？你，还会因为你是人
-类而骄傲吗？是的，如果是我，我会承认因为我是人类而骄傲，因为正是
-人类生命体的短暂，才会让每一个人能够最大限度的忘记痛苦，留下美好。
-万物最终的目的都是追求美的真谛，这样我们这个共同体才会变的越来高
-级。那什么是美的真谛呢？就是无论你会不会说话，会不会写字，看见大
-家共同赞扬或者喜欢的事务，都会用一段声波&amp;quot;哇！&amp;ldquo;来表达相同的情绪。:)&lt;/p></description></item><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</guid><description>&lt;p>&lt;a href="http://airflow.apache.org/">Apache Airflow&lt;/a> : 是由Airbnb公司开源
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright Francis</copyright><lastBuildDate>Thu, 17 Oct 2019 15:06:21 +0000</lastBuildDate><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</guid><description>&lt;p>&lt;a href="http://airflow.apache.org/">Apache Airflow&lt;/a> : 是由Airbnb公司开源
 的一款调度工具，项目于2014年启动，2015年开源，于2016年进入Apache孵化
 器进行孵化，目前已经从孵化器毕业为Apache顶级项目之一.
 Apache Airflow是一个以编程方式创作，安排和监控工作流的平台。Apache
