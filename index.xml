@@ -13,19 +13,7 @@ Airflow通过DAG来定义整个工作流，具有非常强大的表达能力。&
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Cloudera Data warehouse on CDP</title><link>https://francis.run/blog/cloudera-data-warehouse-on-cdp/</link><pubDate>Sun, 28 Jul 2019 22:01:41 +0000</pubDate><guid>https://francis.run/blog/cloudera-data-warehouse-on-cdp/</guid><description>&lt;p>数据驱动的业务需要数据仓库来处理数千个新用户和数百个新用例。
-满足这种不断增长的需求的最佳方法之一是利用混合云环境。
-Cloudera 数据平台（CDP）上的 Cloudera 数据仓库是一种新的
-公共云服务，可以用快两倍的速度处理比以前多两倍的用户。
-在本次webinar中，我们将向您展示Cloudera数据仓库如何：&lt;/p>
-&lt;blockquote>
-&lt;ol>
-&lt;li>评估当前的本地工作负载并决定哪些可以上云&lt;/li>
-&lt;li>将数据和工作负载无缝转换到公共云&lt;/li>
-&lt;li>自动扩展和自动暂停以从云中获得最大收益而不会产生失控成本&lt;/li>
-&lt;/ol>
-&lt;/blockquote>
-&lt;!-- raw HTML omitted --></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;ol>
+&lt;/div></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;ol>
 &lt;li>克隆源码&lt;/li>
 &lt;/ol>
 &lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-fallback" data-lang="fallback">git clone git@github.com:apache/hbase.git
@@ -86,17 +74,7 @@ Line 76 &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f"
 &lt;p>&lt;code>配置 HBase Shell 启动参数&lt;/code>&lt;/p>
 &lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
 &lt;p>&lt;code>HBase Shell 启动成功&lt;/code>&lt;/p>
-&lt;p>&lt;!-- raw HTML omitted -->&lt;/p></description></item><item><title>Cloudera数据平台(CDP)最新预览</title><link>https://francis.run/blog/cloudera%E6%95%B0%E6%8D%AE%E5%B9%B3%E5%8F%B0-cdp-%E6%9C%80%E6%96%B0%E9%A2%84%E8%A7%88/</link><pubDate>Fri, 26 Jul 2019 09:08:58 +0000</pubDate><guid>https://francis.run/blog/cloudera%E6%95%B0%E6%8D%AE%E5%B9%B3%E5%8F%B0-cdp-%E6%9C%80%E6%96%B0%E9%A2%84%E8%A7%88/</guid><description>&lt;p>Cloudera 和 Hortonworks 合并后产品首次亮相。来了解下 Cloudera数据平台（CDP）：
-CDP在混合和多云环境中提供强大的自助服务分析，以及先进、细粒度的安全和治理。
-在下方视频中，我们将重点介绍关键用例并展示独特的CDP功能，包括：&lt;/p>
-&lt;blockquote>
-&lt;ol>
-&lt;li>智能迁移 - 基于策略的控制，可自动执行本地文件系统和云对象存储之间的数据移动，以实现一次性迁移以及数据和元数据的持续增量移动&lt;/li>
-&lt;li>云爆发 - 通过将工作负载自动爆发到云来针对不可预测性情况并作为数据中心的容量补充&lt;/li>
-&lt;li>自适应扩展 - 根据需求智能调整云资源：添加或暂停，来控制容易失控的云成本&lt;/li>
-&lt;/ol>
-&lt;/blockquote>
-&lt;!-- raw HTML omitted --></description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
+&lt;p>&lt;!-- raw HTML omitted -->&lt;/p></description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
 也是&lt;code>Apache HAWQ&lt;/code>的创始人。是一家AI和大数据软件提供商，旗下有产品
 Oushu DB(数据仓库)，LittleBoy(人工智能平台)，Lava(云平台)三款产品。
 是微软加速器成员企业，专注于为国内外企业提供云平台上的数据管理服务。
