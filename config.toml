@@ -21,7 +21,7 @@ hasCJKLanguage= true
 
 [params]
 	subtitle = "Co-organizer [@GDG Beijing](https://www.meetup.com/GDG-Beijing/)"
-	avatar = "https://media-exp1.licdn.com/dms/image/C5603AQGtwZX5TPp4EA/profile-displayphoto-shrink_400_400/0?e=1597276800&v=beta&t=UwZZUmBWmLd_Fs3XEr9hcuyciV3iHxN87v9pIpX-PYY"
+	avatar = "https://avatars1.githubusercontent.com/u/25944814"
 	disableDisqusTypes = ["page"]
 	featherIconsCDN = true
 	favicon="/img/icon.png"
