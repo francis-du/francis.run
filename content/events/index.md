@@ -5,6 +5,10 @@ type: "page"
 author: franics
 ---
 
+## Android 11 Meetup
+
+{{< tweet 1287020701774311424 >}}
+
 ## GDG Beijing March 8 Event
 
 {{< tweet 1236152636916678656 >}}
