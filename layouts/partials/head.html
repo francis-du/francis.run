@@ -8,8 +8,8 @@
 	{{ end }}
 	<h1 class="site-title"><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}</a></h1>
 	<div class="site-description">
-		{{- if isset .Site.Params "subtitle" -}}
-		<p>{{ .Site.Params.Subtitle | markdownify }}</p>
+		{{- if isset .Site.Params "description" -}}
+		<p>{{ .Site.Params.Description | markdownify }}</p>
 		{{- end -}}
 		<nav class="nav social">
 			<ul class="flat">

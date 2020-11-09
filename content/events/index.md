@@ -5,18 +5,18 @@ type: "page"
 author: franics
 ---
 
-## Android 11 Meetup
+## [Twitter]-Android 11 Meetup
 
 {{< tweet 1287020701774311424 >}}
 
-## GDG Beijing March 8 Event
+## [Twitter]-GDG Beijing March 8 Event
 
 {{< tweet 1236152636916678656 >}}
 
-## GDG Beijing DevFest 2019
+## [Twitter]-GDG Beijing DevFest 2019
 
 {{< tweet 1220103873878220800 >}}
 
-## Quicksql Meetup
+## [YouTube]-Quicksql Meetup
 
 {{< youtube L2cV6Zy-Tjs >}}

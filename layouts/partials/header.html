@@ -1,7 +1,6 @@
 <head>
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="baidu-site-verification" content="code-4Ygr7ftaz0" />
 	{{- $title := ( .Title ) -}}
 	{{- $siteTitle := ( .Site.Title ) -}}
 	{{- if .IsHome -}}
@@ -18,6 +17,10 @@
 	{{ with .OutputFormats.Get "rss" -}}
 		{{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
 	{{ end -}}
+
+	{{- if .Site.Params.busuanzi -}}
+	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	{{- end }}
 
 	{{- template "_internal/schema.html" . -}}
 	{{- template "_internal/opengraph.html" . -}}

@@ -1,6 +1,13 @@
 <div class="footer wrapper">
 	<nav class="nav">
-		<div>{{ .Date.Year}} {{ with .Site.Copyright }} {{ . | safeHTML }} | {{ end }} <a href="https://github.com/knadh/hugo-ink">Ink</a> theme on <a href="https://gohugo.io">Hugo</a></div>
+		{{- if .Site.Params.busuanzi -}}
+		<div class="inline" style="float:left;">
+			PV: <span id="busuanzi_value_site_pv"></span> / UV: <span id="busuanzi_value_site_uv"></span>
+		</div>
+		{{- end -}}
+		<div class="inline">
+			2019 - {{ now.Format "2006" }} {{ with .Site.Copyright | markdownify }} {{ . | safeHTML }} {{ end }}
+		</div>
 	</nav>
 </div>
 
