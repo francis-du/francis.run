@@ -19,6 +19,9 @@ enableInlineShortcodes = true
 enableRobotsTXT = true
 hasCJKLanguage= true
 
+[taxonomies]
+  tags = "tags"
+
 [params]
 	subtitle = "Blog"
 	description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Python,Rust,Big Data,Cloud Native,etc..."
@@ -96,6 +99,3 @@ url = "https://dev.to/francisdu"
 name = "RSS"
 icon = "rss"
 url = "/index.xml"
-
-[taxonomies]
-  tags = "tags"
