@@ -4,7 +4,7 @@ type: post
 date: {{ .Date }}
 url: /{{ .Name }}/
 image: /images/2020-thumbs/{{ .Name }}.jpg
-categories:
+tags:
   - Linux
   - Windows
   - Networking
