@@ -28,6 +28,7 @@ hasCJKLanguage= true
 	favicon="img/icon.png"
 	mode = "dark"
 	busuanzi = true
+	social_share = true
 	# customCSS = "css/custom.css"  # Custom CSS applied to default styles.
 	# customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
 	# customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.

@@ -16,12 +16,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	{{ with .OutputFormats.Get "rss" -}}
 		{{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
-	{{ end -}}
+	{{- end -}}
 
 	{{- if .Site.Params.busuanzi -}}
-	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-	{{- end }}
-
+		<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+	{{- end -}}
+	
 	{{- template "_internal/schema.html" . -}}
 	{{- template "_internal/opengraph.html" . -}}
 	{{- template "_internal/twitter_cards.html" . -}}

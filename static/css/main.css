@@ -246,17 +246,19 @@ ul {
     margin: 0 0 10px 0;
     line-height: 0.2em;
 }
-    .site-title a {
-        color: #333;
-        text-decoration: none !important;
-    }
-    .site-title a:hover {
-        border-bottom-width: 3px;
-    }
+
+.site-title a {
+    color: #333;
+    text-decoration: none !important;
+}
+.site-title a:hover {
+    border-bottom-width: 3px;
+}
 
 .header .site-description {
     display: flex;
     justify-content: space-between;
+    font-size: small;
 }
 
 .header nav {
