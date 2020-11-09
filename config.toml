@@ -80,7 +80,7 @@ url = "https://github.com/francis-du"
 [[params.social]]
 name = "Twitter"
 icon = "twitter"
-url = "https://twitter.com/francis_run"
+url = "https://twitter.com/intent/follow?screen_name=francis_run"
 
 [[params.social]]
 name = "Email"
