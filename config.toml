@@ -20,7 +20,7 @@ enableRobotsTXT = true
 hasCJKLanguage= true
 
 [params]
-	subtitle = "Co-organizer [@GDG Beijing](https://www.meetup.com/GDG-Beijing/)"
+	subtitle = "Co-organizer @GDG Beijing"
 	avatar = "https://avatars1.githubusercontent.com/u/25944814"
 	disableDisqusTypes = ["page"]
 	featherIconsCDN = true
