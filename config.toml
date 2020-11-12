@@ -92,15 +92,20 @@ url = "mailto:francis@francisdu.com"
 
 [[params.social]]
 name = "Dev.to"
-icon = "link"
+icon = "link-2"
 url = "https://dev.to/francisdu"
 
 [[params.social]]
-name = "RSS"
-icon = "rss"
-url = "/index.xml"
+name = "Youtube"
+icon = "youtube"
+url = "https://www.youtube.com/channel/UCFVmijl279L0A7ub8dzcGkg"
 
 [[params.social]]
 name = "Site Status"
 icon = "monitor"
 url = "https://status.francis.run/"
+
+[[params.social]]
+name = "RSS"
+icon = "rss"
+url = "/index.xml"
