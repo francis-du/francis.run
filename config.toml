@@ -99,3 +99,8 @@ url = "https://dev.to/francisdu"
 name = "RSS"
 icon = "rss"
 url = "/index.xml"
+
+[[params.social]]
+name = "Site Status"
+icon = "monitor"
+url = "https://status.francis.run/"
