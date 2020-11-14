@@ -1,4 +1,4 @@
 User-agent: *
-Disallow: /robots.txt/img/*
-Disallow: /robots.txt/about/*
-Disallow: /robots.txt/album/*
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
