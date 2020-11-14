@@ -199,7 +199,7 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;a href="https://kylo.io">Kylo&lt;/a>,它是一个数据湖的管理工具，感兴趣的
 可以看下&lt;a href="https://kylo.readthedocs.io/en/v0.10.0/">Kylo&lt;code>s Github](https://github.com/Teradata/kylo)、 [Kylo&lt;/code>s Doc&lt;/a>。
 我这个PDF不知道哪里来的，反正是邮箱收到的，索性就分享出来了，可以下载下来看看。&lt;/p>
-&lt;p>&lt;a href="http://s-event.cn/EDM/video/IntelligentDataGovernnceForDummies.pdf">点击下载 &amp;raquo;&lt;/a>&lt;/p></description></item><item><title>About me</title><link>https://francis.run/about/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="../img/resume.png" alt="About Me">&lt;/p></description></item><item><title>Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
+&lt;p>&lt;a href="http://s-event.cn/EDM/video/IntelligentDataGovernnceForDummies.pdf">点击下载 &amp;raquo;&lt;/a>&lt;/p></description></item><item><title>Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
 &lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At 14:00 tomorrow, please checkout Bilibili Beijing GDG live channel on time. Click to join our channel :&lt;a href="https://t.co/gJKL6jPeQA">https://t.co/gJKL6jPeQA&lt;/a> &lt;a href="https://t.co/PoZkBXrOoX">pic.twitter.com/PoZkBXrOoX&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1287020701774311424?ref_src=twsrc%5Etfw">July 25, 2020&lt;/a>&lt;/blockquote>
 &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
 &lt;h2 id="twitter-gdg-beijing-march-8-event">[Twitter]-GDG Beijing March 8 Event&lt;/h2>
@@ -211,4 +211,38 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;h2 id="youtube-quicksql-meetup">[YouTube]-Quicksql Meetup&lt;/h2>
 &lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
 &lt;iframe src="https://www.youtube.com/embed/L2cV6Zy-Tjs" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video">&lt;/iframe>
-&lt;/div></description></item></channel></rss>
+&lt;/div></description></item><item><title>I am Francis Toh</title><link>https://francis.run/about/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://img.shields.io/badge/GitHub%20Profile-orange?style=for-the-badge" alt="GitHub Profile">&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>GitHub Stats&lt;/th>
+&lt;th>Waketime Week Stats&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;a href="https://github.com/francis-du/">&lt;img src="https://github-readme-stats.vercel.app/api?username=francis-du&amp;amp;count_private=true&amp;amp;show_icons=true&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://wakatime.com/@francis">&lt;img src="https://github-readme-stats.vercel.app/api/wakatime?username=francis&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;img src="https://img.shields.io/badge/Live%20status-orange?style=for-the-badge" alt="Live Status">&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>🔭 I’m currently working on &lt;a href="https://github.com/trisasnava/koifish">Koifish&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>🌱 I’m currently learning &lt;a href="https://www.rust-lang.org/learn">Rust&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>👯 I’m looking to collaborate on &lt;a href="https://github.com/trisasnava/koifish">Koifish&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>📝 I regulary write articles on &lt;a href="https://francis.run">https://francis.run&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>📄 Know about my experiences &lt;a href="https://francis.run/about/">https://francis.run/about/&lt;/a>&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>&lt;img src="https://img.shields.io/badge/LinkedIn%20Profile-orange?style=for-the-badge" alt="Resume">&lt;/p>
+&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume.png" alt="Resume">&lt;/a>&lt;/p></description></item></channel></rss>
