@@ -24,7 +24,7 @@
 	<meta property="og:description" content="{{ .Params.Summary }}" />
 	<meta property="og:locale" content="{{ .Site.LanguageCode }}" />
 	{{ end }}
-
+	
 	{{- if isset .Site.Params "favicon" -}}
 		<link rel="icon" type="image/png" href="{{ .Site.BaseURL }}{{ .Site.Params.favicon }}" />
 	{{- end -}}
