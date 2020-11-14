@@ -1,6 +1,4 @@
 User-agent: *
-{{range .Pages}}
-Disallow: /img/*
-Disallow: /about/*
-Disallow: /album/*
-{{end}}
+Disallow: {{.RelPermalink}}/img/*
+Disallow: {{.RelPermalink}}/about/*
+Disallow: {{.RelPermalink}}/album/*
