@@ -9,6 +9,22 @@
 		<title>{{ $title }} - {{ $siteTitle }}</title>
 	{{- end -}}
 
+	<!-- Favicons -->
+	<link rel="icon" href="{{ .Site.Params.favicon }}"> 
+	<link rel="apple-touch-icon" href="{{ .Site.Params.appleTouchIcon }}">
+
+	<!-- Open Graph -->
+	{{- if eq .Kind "page" }}
+	<meta property="og:title" content="{{ .Title }}" />
+	<meta property="og:type" content="blog" />
+	<meta property="og:url" content="{{ .Permalink }}" />
+	{{- if .Params.album -}}
+	<meta property="og:image" content="{{ .Params.album }}" />
+	{{ end }}
+	<meta property="og:description" content="{{ .Params.Summary }}" />
+	<meta property="og:locale" content="{{ .Site.LanguageCode }}" />
+	{{ end }}
+
 	{{- if isset .Site.Params "favicon" -}}
 		<link rel="icon" type="image/png" href="{{ .Site.BaseURL }}{{ .Site.Params.favicon }}" />
 	{{- end -}}
