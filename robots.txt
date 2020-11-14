@@ -1,1 +1,89 @@
 User-agent: *
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
+
+Disallow: /img/*
+Disallow: /about/*
+Disallow: /album/*
