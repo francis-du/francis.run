@@ -1,5 +1,4 @@
 baseURL = "https://francis.run/"
-languageCode = "en"
 title = "Francis Toh"
 copyright = "© Copyright [Francis Tho](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)"
 paginate = 6
@@ -19,9 +18,6 @@ enableInlineShortcodes = true
 enableRobotsTXT = true
 hasCJKLanguage= true
 
-[taxonomies]
-  tags = "tags"
-
 [params]
 	subtitle = "Blog"
 	description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Python,Rust,Big Data,Cloud Native,etc..."
@@ -38,8 +34,7 @@ hasCJKLanguage= true
 
 [author]
     name = "Francis Toh"
-	
-# Nav.
+
 [[menu.main]]
 name = "Home"
 url = "/"
@@ -109,3 +104,6 @@ url = "https://status.francis.run/"
 name = "RSS"
 icon = "rss"
 url = "/index.xml"
+
+[taxonomies]
+  tags = "tags"
