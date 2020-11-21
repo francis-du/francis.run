@@ -1,6 +1,6 @@
 baseURL = "https://francis.run/"
-title = "Francis Toh"
-copyright = "© Copyright [Francis Tho](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)"
+title = "Francis Du"
+copyright = "© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)"
 paginate = 6
 
 pygmentsstyle = "vs"
