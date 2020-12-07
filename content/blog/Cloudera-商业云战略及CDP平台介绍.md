@@ -1,7 +1,8 @@
 ---
-title: Cloudera 商业云战略及CDP平台介绍
-date: 2019-07-14 21:34:25
-author: Francis
+title: "Cloudera 商业云战略及CDP平台介绍"
+date: 2019-07-14 21:34:25+08:00
+url: /blog/cloudera-cdp/
+image: /img/icon.png
 tags:
   - PPT
 ---

@@ -1,7 +1,8 @@
 ---
-title: TiDB和Splice Machine的初步对比
-date: 2019-07-16 14:37:28
-author: Francis
+title: "TiDB 和 Splice Machine的初步对比"
+date: 2019-07-16 14:37:28+08:00
+url: /blog/TiDB_Splice-Machine/
+image: /img/icon.png
 tags:
   - Database
   - PPT

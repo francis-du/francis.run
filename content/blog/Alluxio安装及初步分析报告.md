@@ -1,7 +1,8 @@
 ---
-title: Alluxio安装及初步分析报告
-date: 2019-07-16 15:06:21
-author: Francis
+title: "Alluxio安装及初步分析报告"
+date: 2019-07-16 15:06:21+08:00
+url: /blog/alluxio/
+image: /img/icon.png
 tags:
   - PPT
   - Alluxio

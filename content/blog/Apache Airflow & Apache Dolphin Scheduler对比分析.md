@@ -1,7 +1,8 @@
 ---
-title: Apache Airflow & Apache Dolphin Scheduler对比分析
-date: 2019-10-17 15:06:21
-author: Francis
+title: "Apache Airflow & Apache Dolphin Scheduler对比分析"
+date: 2019-10-17 15:06:21+08:00
+url: /blog/apache-airflow_apache-dolphin-scheduler/
+image: /img/icon.png
 tags:
   - PPT
   - Scheduler

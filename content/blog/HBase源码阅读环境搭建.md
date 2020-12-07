@@ -1,11 +1,11 @@
 ---
-title: HBase源码阅读环境搭建
-date: 2019-07-28 21:01:41
-categories: HBase
-author: Francis
+title: "HBase源码阅读环境搭建"
+date: 2019-07-28 21:01:41+08:00
+url: /blog/HBase源码阅读环境搭建/
+image: /img/hbase.png
 tags:
   - HBase
-  - 大数据
+  - Big Data
 ---
 
 ![](/img/hbase.png)

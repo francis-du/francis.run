@@ -1,9 +1,10 @@
 ---
-title: Kyligence 安装及初步分析报告
-date: 2019-07-25 17:36:08
-author: Francis
+title: "Kyligence 安装及初步分析报告"
+date: 2019-07-25 17:36:08+08:00
+url: /blog/kyligence/
+image: /img/icon.png
 tags:
-  - Database
+  - OLAP
   - PPT
 ---
 

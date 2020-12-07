@@ -1,7 +1,8 @@
 ---
-title: OushuDB&HashDB分析报告
-date: 2019-07-25 18:01:57
-author: Francis
+title: "OushuDB & HashDB分析报告"
+date: 2019-07-25 18:01:57+08:00
+url: /blog/OushuDB_HashDB/
+image: /img/icon.png
 tags:
   - Database
   - PPT

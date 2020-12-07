@@ -1,7 +1,8 @@
 ---
-title: Treadata`s Kylo分析报告
-date: 2019-07-25 17:51:02
-author: Francis
+title: "Treadata's Kylo 分析报告"
+date: 2019-07-25 17:51:02+08:00
+url: /blog/Treadata-s_Kylo/
+image: /img/icon.png
 tags:
   - ETL
   - PPT

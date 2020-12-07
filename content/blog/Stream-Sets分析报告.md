@@ -1,7 +1,8 @@
 ---
-title: Stream Sets Data Connector分析报告
-date:  2019-07-05 13:33:31
-author: Francis
+title: "Stream Sets Data Connector分析报告"
+date: 2019-07-05 13:33:31+08:00
+url: /blog/Stream-Sets_Data_Connector/
+image: /img/icon.png
 tags:
   - ETL
   - PPT
