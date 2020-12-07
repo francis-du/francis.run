@@ -1,4 +1,60 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 17 Oct 2019 15:06:21 +0000</lastBuildDate><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/apache-airflow-apache-dolphin-scheduler%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90/</guid><description>&lt;p>&lt;a href="http://airflow.apache.org/">Apache Airflow&lt;/a> : 是由Airbnb公司开源
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Mon, 07 Dec 2020 17:16:21 +0800</lastBuildDate><item><title>URL Shortener</title><link>https://francis.run/blog/Url-shortener/</link><pubDate>Mon, 07 Dec 2020 17:16:21 +0800</pubDate><guid>https://francis.run/blog/Url-shortener/</guid><description>&lt;h2 id="whats-it">What&amp;rsquo;s it&lt;/h2>
+&lt;p>URL-Shortener is a simple app that is build on Cloudflare Workers using Short.io API.&lt;/p>
+&lt;p>&lt;a href="https://short.francis.run/?link=https%3A%2F%2Ffrancis.run">&lt;img src="https://raw.githubusercontent.com/francis-du/url-shortener/main/src/static/img/index.png" alt="index">&lt;/a>&lt;/p>
+&lt;h2 id="how-to-use">How to use&lt;/h2>
+&lt;p>&lt;a href="https://deploy.workers.cloudflare.com/?url=https://github.com/francis-du/url-shortener">&lt;img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers">&lt;/a>&lt;/p>
+&lt;h3 id="web-ui">Web UI&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>Open Website &lt;code>https://short.francis.run&lt;/code>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Paste the long link you want to shorten.&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Click the Go button to generate a short link.&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;h3 id="get-request">Get request&lt;/h3>
+&lt;ul>
+&lt;li>
+&lt;p>Request Url &lt;code>https://short.francis.run&lt;/code>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>Request parameters and return response data&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>parameters&lt;/th>
+&lt;th>description&lt;/th>
+&lt;th>required&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>?link=&amp;quot;&amp;quot;&lt;/td>
+&lt;td>link, which you want to shorten&lt;/td>
+&lt;td>Y&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>?api=&amp;ldquo;true&amp;rdquo;&lt;/td>
+&lt;td>Return json data - Required&lt;/td>
+&lt;td>Y&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>?title=&amp;quot;&amp;quot;&lt;/td>
+&lt;td>title of created URL to be shown in short.cm admin panel&lt;/td>
+&lt;td>N&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>?path&amp;quot;&amp;quot;&lt;/td>
+&lt;td>optional path part of newly created link. If empty - it will be generated automatically&lt;/td>
+&lt;td>N&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table></description></item><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow_apache-dolphin-scheduler/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0800</pubDate><guid>https://francis.run/blog/apache-airflow_apache-dolphin-scheduler/</guid><description>&lt;p>&lt;a href="http://airflow.apache.org/">Apache Airflow&lt;/a> : 是由Airbnb公司开源
 的一款调度工具，项目于2014年启动，2015年开源，于2016年进入Apache孵化
 器进行孵化，目前已经从孵化器毕业为Apache顶级项目之一.
 Apache Airflow是一个以编程方式创作，安排和监控工作流的平台。Apache
@@ -13,7 +69,7 @@ Airflow通过DAG来定义整个工作流，具有非常强大的表达能力。&
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;p>&lt;img src="https://francis.run/img/hbase.png" alt="">&lt;/p>
+&lt;/div></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0800</pubDate><guid>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;p>&lt;img src="https://francis.run/img/hbase.png" alt="">&lt;/p>
 &lt;ol>
 &lt;li>克隆源码&lt;/li>
 &lt;/ol>
@@ -75,7 +131,7 @@ Line 76 &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f"
 &lt;p>&lt;code>配置 HBase Shell 启动参数&lt;/code>
 &lt;img src="https://francis.run/img/hbase-shell.png" alt="">&lt;/p>
 &lt;p>&lt;code>HBase Shell 启动成功&lt;/code>
-&lt;img src="https://francis.run/img/hbase-shell-run.png" alt="">&lt;/p></description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
+&lt;img src="https://francis.run/img/hbase-shell-run.png" alt="">&lt;/p></description></item><item><title>OushuDB &amp; HashDB分析报告</title><link>https://francis.run/blog/OushuDB_HashDB/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0800</pubDate><guid>https://francis.run/blog/OushuDB_HashDB/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
 也是&lt;code>Apache HAWQ&lt;/code>的创始人。是一家AI和大数据软件提供商，旗下有产品
 Oushu DB(数据仓库)，LittleBoy(人工智能平台)，Lava(云平台)三款产品。
 是微软加速器成员企业，专注于为国内外企业提供云平台上的数据管理服务。
@@ -100,7 +156,7 @@ Oushu DB是由Apache HAWQ创始团队打造的新一代数据仓库(New Data War
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Treadata`s Kylo分析报告</title><link>https://francis.run/blog/treadata-s-kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:51:02 +0000</pubDate><guid>https://francis.run/blog/treadata-s-kylo%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://kylo.io/">Kylo&lt;/a> 是希腊语中的意思是“流动” ，它是一个基于
+&lt;/div></description></item><item><title>Treadata's Kylo 分析报告</title><link>https://francis.run/blog/Treadata-s_Kylo/</link><pubDate>Thu, 25 Jul 2019 17:51:02 +0800</pubDate><guid>https://francis.run/blog/Treadata-s_Kylo/</guid><description>&lt;p>&lt;a href="https://kylo.io/">Kylo&lt;/a> 是希腊语中的意思是“流动” ，它是一个基于
 Apache Hadoop 和 Apache Spark 构建的功能丰富的数据湖平台管理工具。
 Kylo 提供 &lt;code>Turnkey&lt;/code>(一站式解决方案)、业务友好的数据湖解决方案，
 并支持自助数据摄取和数据准备以及数据发掘。 Kylo 的 Web 应用层提供
@@ -116,7 +172,7 @@ Think Big为全球最大的组织提供大数据和分析咨询服务。Think Bi
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Kyligence 安装及初步分析报告</title><link>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:36:08 +0000</pubDate><guid>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://kyligence.io/">Kyligence&lt;/a> 于2016年3月成立于上海，
+&lt;/div></description></item><item><title>Kyligence 安装及初步分析报告</title><link>https://francis.run/blog/kyligence/</link><pubDate>Thu, 25 Jul 2019 17:36:08 +0800</pubDate><guid>https://francis.run/blog/kyligence/</guid><description>&lt;p>&lt;a href="https://kyligence.io/">Kyligence&lt;/a> 于2016年3月成立于上海，
 中文名为上海跬智信息技术有限公司，是由首个来自中国的Apache软
 件基金会开源项目Apache Kylin 核心团队组建的数据科技公司。
 Kyligence 提供的 Kyligence Enterprise 是基于 Apache Kylin
@@ -131,7 +187,7 @@ Kyligence 提供的 Kyligence Enterprise 是基于 Apache Kylin
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0000</pubDate><guid>https://francis.run/blog/alluxio%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://www.alluxio.io">Alluxio&lt;/a>
+&lt;/div></description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0800</pubDate><guid>https://francis.run/blog/alluxio/</guid><description>&lt;p>&lt;a href="https://www.alluxio.io">Alluxio&lt;/a>
 是一个开源的高容错的分布式内存文件系统，目前在很多公司中使用，
 主要用来做大数据平台的缓存等。本文的主要内容是关于 Alluxio 的安装和简单的分析，仅供参考。&lt;/p>
 &lt;div class="embed zohoshow">
@@ -139,7 +195,7 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>TiDB和Splice Machine的初步对比</title><link>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0000</pubDate><guid>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</guid><description>&lt;p>&lt;a href="https://github.com/splicemachine/spliceengine">Splice Machine&lt;/a> 和
+&lt;/div></description></item><item><title>TiDB 和 Splice Machine的初步对比</title><link>https://francis.run/blog/TiDB_Splice-Machine/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0800</pubDate><guid>https://francis.run/blog/TiDB_Splice-Machine/</guid><description>&lt;p>&lt;a href="https://github.com/splicemachine/spliceengine">Splice Machine&lt;/a> 和
 &lt;a href="https://github.com/pingcap/tidb">TiDB&lt;/a> 都是优秀的开源 HTAP 数据库，
 一个针对大数据技术栈更加友好，完全不脱离大数据组件，比如 Hadoop/HBase/Spark 。
 另一个脱离了大数据技术栈，走自主研发(TiKV)。相比 TiDB 而言，Splice Machine
@@ -155,12 +211,12 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0000</pubDate><guid>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;div class="embed zohoshow">
+&lt;/div></description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/SequoiaDB_%E5%B7%A8%E6%9D%89%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0800</pubDate><guid>https://francis.run/blog/SequoiaDB_%E5%B7%A8%E6%9D%89%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;div class="embed zohoshow">
 &lt;iframe src="https://show.zohopublic.com/publish/f9a26ae2a0de74aed4985b0cba463d9a17d8f/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Cloudera 商业云战略及CDP平台介绍</title><link>https://francis.run/blog/cloudera-%E5%95%86%E4%B8%9A%E4%BA%91%E6%88%98%E7%95%A5%E5%8F%8Acdp%E5%B9%B3%E5%8F%B0%E4%BB%8B%E7%BB%8D/</link><pubDate>Sun, 14 Jul 2019 21:34:25 +0000</pubDate><guid>https://francis.run/blog/cloudera-%E5%95%86%E4%B8%9A%E4%BA%91%E6%88%98%E7%95%A5%E5%8F%8Acdp%E5%B9%B3%E5%8F%B0%E4%BB%8B%E7%BB%8D/</guid><description>&lt;p>今年年初写的，最近在写一些大数据行业的分析报告，目前有数据库、
+&lt;/div></description></item><item><title>Cloudera 商业云战略及CDP平台介绍</title><link>https://francis.run/blog/cloudera-cdp/</link><pubDate>Sun, 14 Jul 2019 21:34:25 +0800</pubDate><guid>https://francis.run/blog/cloudera-cdp/</guid><description>&lt;p>今年年初写的，最近在写一些大数据行业的分析报告，目前有数据库、
 各种 ETL 软件以及各种商业软件的试用报告。最近会找一些脱敏之后
 然后发出来，给需要的朋友，或者和朋友做交流用在线的 PPT 播放方
 式也比较方便，我用的是 &lt;a href="https://show.zoho.com">Zoho Show&lt;/a>
@@ -191,7 +247,7 @@ frameborder="0" allowfullscreen>
 &lt;p>📷 500PX
 &lt;div class="embed iframe">
 &lt;iframe width="100%" height="500" src="https://500px.com.cn/francisdu" frameborder="0" allowfullscreen>&lt;/iframe>
-&lt;/div>&lt;/p></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0000</pubDate><guid>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
+&lt;/div>&lt;/p></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/Stream-Sets_Data_Connector/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0800</pubDate><guid>https://francis.run/blog/Stream-Sets_Data_Connector/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
 因此有了以下分析报告，该 PPT 主要是分为三部分来介绍&lt;code>Stream Set Open Sorce Data Connector&lt;/code>:&lt;/p>
 &lt;ol>
 &lt;li>第一部分主要介绍了&lt;code>Stream Sets&lt;/code>公司以及创始人&lt;/li>

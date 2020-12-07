@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Database | Francis Du</title><link>https://francis.run/tags/database/</link><atom:link href="https://francis.run/tags/database/index.xml" rel="self" type="application/rss+xml"/><description>Database</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 25 Jul 2019 18:01:57 +0000</lastBuildDate><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Database | Francis Du</title><link>https://francis.run/tags/database/</link><atom:link href="https://francis.run/tags/database/index.xml" rel="self" type="application/rss+xml"/><description>Database</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 25 Jul 2019 18:01:57 +0800</lastBuildDate><item><title>OushuDB &amp; HashDB分析报告</title><link>https://francis.run/blog/OushuDB_HashDB/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0800</pubDate><guid>https://francis.run/blog/OushuDB_HashDB/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
 也是&lt;code>Apache HAWQ&lt;/code>的创始人。是一家AI和大数据软件提供商，旗下有产品
 Oushu DB(数据仓库)，LittleBoy(人工智能平台)，Lava(云平台)三款产品。
 是微软加速器成员企业，专注于为国内外企业提供云平台上的数据管理服务。
@@ -23,22 +23,7 @@ Oushu DB是由Apache HAWQ创始团队打造的新一代数据仓库(New Data War
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Kyligence 安装及初步分析报告</title><link>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 17:36:08 +0000</pubDate><guid>https://francis.run/blog/kyligence%E5%AE%89%E8%A3%85%E5%8F%8A%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>&lt;a href="https://kyligence.io/">Kyligence&lt;/a> 于2016年3月成立于上海，
-中文名为上海跬智信息技术有限公司，是由首个来自中国的Apache软
-件基金会开源项目Apache Kylin 核心团队组建的数据科技公司。
-Kyligence 提供的 Kyligence Enterprise 是基于 Apache Kylin
-的企业级智能大数据分析平台，为用户提供PB级数据集上的亚秒级查询能力，
-并引入了大量机器学习技术，提供自动建模功能智能化能力，大大提升了大
-数据分析生产力。&lt;/p>
-&lt;p>Kyligence Cloud 是Kyligence云计算的核心产品，已在亚马逊 AWS 云平台、
-微软Azure云平台、阿里云云平台等上线，可提供快捷高效的数据分析解决方案
-以支持企业日益增长的云端分析业务。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a264f657ed2a8ea47a8b0936771cd877c84/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>TiDB和Splice Machine的初步对比</title><link>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0000</pubDate><guid>https://francis.run/blog/tidb%E5%92%8Csplicemachine%E7%9A%84%E5%88%9D%E6%AD%A5%E5%AF%B9%E6%AF%94/</guid><description>&lt;p>&lt;a href="https://github.com/splicemachine/spliceengine">Splice Machine&lt;/a> 和
+&lt;/div></description></item><item><title>TiDB 和 Splice Machine的初步对比</title><link>https://francis.run/blog/TiDB_Splice-Machine/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0800</pubDate><guid>https://francis.run/blog/TiDB_Splice-Machine/</guid><description>&lt;p>&lt;a href="https://github.com/splicemachine/spliceengine">Splice Machine&lt;/a> 和
 &lt;a href="https://github.com/pingcap/tidb">TiDB&lt;/a> 都是优秀的开源 HTAP 数据库，
 一个针对大数据技术栈更加友好，完全不脱离大数据组件，比如 Hadoop/HBase/Spark 。
 另一个脱离了大数据技术栈，走自主研发(TiKV)。相比 TiDB 而言，Splice Machine
@@ -54,7 +39,7 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0000</pubDate><guid>https://francis.run/blog/sequoiadb%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;div class="embed zohoshow">
+&lt;/div></description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/SequoiaDB_%E5%B7%A8%E6%9D%89%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0800</pubDate><guid>https://francis.run/blog/SequoiaDB_%E5%B7%A8%E6%9D%89%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;div class="embed zohoshow">
 &lt;iframe src="https://show.zohopublic.com/publish/f9a26ae2a0de74aed4985b0cba463d9a17d8f/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
