@@ -1,7 +1,6 @@
 ---
 title: Cloudera 商业云战略及CDP平台介绍
 date: 2019-07-14 21:34:25
-categories: CDP
 author: Francis
 tags:
   - PPT

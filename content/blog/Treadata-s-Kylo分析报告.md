@@ -1,7 +1,6 @@
 ---
 title: Treadata`s Kylo分析报告
 date: 2019-07-25 17:51:02
-categories: DataLake
 author: Francis
 tags:
   - ETL

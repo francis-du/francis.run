@@ -1,10 +1,9 @@
 ---
 title: OushuDB&HashDB分析报告
 date: 2019-07-25 18:01:57
-categories: Database
 author: Francis
 tags:
-  - 数据库
+  - Database
   - PPT
 ---
 

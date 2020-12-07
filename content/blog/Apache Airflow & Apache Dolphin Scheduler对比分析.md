@@ -1,10 +1,10 @@
 ---
 title: Apache Airflow & Apache Dolphin Scheduler对比分析
 date: 2019-10-17 15:06:21
-categories: Scheduler
 author: Francis
 tags:
   - PPT
+  - Scheduler
 ---
 
 [Apache Airflow](http://airflow.apache.org/) : 是由Airbnb公司开源

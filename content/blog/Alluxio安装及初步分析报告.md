@@ -1,10 +1,10 @@
 ---
 title: Alluxio安装及初步分析报告
 date: 2019-07-16 15:06:21
-categories: Alluxio
 author: Francis
 tags:
   - PPT
+  - Alluxio
 ---
 
 [Alluxio](https://www.alluxio.io)

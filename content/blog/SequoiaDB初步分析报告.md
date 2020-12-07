@@ -1,10 +1,9 @@
 ---
 title: SequoiaDB-巨杉数据库初步分析报告
 date: 2019-07-16 14:30:28
-categories: Database 
 author: Francis
 tags:
-  - 数据库
+  - Database
   - PPT
 ---
 

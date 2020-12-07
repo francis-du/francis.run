@@ -8,6 +8,8 @@ tags:
   - 大数据
 ---
 
+![](/img/hbase.png)
+
 1. 克隆源码
 
 ```
@@ -69,22 +71,17 @@ Line 95 <exec executable="sh" failonerror="true">
 
 `配置 HMaster 启动参数：如果不配置 log4j, HMaster无法启动`
 
-<img src="/images/article/hmaster.png" width="800" hegiht="500" align=center />
-
+![](/img/hmaster.png)
 `HMaster 启动成功`
 
-<img src="/images/article/hmaster-run.png" width="800" hegiht="500" align=center />
-
+![](/img/hmaster-run.png)
 `进入HBase Web UI 查看 http://localhost:16010,启动HMaster之后会默认给你启动一个Hregionserver.`
 
-<img src="/images/article/habse-webui.png" width="800" hegiht="500" align=center />
-
+![](/img/hbase-webui.png)
 - 配置并启动 HHbase Shell
 
 `配置 HBase Shell 启动参数`
-
-<img src="/images/article/hbase-shell.png" width="800" hegiht="500" align=center />
+![](/img/hbase-shell.png)
 
 `HBase Shell 启动成功`
-
-<img src="/images/article/hbase-shell-run.png" width="800" hegiht="500" align=center />
+![](/img/hbase-shell-run.png)

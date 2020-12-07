@@ -1,10 +1,9 @@
 ---
 title: Kyligence 安装及初步分析报告
 date: 2019-07-25 17:36:08
-categories: Kyligence
 author: Francis
 tags:
-  - Kyligence
+  - Database
   - PPT
 ---
 

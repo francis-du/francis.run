@@ -1,10 +1,9 @@
 ---
 title: TiDB和Splice Machine的初步对比
 date: 2019-07-16 14:37:28
-categories: Database
 author: Francis
 tags:
-  - 数据库
+  - Database
   - PPT
 ---
 

@@ -1,7 +1,6 @@
 ---
 title: Stream Sets Data Connector分析报告
 date:  2019-07-05 13:33:31
-categories: StreamSets
 author: Francis
 tags:
   - ETL
