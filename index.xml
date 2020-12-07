@@ -13,7 +13,8 @@ Airflow通过DAG来定义整个工作流，具有非常强大的表达能力。&
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;ol>
+&lt;/div></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0000</pubDate><guid>https://francis.run/blog/hbase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;p>&lt;img src="https://francis.run/img/hbase.png" alt="">&lt;/p>
+&lt;ol>
 &lt;li>克隆源码&lt;/li>
 &lt;/ol>
 &lt;div class="highlight">&lt;pre style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4">&lt;code class="language-fallback" data-lang="fallback">git clone git@github.com:apache/hbase.git
@@ -63,18 +64,18 @@ Line 76 &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f"
 &lt;li>配置并启动 HMaster&lt;/li>
 &lt;/ul>
 &lt;p>&lt;code>配置 HMaster 启动参数：如果不配置 log4j, HMaster无法启动&lt;/code>&lt;/p>
-&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
-&lt;p>&lt;code>HMaster 启动成功&lt;/code>&lt;/p>
-&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
-&lt;p>&lt;code>进入HBase Web UI 查看 http://localhost:16010,启动HMaster之后会默认给你启动一个Hregionserver.&lt;/code>&lt;/p>
-&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/hmaster.png" alt="">
+&lt;code>HMaster 启动成功&lt;/code>&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/hmaster-run.png" alt="">
+&lt;code>进入HBase Web UI 查看 http://localhost:16010,启动HMaster之后会默认给你启动一个Hregionserver.&lt;/code>&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/hbase-webui.png" alt="">&lt;/p>
 &lt;ul>
 &lt;li>配置并启动 HHbase Shell&lt;/li>
 &lt;/ul>
-&lt;p>&lt;code>配置 HBase Shell 启动参数&lt;/code>&lt;/p>
-&lt;p>&lt;!-- raw HTML omitted -->&lt;/p>
-&lt;p>&lt;code>HBase Shell 启动成功&lt;/code>&lt;/p>
-&lt;p>&lt;!-- raw HTML omitted -->&lt;/p></description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
+&lt;p>&lt;code>配置 HBase Shell 启动参数&lt;/code>
+&lt;img src="https://francis.run/img/hbase-shell.png" alt="">&lt;/p>
+&lt;p>&lt;code>HBase Shell 启动成功&lt;/code>
+&lt;img src="https://francis.run/img/hbase-shell-run.png" alt="">&lt;/p></description></item><item><title>OushuDB&amp;HashDB分析报告</title><link>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0000</pubDate><guid>https://francis.run/blog/oushudb-hashdb%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
 也是&lt;code>Apache HAWQ&lt;/code>的创始人。是一家AI和大数据软件提供商，旗下有产品
 Oushu DB(数据仓库)，LittleBoy(人工智能平台)，Lava(云平台)三款产品。
 是微软加速器成员企业，专注于为国内外企业提供云平台上的数据管理服务。
@@ -169,19 +170,27 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Album</title><link>https://francis.run/album/</link><pubDate>Tue, 09 Jul 2019 18:55:01 +0000</pubDate><guid>https://francis.run/album/</guid><description>&lt;p>📷 2019
+&lt;/div></description></item><item><title>Album</title><link>https://francis.run/album/</link><pubDate>Tue, 09 Jul 2019 18:55:01 +0000</pubDate><guid>https://francis.run/album/</guid><description>&lt;p>📷 2016-2018
 &lt;div class="embed myalbum">
-&lt;iframe width="890" height="478"
+&lt;iframe width="100%" height="500"
+src="https://myalbum.com/embed/4mzufyVEkQCo"
+frameborder="0" allowfullscreen>
+&lt;/iframe>
+&lt;/div>&lt;/p>
+&lt;p>📷 2019
+&lt;div class="embed myalbum">
+&lt;iframe width="100%" height="500"
 src="https://myalbum.com/embed/RxKkHUDEhvFE"
 frameborder="0" allowfullscreen>
 &lt;/iframe>
 &lt;/div>&lt;/p>
-&lt;p>📷 2016-2018
-&lt;div class="embed myalbum">
-&lt;iframe width="890" height="478"
-src="https://myalbum.com/embed/4mzufyVEkQCo"
-frameborder="0" allowfullscreen>
-&lt;/iframe>
+&lt;p>📷 Neo Share
+&lt;div class="embed iframe">
+&lt;iframe width="100%" height="500" src="https://m.ufoto.com.cn/wap/#/login-free/user-detail/4951a7126f91e76307993007a077c4e7" frameborder="0" allowfullscreen>&lt;/iframe>
+&lt;/div>&lt;/p>
+&lt;p>📷 500PX
+&lt;div class="embed iframe">
+&lt;iframe width="100%" height="500" src="https://500px.com.cn/francisdu" frameborder="0" allowfullscreen>&lt;/iframe>
 &lt;/div>&lt;/p></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0000</pubDate><guid>https://francis.run/blog/stream-sets%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
 因此有了以下分析报告，该 PPT 主要是分为三部分来介绍&lt;code>Stream Set Open Sorce Data Connector&lt;/code>:&lt;/p>
 &lt;ol>
