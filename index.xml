@@ -1,4 +1,41 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Mon, 07 Dec 2020 17:16:21 +0800</lastBuildDate><item><title>URL Shortener</title><link>https://francis.run/blog/Url-shortener/</link><pubDate>Mon, 07 Dec 2020 17:16:21 +0800</pubDate><guid>https://francis.run/blog/Url-shortener/</guid><description>&lt;h2 id="whats-it">What&amp;rsquo;s it&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Mon, 07 Dec 2020 17:16:21 +0800</lastBuildDate><item><title>My Open Source Projects</title><link>https://francis.run/projects/</link><pubDate>Thu, 10 Dec 2020 03:42:43 +0800</pubDate><guid>https://francis.run/projects/</guid><description>&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>Open Source&lt;/th>
+&lt;th>Contributions&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;a href="https://guide.trisasnava.org">&lt;img src="https://readme-stats.francis.run/api/pin/?username=trisasnava&amp;amp;repo=OpenSourceGuide&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/anuraghazra/github-readme-stats/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=anuraghazra&amp;amp;repo=github-readme-stats&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;a href="https://trisasnava.org/">&lt;img src="https://readme-stats.francis.run/api/pin/?username=trisasnava&amp;amp;repo=trisasnava.github.io&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/Qihoo360/Quicksql/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=Qihoo360&amp;amp;repo=Quicksql&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;a href="https://github.com/francis-du/URL-Shortener">&lt;img src="https://readme-stats.francis.run/api/pin/?username=francis-du&amp;amp;repo=URL-Shortener&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/ireneontheway/ireneontheway.github.io/commits?author=francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=ireneontheway&amp;amp;repo=ireneontheway.github.io&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;a href="https://github.com/trisasnava/koifish/commits?author=francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=trisasnava&amp;amp;repo=koifish&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/pyreadline/pyreadline/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=pyreadline&amp;amp;repo=pyreadline&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;a href="https://github.com/francis-du/francis.run">&lt;img src="https://readme-stats.francis.run/api/pin/?username=francis-du&amp;amp;repo=francis.run&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://github.com/kaiyuanshe/osschat/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=kaiyuanshe&amp;amp;repo=osschat&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>-&lt;/td>
+&lt;td>&lt;a href="https://github.com/apache/iotdb/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=apache&amp;amp;repo=iotdb&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>-&lt;/td>
+&lt;td>&lt;a href="https://github.com/netdata/localization/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=netdata&amp;amp;repo=localization&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table></description></item><item><title>URL Shortener</title><link>https://francis.run/blog/Url-shortener/</link><pubDate>Mon, 07 Dec 2020 17:16:21 +0800</pubDate><guid>https://francis.run/blog/Url-shortener/</guid><description>&lt;h2 id="whats-it">What&amp;rsquo;s it&lt;/h2>
 &lt;p>URL-Shortener is a simple app that is build on Cloudflare Workers using Short.io API.&lt;/p>
 &lt;p>&lt;a href="https://short.francis.run/?link=https%3A%2F%2Ffrancis.run">&lt;img src="https://raw.githubusercontent.com/francis-du/url-shortener/main/src/static/img/index.png" alt="index">&lt;/a>&lt;/p>
 &lt;h2 id="how-to-use">How to use&lt;/h2>
@@ -226,7 +263,7 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Album</title><link>https://francis.run/album/</link><pubDate>Tue, 09 Jul 2019 18:55:01 +0000</pubDate><guid>https://francis.run/album/</guid><description>&lt;p>📷 2016-2018
+&lt;/div></description></item><item><title>My Album</title><link>https://francis.run/album/</link><pubDate>Tue, 09 Jul 2019 18:55:01 +0000</pubDate><guid>https://francis.run/album/</guid><description>&lt;p>📷 2016-2018
 &lt;div class="embed myalbum">
 &lt;iframe width="100%" height="500"
 src="https://myalbum.com/embed/4mzufyVEkQCo"
@@ -260,19 +297,7 @@ frameborder="0" allowfullscreen>
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At 14:00 tomorrow, please checkout Bilibili Beijing GDG live channel on time. Click to join our channel :&lt;a href="https://t.co/gJKL6jPeQA">https://t.co/gJKL6jPeQA&lt;/a> &lt;a href="https://t.co/PoZkBXrOoX">pic.twitter.com/PoZkBXrOoX&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1287020701774311424?ref_src=twsrc%5Etfw">July 25, 2020&lt;/a>&lt;/blockquote>
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
-&lt;h2 id="twitter-gdg-beijing-march-8-event">[Twitter]-GDG Beijing March 8 Event&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">GDG Beijing March 8 Event. &lt;a href="https://t.co/14VJdTBlMa">pic.twitter.com/14VJdTBlMa&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1236152636916678656?ref_src=twsrc%5Etfw">March 7, 2020&lt;/a>&lt;/blockquote>
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
-&lt;h2 id="twitter-gdg-beijing-devfest-2019">[Twitter]-GDG Beijing DevFest 2019&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At &lt;a href="https://twitter.com/hashtag/DevFest?src=hash&amp;amp;ref_src=twsrc%5Etfw">#DevFest&lt;/a> Beijing, Xiaolong Ran shared how to build a Go function based on the Go language through Apache Pulsar.&lt;br>&lt;br>Apache Pulsar is a Cloud-native next-generation messaging system and real-time processing platform.&lt;br>&lt;br>Check it out → &lt;a href="https://t.co/NfTt2Jkb8Z">https://t.co/NfTt2Jkb8Z&lt;/a> &lt;a href="https://t.co/mWZpQ8jcKU">pic.twitter.com/mWZpQ8jcKU&lt;/a>&lt;/p>&amp;mdash; Google Developer Groups (@gdg) &lt;a href="https://twitter.com/gdg/status/1220103873878220800?ref_src=twsrc%5Etfw">January 22, 2020&lt;/a>&lt;/blockquote>
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
-&lt;h2 id="youtube-quicksql-meetup">[YouTube]-Quicksql Meetup&lt;/h2>
-&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-&lt;iframe src="https://www.youtube.com/embed/L2cV6Zy-Tjs" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video">&lt;/iframe>
-&lt;/div></description></item><item><title>I am Francis Du</title><link>https://francis.run/about/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://img.shields.io/badge/GitHub%20Profile-orange?style=for-the-badge" alt="GitHub Profile">&lt;/p>
+&lt;/div></description></item><item><title>I Am Francis Du</title><link>https://francis.run/about/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://img.shields.io/badge/GitHub%20Profile-orange?style=for-the-badge" alt="GitHub Profile">&lt;/p>
 &lt;table>
 &lt;thead>
 &lt;tr>
@@ -283,7 +308,7 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;tbody>
 &lt;tr>
 &lt;td>&lt;a href="https://github.com/francis-du/">&lt;img src="https://github-readme-stats.vercel.app/api?username=francis-du&amp;amp;count_private=true&amp;amp;show_icons=true&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://wakatime.com/@francis">&lt;img src="https://github-readme-stats.vercel.app/api/wakatime?username=francis&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
+&lt;td>&lt;a href="https://wakatime.com/@francis">&lt;img src="https://github-readme-stats-git.francisdu.vercel.app/api/wakatime?username=francis&amp;amp;hide=other,html,scss,css,yaml,xml,toml,markdown&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
@@ -306,4 +331,16 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/li>
 &lt;/ul>
 &lt;p>&lt;img src="https://img.shields.io/badge/LinkedIn%20Profile-orange?style=for-the-badge" alt="Resume">&lt;/p>
-&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume.png" alt="Resume">&lt;/a>&lt;/p></description></item></channel></rss>
+&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume.png" alt="Resume">&lt;/a>&lt;/p></description></item><item><title>Public Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
+&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At 14:00 tomorrow, please checkout Bilibili Beijing GDG live channel on time. Click to join our channel :&lt;a href="https://t.co/gJKL6jPeQA">https://t.co/gJKL6jPeQA&lt;/a> &lt;a href="https://t.co/PoZkBXrOoX">pic.twitter.com/PoZkBXrOoX&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1287020701774311424?ref_src=twsrc%5Etfw">July 25, 2020&lt;/a>&lt;/blockquote>
+&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
+&lt;h2 id="twitter-gdg-beijing-march-8-event">[Twitter]-GDG Beijing March 8 Event&lt;/h2>
+&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">GDG Beijing March 8 Event. &lt;a href="https://t.co/14VJdTBlMa">pic.twitter.com/14VJdTBlMa&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1236152636916678656?ref_src=twsrc%5Etfw">March 7, 2020&lt;/a>&lt;/blockquote>
+&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
+&lt;h2 id="twitter-gdg-beijing-devfest-2019">[Twitter]-GDG Beijing DevFest 2019&lt;/h2>
+&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At &lt;a href="https://twitter.com/hashtag/DevFest?src=hash&amp;amp;ref_src=twsrc%5Etfw">#DevFest&lt;/a> Beijing, Xiaolong Ran shared how to build a Go function based on the Go language through Apache Pulsar.&lt;br>&lt;br>Apache Pulsar is a Cloud-native next-generation messaging system and real-time processing platform.&lt;br>&lt;br>Check it out → &lt;a href="https://t.co/NfTt2Jkb8Z">https://t.co/NfTt2Jkb8Z&lt;/a> &lt;a href="https://t.co/mWZpQ8jcKU">pic.twitter.com/mWZpQ8jcKU&lt;/a>&lt;/p>&amp;mdash; Google Developer Groups (@gdg) &lt;a href="https://twitter.com/gdg/status/1220103873878220800?ref_src=twsrc%5Etfw">January 22, 2020&lt;/a>&lt;/blockquote>
+&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
+&lt;h2 id="youtube-quicksql-meetup">[YouTube]-Quicksql Meetup&lt;/h2>
+&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+&lt;iframe src="https://www.youtube.com/embed/L2cV6Zy-Tjs" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video">&lt;/iframe>
+&lt;/div></description></item></channel></rss>
