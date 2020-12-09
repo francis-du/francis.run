@@ -10,32 +10,32 @@ pygmentscodefencesguesssyntax = true
 googleAnalytics = "UA-169239941-1"
 disqusShortname = "francis-run"
 dataDir = "data"
-contentDir= "content"
+contentDir = "content"
 
 enableEmoji = true
-enableGitInfo = true 
+enableGitInfo = true
 enableInlineShortcodes = true
 enableRobotsTXT = true
-hasCJKLanguage= true
+hasCJKLanguage = true
 
 [params]
-	subtitle = "Blog"
-	description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Python,Rust,Big Data,Cloud Native,etc..."
-	avatar = "https://avatars1.githubusercontent.com/u/25944814"
-	disableDisqusTypes = ["page"]
-	featherIconsCDN = true
-	favicon="img/icon.png"
-	images="img/icon.png"
-	title = "Francis Blog"
-	mode = "dark"
-	busuanzi = true
-	social_share = true
-	# customCSS = "css/custom.css"  # Custom CSS applied to default styles.
-	# customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
-	# customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
+    subtitle = "Blog"
+    description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Python,Rust,Big Data,Cloud Native,etc..."
+    avatar = "https://avatars1.githubusercontent.com/u/25944814"
+    disableDisqusTypes = ["page"]
+    featherIconsCDN = true
+    favicon = "img/icon.png"
+    images = "img/icon.png"
+    title = "Francis Blog"
+    mode = "dark"
+    busuanzi = true
+    social_share = true
+    # customCSS = "css/custom.css"  # Custom CSS applied to default styles.
+    # customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
+    # customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
 
 [author]
-    name = "Francis Toh"
+name = "Francis Toh"
 
 [[menu.main]]
 name = "Home"
@@ -48,13 +48,13 @@ url = "/blog"
 weight = 2
 
 [[menu.main]]
-name = "Events"
-url = "/events"
+name = "Projects"
+url = "/projects"
 weight = 3
 
 [[menu.main]]
-name = "Album"
-url = "/album"
+name = "Events"
+url = "/events"
 weight = 4
 
 [[menu.main]]
@@ -63,9 +63,19 @@ url = "/tags"
 weight = 5
 
 [[menu.main]]
+name = "Album"
+url = "/album"
+weight = 6
+
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 7
+
+[[menu.main]]
 name = "About"
 url = "/about"
-weight = 6
+weight = 8
 
 [[params.social]]
 name = "LinkedIn"
@@ -108,4 +118,4 @@ icon = "rss"
 url = "/index.xml"
 
 [taxonomies]
-  tags = "tags"
+tags = "tags"

@@ -1,0 +1,14 @@
+---
+title: "My Open Source Projects"
+date: 2020-12-10T03:42:43+08:00
+---
+
+|  Open Source | Contributions  |
+|  ----------  | -------------  |
+| [![](https://readme-stats.francis.run/api/pin/?username=trisasnava&repo=OpenSourceGuide&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://guide.trisasnava.org) | [![](https://readme-stats.francis.run/api/pin/?username=anuraghazra&repo=github-readme-stats&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/anuraghazra/github-readme-stats/pulls?q=is:all%20author:francis-du) | 
+| [![](https://readme-stats.francis.run/api/pin/?username=trisasnava&repo=trisasnava.github.io&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://trisasnava.org/) | [![](https://readme-stats.francis.run/api/pin/?username=Qihoo360&repo=Quicksql&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/Qihoo360/Quicksql/pulls?q=is:all%20author:francis-du) |
+| [![](https://readme-stats.francis.run/api/pin/?username=francis-du&repo=URL-Shortener&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/francis-du/URL-Shortener) | [![](https://readme-stats.francis.run/api/pin/?username=ireneontheway&repo=ireneontheway.github.io&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/ireneontheway/ireneontheway.github.io/commits?author=francis-du) |
+| [![](https://readme-stats.francis.run/api/pin/?username=trisasnava&repo=koifish&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/trisasnava/koifish/commits?author=francis-du) | [![](https://readme-stats.francis.run/api/pin/?username=pyreadline&repo=pyreadline&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/pyreadline/pyreadline/pulls?q=is:all%20author:francis-du) |
+| [![](https://readme-stats.francis.run/api/pin/?username=francis-du&repo=francis.run&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/francis-du/francis.run) | [![](https://readme-stats.francis.run/api/pin/?username=kaiyuanshe&repo=osschat&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/kaiyuanshe/osschat/pulls?q=is:all%20author:francis-du) |
+| - | [![](https://readme-stats.francis.run/api/pin/?username=apache&repo=iotdb&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/apache/iotdb/pulls?q=is:all%20author:francis-du) |
+| - | [![](https://readme-stats.francis.run/api/pin/?username=netdata&repo=localization&bg_color=30,e96443,904e95&title_color=fff&text_color=fff%22)](https://github.com/netdata/localization/pulls?q=is:all%20author:francis-du) |
