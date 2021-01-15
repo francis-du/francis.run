@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wikipedia | Francis Du</title><link>https://francis.run/tags/wikipedia/</link><atom:link href="https://francis.run/tags/wikipedia/index.xml" rel="self" type="application/rss+xml"/><description>Wikipedia</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sat, 16 Jan 2021 04:40:36 +0800</lastBuildDate><item><title>Wiki Graph 的来历</title><link>https://francis.run/blog/wiki-graph/</link><pubDate>Sat, 16 Jan 2021 04:40:36 +0800</pubDate><guid>https://francis.run/blog/wiki-graph/</guid><description>&lt;p>项目名称为 Wiki Graph，项目以 MIT LICENSE 托管在 GitHub[1]，
 Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务托管。
-该项目源于的一次远程面试题。 &lt;a href="https://gist.github.com/defclass/8c4f6da71629d861f9a554ad7580c1ef">详情&lt;/a>&lt;/p>
+该项目源于一次远程面试，以下内容摘自面试邮件。 &lt;a href="https://gist.github.com/defclass/8c4f6da71629d861f9a554ad7580c1ef">详情&lt;/a>&lt;/p>
 &lt;p>&lt;img src="https://wiki-graph.francis.run/images/index.png" alt="">&lt;/p>
 &lt;h3 id="面试题">面试题：&lt;/h3>
 &lt;blockquote>
@@ -24,7 +24,7 @@ Wikipedia搜索，这样返回的结果就是对应搜索关键字的语言。�
 Amcharts 将数据渲染成一个 Graph。&lt;/li>
 &lt;/ol>
 &lt;p>&lt;img src="https://wiki-graph.francis.run/images/graph.png" alt="">&lt;/p>
-&lt;p>###回答问题：&lt;/p>
+&lt;h3 id="回答问题">回答问题：&lt;/h3>
 &lt;blockquote>
 &lt;p>请谈一谈你为什么对 Logseq 感兴趣，以及你对知识管理或其它笔记软件的理解。&lt;/p>
 &lt;/blockquote>
