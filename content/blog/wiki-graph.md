@@ -1,5 +1,5 @@
 ---
-title: "Wiki Graph 的来历"
+title: "Wiki Graph"
 date: 2021-01-16T04:40:36+08:00
 url: /blog/wiki-graph/
 tags:
@@ -7,7 +7,7 @@ tags:
 - Wikipedia
 ---
 
-项目名称为 Wiki Graph，项目以 MIT LICENSE 托管在 GitHub[1]，
+项目以 MIT LICENSE 托管在 GitHub[1]，
 Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务托管。
 该项目源于一次远程面试，以下内容摘自面试邮件。 [详情](https://gist.github.com/defclass/8c4f6da71629d861f9a554ad7580c1ef)
 

@@ -20,7 +20,7 @@ hasCJKLanguage = true
 
 [params]
     subtitle = "Blog"
-    description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Python,Rust,Big Data,Cloud Native,etc..."
+    description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Rust,Python,Big Data,etc..."
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
     disableDisqusTypes = ["page"]
     featherIconsCDN = true
@@ -48,34 +48,29 @@ url = "/blog"
 weight = 2
 
 [[menu.main]]
-name = "Projects"
-url = "/projects"
-weight = 3
-
-[[menu.main]]
 name = "Events"
 url = "/events"
-weight = 4
+weight = 3
 
 [[menu.main]]
 name = "Tags"
 url = "/tags"
-weight = 5
+weight = 4
 
 [[menu.main]]
 name = "Album"
 url = "/album"
-weight = 6
+weight = 5
 
 [[menu.main]]
 name = "Tags"
 url = "/tags"
-weight = 7
+weight = 6
 
 [[menu.main]]
 name = "About"
 url = "/about"
-weight = 8
+weight = 7
 
 [[params.social]]
 name = "LinkedIn"
