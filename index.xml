@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sat, 16 Jan 2021 04:40:36 +0800</lastBuildDate><item><title>Wiki Graph 的来历</title><link>https://francis.run/blog/wiki-graph/</link><pubDate>Sat, 16 Jan 2021 04:40:36 +0800</pubDate><guid>https://francis.run/blog/wiki-graph/</guid><description>&lt;p>项目名称为 Wiki Graph，项目以 MIT LICENSE 托管在 GitHub[1]，
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sat, 16 Jan 2021 04:40:36 +0800</lastBuildDate><item><title>Wiki Graph</title><link>https://francis.run/blog/wiki-graph/</link><pubDate>Sat, 16 Jan 2021 04:40:36 +0800</pubDate><guid>https://francis.run/blog/wiki-graph/</guid><description>&lt;p>项目以 MIT LICENSE 托管在 GitHub[1]，
 Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务托管。
 该项目源于一次远程面试，以下内容摘自面试邮件。 &lt;a href="https://gist.github.com/defclass/8c4f6da71629d861f9a554ad7580c1ef">详情&lt;/a>&lt;/p>
 &lt;p>&lt;img src="https://wiki-graph.francis.run/images/index.png" alt="">&lt;/p>
@@ -40,44 +40,7 @@ Amcharts 将数据渲染成一个 Graph。&lt;/li>
 &lt;/ol>
 &lt;p>[1].&lt;a href="https://github.com/francis-du/wiki-graph">源码地址: https://github.com/francis-du/wiki-graph&lt;/a>&lt;/p>
 &lt;p>[2].&lt;a href="https://wiki-graphs.herokuapp.com">在线体验地址：https://wiki-graphs.herokuapp.com&lt;/a>&lt;/p>
-&lt;p>[3].&lt;a href="https://wiki-graph.francis.run">在线文档地址：https://wiki-graph.francis.run&lt;/a>&lt;/p></description></item><item><title>My Open Source Projects</title><link>https://francis.run/projects/</link><pubDate>Thu, 10 Dec 2020 03:42:43 +0800</pubDate><guid>https://francis.run/projects/</guid><description>&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>Open Source&lt;/th>
-&lt;th>Contributions&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;a href="https://guide.trisasnava.org">&lt;img src="https://readme-stats.francis.run/api/pin/?username=trisasnava&amp;amp;repo=OpenSourceGuide&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://github.com/anuraghazra/github-readme-stats/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=anuraghazra&amp;amp;repo=github-readme-stats&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;a href="https://trisasnava.org/">&lt;img src="https://readme-stats.francis.run/api/pin/?username=trisasnava&amp;amp;repo=trisasnava.github.io&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://github.com/Qihoo360/Quicksql/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=Qihoo360&amp;amp;repo=Quicksql&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;a href="https://github.com/francis-du/URL-Shortener">&lt;img src="https://readme-stats.francis.run/api/pin/?username=francis-du&amp;amp;repo=URL-Shortener&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://github.com/ireneontheway/ireneontheway.github.io/commits?author=francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=ireneontheway&amp;amp;repo=ireneontheway.github.io&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;a href="https://github.com/trisasnava/koifish/commits?author=francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=trisasnava&amp;amp;repo=koifish&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://github.com/pyreadline/pyreadline/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=pyreadline&amp;amp;repo=pyreadline&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;a href="https://github.com/francis-du/francis.run">&lt;img src="https://readme-stats.francis.run/api/pin/?username=francis-du&amp;amp;repo=francis.run&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://github.com/kaiyuanshe/osschat/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=kaiyuanshe&amp;amp;repo=osschat&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>-&lt;/td>
-&lt;td>&lt;a href="https://github.com/apache/iotdb/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=apache&amp;amp;repo=iotdb&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>-&lt;/td>
-&lt;td>&lt;a href="https://github.com/netdata/localization/pulls?q=is:all%20author:francis-du">&lt;img src="https://readme-stats.francis.run/api/pin/?username=netdata&amp;amp;repo=localization&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff%22" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table></description></item><item><title>URL Shortener</title><link>https://francis.run/blog/Url-shortener/</link><pubDate>Mon, 07 Dec 2020 17:16:21 +0800</pubDate><guid>https://francis.run/blog/Url-shortener/</guid><description>&lt;h2 id="whats-it">What&amp;rsquo;s it&lt;/h2>
+&lt;p>[3].&lt;a href="https://wiki-graph.francis.run">在线文档地址：https://wiki-graph.francis.run&lt;/a>&lt;/p></description></item><item><title>URL Shortener</title><link>https://francis.run/blog/Url-shortener/</link><pubDate>Mon, 07 Dec 2020 17:16:21 +0800</pubDate><guid>https://francis.run/blog/Url-shortener/</guid><description>&lt;h2 id="whats-it">What&amp;rsquo;s it&lt;/h2>
 &lt;p>URL-Shortener is a simple app that is build on Cloudflare Workers using Short.io API.&lt;/p>
 &lt;p>&lt;a href="https://short.francis.run/?link=https%3A%2F%2Ffrancis.run">&lt;img src="https://raw.githubusercontent.com/francis-du/url-shortener/main/src/static/img/index.png" alt="index">&lt;/a>&lt;/p>
 &lt;h2 id="how-to-use">How to use&lt;/h2>
@@ -357,13 +320,13 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;p>&lt;img src="https://img.shields.io/badge/Live%20status-orange?style=for-the-badge" alt="Live Status">&lt;/p>
 &lt;ul>
 &lt;li>
-&lt;p>🔭 I’m currently working on &lt;a href="https://github.com/trisasnava/koifish">Koifish&lt;/a>&lt;/p>
+&lt;p>🔭 I’m currently working on &lt;a href="https://github.com/francis-du/iotdb-rs">iotdb-rs&lt;/a>&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>🌱 I’m currently learning &lt;a href="https://www.rust-lang.org/learn">Rust&lt;/a>&lt;/p>
 &lt;/li>
 &lt;li>
-&lt;p>👯 I’m looking to collaborate on &lt;a href="https://github.com/trisasnava/koifish">Koifish&lt;/a>&lt;/p>
+&lt;p>👯 I’m looking to collaborate on &lt;a href="https://github.com/francis-du/iotdb-rs">iotdb-rs&lt;/a>&lt;/p>
 &lt;/li>
 &lt;li>
 &lt;p>📝 I regulary write articles on &lt;a href="https://francis.run">https://francis.run&lt;/a>&lt;/p>
