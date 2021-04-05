@@ -268,28 +268,7 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>My Album</title><link>https://francis.run/album/</link><pubDate>Tue, 09 Jul 2019 18:55:01 +0000</pubDate><guid>https://francis.run/album/</guid><description>&lt;p>📷 2016-2018
-&lt;div class="embed myalbum">
-&lt;iframe width="100%" height="500"
-src="https://myalbum.com/embed/4mzufyVEkQCo"
-frameborder="0" allowfullscreen>
-&lt;/iframe>
-&lt;/div>&lt;/p>
-&lt;p>📷 2019
-&lt;div class="embed myalbum">
-&lt;iframe width="100%" height="500"
-src="https://myalbum.com/embed/RxKkHUDEhvFE"
-frameborder="0" allowfullscreen>
-&lt;/iframe>
-&lt;/div>&lt;/p>
-&lt;p>📷 Neo Share
-&lt;div class="embed iframe">
-&lt;iframe width="100%" height="500" src="https://m.ufoto.com.cn/wap/#/login-free/user-detail/4951a7126f91e76307993007a077c4e7" frameborder="0" allowfullscreen>&lt;/iframe>
-&lt;/div>&lt;/p>
-&lt;p>📷 500PX
-&lt;div class="embed iframe">
-&lt;iframe width="100%" height="500" src="https://500px.com.cn/francisdu" frameborder="0" allowfullscreen>&lt;/iframe>
-&lt;/div>&lt;/p></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/Stream-Sets_Data_Connector/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0800</pubDate><guid>https://francis.run/blog/Stream-Sets_Data_Connector/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
+&lt;/div></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/Stream-Sets_Data_Connector/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0800</pubDate><guid>https://francis.run/blog/Stream-Sets_Data_Connector/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
 因此有了以下分析报告，该 PPT 主要是分为三部分来介绍&lt;code>Stream Set Open Sorce Data Connector&lt;/code>:&lt;/p>
 &lt;ol>
 &lt;li>第一部分主要介绍了&lt;code>Stream Sets&lt;/code>公司以及创始人&lt;/li>
@@ -336,14 +315,15 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/li>
 &lt;/ul>
 &lt;p>&lt;img src="https://img.shields.io/badge/LinkedIn%20Profile-orange?style=for-the-badge" alt="Resume">&lt;/p>
-&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume.png" alt="Resume">&lt;/a>&lt;/p></description></item><item><title>Public Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
+&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume-1.png" alt="Resume">&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume-2.png" alt="Resume">&lt;/a>&lt;/p></description></item><item><title>Public Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
 &lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At 14:00 tomorrow, please checkout Bilibili Beijing GDG live channel on time. Click to join our channel :&lt;a href="https://t.co/gJKL6jPeQA">https://t.co/gJKL6jPeQA&lt;/a> &lt;a href="https://t.co/PoZkBXrOoX">pic.twitter.com/PoZkBXrOoX&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1287020701774311424?ref_src=twsrc%5Etfw">July 25, 2020&lt;/a>&lt;/blockquote>
 &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
 &lt;h2 id="twitter-gdg-beijing-march-8-event">[Twitter]-GDG Beijing March 8 Event&lt;/h2>
 &lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">GDG Beijing March 8 Event. &lt;a href="https://t.co/14VJdTBlMa">pic.twitter.com/14VJdTBlMa&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1236152636916678656?ref_src=twsrc%5Etfw">March 7, 2020&lt;/a>&lt;/blockquote>
 &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
 &lt;h2 id="twitter-gdg-beijing-devfest-2019">[Twitter]-GDG Beijing DevFest 2019&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At &lt;a href="https://twitter.com/hashtag/DevFest?src=hash&amp;amp;ref_src=twsrc%5Etfw">#DevFest&lt;/a> Beijing, Xiaolong Ran shared how to build a Go function based on the Go language through Apache Pulsar.&lt;br>&lt;br>Apache Pulsar is a Cloud-native next-generation messaging system and real-time processing platform.&lt;br>&lt;br>Check it out → &lt;a href="https://t.co/NfTt2Jkb8Z">https://t.co/NfTt2Jkb8Z&lt;/a> &lt;a href="https://t.co/mWZpQ8jcKU">pic.twitter.com/mWZpQ8jcKU&lt;/a>&lt;/p>&amp;mdash; Google Developer Groups (@gdg) &lt;a href="https://twitter.com/gdg/status/1220103873878220800?ref_src=twsrc%5Etfw">January 22, 2020&lt;/a>&lt;/blockquote>
+&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At &lt;a href="https://twitter.com/hashtag/DevFest?src=hash&amp;amp;ref_src=twsrc%5Etfw">#DevFest&lt;/a> Beijing, Xiaolong Ran shared how to build a Go function based on the Go language through Apache Pulsar.&lt;br>&lt;br>Apache Pulsar is a Cloud-native next-generation messaging system and real-time processing platform.&lt;br>&lt;br>Check it out → &lt;a href="https://t.co/NfTt2Jkb8Z">https://t.co/NfTt2Jkb8Z&lt;/a> &lt;a href="https://t.co/mWZpQ8jcKU">pic.twitter.com/mWZpQ8jcKU&lt;/a>&lt;/p>&amp;mdash; Google Developer Groups (@googledevgroups) &lt;a href="https://twitter.com/googledevgroups/status/1220103873878220800?ref_src=twsrc%5Etfw">January 22, 2020&lt;/a>&lt;/blockquote>
 &lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
 &lt;h2 id="youtube-quicksql-meetup">[YouTube]-Quicksql Meetup&lt;/h2>
 &lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
