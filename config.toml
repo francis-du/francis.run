@@ -58,19 +58,14 @@ url = "/tags"
 weight = 4
 
 [[menu.main]]
-name = "Album"
-url = "/album"
-weight = 5
-
-[[menu.main]]
 name = "Tags"
 url = "/tags"
-weight = 6
+weight = 5
 
 [[menu.main]]
 name = "About"
 url = "/about"
-weight = 7
+weight = 6
 
 [[params.social]]
 name = "LinkedIn"
@@ -91,16 +86,6 @@ url = "https://twitter.com/intent/follow?screen_name=francis_run"
 name = "Email"
 icon = "mail"
 url = "mailto:francis@francisdu.com"
-
-[[params.social]]
-name = "Dev.to"
-icon = "link-2"
-url = "https://dev.to/francisdu"
-
-[[params.social]]
-name = "Youtube"
-icon = "youtube"
-url = "https://www.youtube.com/channel/UCFVmijl279L0A7ub8dzcGkg"
 
 [[params.social]]
 name = "Site Status"

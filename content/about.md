@@ -23,4 +23,6 @@ date: 2019-04-04 21:04:10
 
 ![Resume](https://img.shields.io/badge/LinkedIn%20Profile-orange?style=for-the-badge)
 
-[![Resume](../img/resume.png)](https://www.linkedin.com/in/francis-du/)
+[![Resume](../img/resume-1.png)](https://www.linkedin.com/in/francis-du/)
+
+[![Resume](../img/resume-2.png)](https://www.linkedin.com/in/francis-du/)
