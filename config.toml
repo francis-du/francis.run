@@ -20,7 +20,7 @@ hasCJKLanguage = true
 
 [params]
     subtitle = "Blog"
-    description = "Software Enigneer | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Rust,Python,Big Data,etc..."
+    description = "🤯Thinking Guy | 💻Software Engineer | 🦀 Rustacean | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Moderator [@Eleduck.com](https://eleduck.com/users/zlhe67) | Technique: Java,Rust,Python,Big Data,etc..."
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
     disableDisqusTypes = ["page"]
     featherIconsCDN = true
@@ -68,11 +68,6 @@ url = "/about"
 weight = 6
 
 [[params.social]]
-name = "LinkedIn"
-icon = "linkedin"
-url = "https://www.linkedin.com/in/francis-du/"
-
-[[params.social]]
 name = "Github"
 icon = "github"
 url = "https://github.com/francis-du"
@@ -83,14 +78,9 @@ icon = "twitter"
 url = "https://twitter.com/intent/follow?screen_name=francis_run"
 
 [[params.social]]
-name = "Email"
-icon = "mail"
-url = "mailto:francis@francisdu.com"
-
-[[params.social]]
-name = "Site Status"
-icon = "monitor"
-url = "https://status.francis.run/"
+name = "LinkedIn"
+icon = "linkedin"
+url = "https://www.linkedin.com/in/francis-du/"
 
 [[params.social]]
 name = "RSS"
