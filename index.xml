@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Mon, 26 Jul 2021 00:48:30 +0800</lastBuildDate><item><title>蠕虫</title><link>https://francis.run/blog/ruchong/</link><pubDate>Mon, 26 Jul 2021 00:48:30 +0800</pubDate><guid>https://francis.run/blog/ruchong/</guid><description>&lt;h2 id="-蠕虫">🐛 蠕虫&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 24 Dec 2021 21:58:00 +0800</lastBuildDate><item><title>Github Wrapped</title><link>https://francis.run/blog/github-wrapped/</link><pubDate>Fri, 24 Dec 2021 21:58:00 +0800</pubDate><guid>https://francis.run/blog/github-wrapped/</guid><description>&lt;p>&lt;a href="https://francis-du.wrapped.run/">&lt;img src="https://francis.run/img/github-wrapped.png" alt="github-wrapped">&lt;/a>&lt;/p></description></item><item><title>蠕虫</title><link>https://francis.run/blog/ruchong/</link><pubDate>Mon, 26 Jul 2021 00:48:30 +0800</pubDate><guid>https://francis.run/blog/ruchong/</guid><description>&lt;h2 id="-蠕虫">🐛 蠕虫&lt;/h2>
 &lt;blockquote>
 &lt;p>(2021年7月21日 北京)&lt;/p>
 &lt;/blockquote>
@@ -311,51 +311,4 @@ allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>I Am Francis Du</title><link>https://francis.run/about/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://img.shields.io/badge/GitHub%20Profile-orange?style=for-the-badge" alt="GitHub Profile">&lt;/p>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>GitHub Stats&lt;/th>
-&lt;th>Waketime Week Stats&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;a href="https://github.com/francis-du/">&lt;img src="https://github-readme-stats.vercel.app/api?username=francis-du&amp;amp;count_private=true&amp;amp;show_icons=true&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
-&lt;td>&lt;a href="https://wakatime.com/@francis">&lt;img src="https://github-readme-stats-git.francisdu.vercel.app/api/wakatime?username=francis&amp;amp;hide=other,html,scss,css,yaml,xml,toml,markdown&amp;amp;bg_color=30,e96443,904e95&amp;amp;title_color=fff&amp;amp;text_color=fff" alt="">&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;p>&lt;img src="https://img.shields.io/badge/Live%20status-orange?style=for-the-badge" alt="Live Status">&lt;/p>
-&lt;ul>
-&lt;li>
-&lt;p>🔭 I’m currently working on &lt;a href="https://github.com/francis-du/iotdb-rs">iotdb-rs&lt;/a>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>🌱 I’m currently learning &lt;a href="https://www.rust-lang.org/learn">Rust&lt;/a>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>👯 I’m looking to collaborate on &lt;a href="https://github.com/francis-du/iotdb-rs">iotdb-rs&lt;/a>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>📝 I regulary write articles on &lt;a href="https://francis.run">https://francis.run&lt;/a>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>📄 Know about my experiences &lt;a href="https://francis.run/about/">https://francis.run/about/&lt;/a>&lt;/p>
-&lt;/li>
-&lt;/ul>
-&lt;p>&lt;img src="https://img.shields.io/badge/LinkedIn%20Profile-orange?style=for-the-badge" alt="Resume">&lt;/p>
-&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume-1.png" alt="Resume">&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://www.linkedin.com/in/francis-du/">&lt;img src="../img/resume-2.png" alt="Resume">&lt;/a>&lt;/p></description></item><item><title>Public Events</title><link>https://francis.run/events/</link><pubDate>Thu, 04 Apr 2019 21:04:10 +0000</pubDate><guid>https://francis.run/events/</guid><description>&lt;h2 id="twitter-android-11-meetup">[Twitter]-Android 11 Meetup&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At 14:00 tomorrow, please checkout Bilibili Beijing GDG live channel on time. Click to join our channel :&lt;a href="https://t.co/gJKL6jPeQA">https://t.co/gJKL6jPeQA&lt;/a> &lt;a href="https://t.co/PoZkBXrOoX">pic.twitter.com/PoZkBXrOoX&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1287020701774311424?ref_src=twsrc%5Etfw">July 25, 2020&lt;/a>&lt;/blockquote>
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
-&lt;h2 id="twitter-gdg-beijing-march-8-event">[Twitter]-GDG Beijing March 8 Event&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">GDG Beijing March 8 Event. &lt;a href="https://t.co/14VJdTBlMa">pic.twitter.com/14VJdTBlMa&lt;/a>&lt;/p>&amp;mdash; GDG Beijing (@gdgbeijing) &lt;a href="https://twitter.com/gdgbeijing/status/1236152636916678656?ref_src=twsrc%5Etfw">March 7, 2020&lt;/a>&lt;/blockquote>
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
-&lt;h2 id="twitter-gdg-beijing-devfest-2019">[Twitter]-GDG Beijing DevFest 2019&lt;/h2>
-&lt;blockquote class="twitter-tweet">&lt;p lang="en" dir="ltr">At &lt;a href="https://twitter.com/hashtag/DevFest?src=hash&amp;amp;ref_src=twsrc%5Etfw">#DevFest&lt;/a> Beijing, Xiaolong Ran shared how to build a Go function based on the Go language through Apache Pulsar.&lt;br>&lt;br>Apache Pulsar is a Cloud-native next-generation messaging system and real-time processing platform.&lt;br>&lt;br>Check it out → &lt;a href="https://t.co/NfTt2Jkb8Z">https://t.co/NfTt2Jkb8Z&lt;/a> &lt;a href="https://t.co/mWZpQ8jcKU">pic.twitter.com/mWZpQ8jcKU&lt;/a>&lt;/p>&amp;mdash; Google Developer Groups (@googledevgroups) &lt;a href="https://twitter.com/googledevgroups/status/1220103873878220800?ref_src=twsrc%5Etfw">January 22, 2020&lt;/a>&lt;/blockquote>
-&lt;script async src="https://platform.twitter.com/widgets.js" charset="utf-8">&lt;/script>
-&lt;h2 id="youtube-quicksql-meetup">[YouTube]-Quicksql Meetup&lt;/h2>
-&lt;div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
-&lt;iframe src="https://www.youtube.com/embed/L2cV6Zy-Tjs" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;" allowfullscreen title="YouTube Video">&lt;/iframe>
 &lt;/div></description></item></channel></rss>
