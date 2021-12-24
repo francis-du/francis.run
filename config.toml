@@ -20,7 +20,7 @@ hasCJKLanguage = true
 
 [params]
     subtitle = "Blog"
-    description = "🤯 Thinking | 💻 Software Engineer | 🦀 Rustacean | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Rust,Python,Big Data,etc..."
+    description = "💻 Big Data Engineer | 🦀 Rustacean | 🥳 Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing)"
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
     disableDisqusTypes = ["page"]
     featherIconsCDN = true
@@ -48,24 +48,14 @@ url = "/blog"
 weight = 2
 
 [[menu.main]]
-name = "Events"
-url = "/events"
+name = "Tags"
+url = "/tags"
 weight = 3
 
 [[menu.main]]
 name = "Tags"
 url = "/tags"
 weight = 4
-
-[[menu.main]]
-name = "Tags"
-url = "/tags"
-weight = 5
-
-[[menu.main]]
-name = "About"
-url = "/about"
-weight = 6
 
 [[params.social]]
 name = "Github"
