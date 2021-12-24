@@ -20,7 +20,7 @@ hasCJKLanguage = true
 
 [params]
     subtitle = "Blog"
-    description = "🤯Thinking Guy | 💻Software Engineer | 🦀 Rustacean | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Moderator [@Eleduck.com](https://eleduck.com/users/zlhe67) | Technique: Java,Rust,Python,Big Data,etc..."
+    description = "🤯 Thinking | 💻 Software Engineer | 🦀 Rustacean | Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing) | Technique: Java,Rust,Python,Big Data,etc..."
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
     disableDisqusTypes = ["page"]
     featherIconsCDN = true
@@ -35,7 +35,7 @@ hasCJKLanguage = true
     # customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
 
 [author]
-name = "Francis Toh"
+name = "Francis Du"
 
 [[menu.main]]
 name = "Home"
