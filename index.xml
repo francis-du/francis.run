@@ -1,4 +1,109 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Fri, 24 Dec 2021 21:58:00 +0800</lastBuildDate><item><title>Github Wrapped</title><link>https://francis.run/blog/github-wrapped/</link><pubDate>Fri, 24 Dec 2021 21:58:00 +0800</pubDate><guid>https://francis.run/blog/github-wrapped/</guid><description>&lt;p>&lt;a href="https://francis-du.wrapped.run/">&lt;img src="https://francis.run/img/github-wrapped.png" alt="github-wrapped">&lt;/a>&lt;/p></description></item><item><title>蠕虫</title><link>https://francis.run/blog/ruchong/</link><pubDate>Mon, 26 Jul 2021 00:48:30 +0800</pubDate><guid>https://francis.run/blog/ruchong/</guid><description>&lt;h2 id="-蠕虫">🐛 蠕虫&lt;/h2>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sat, 01 Jan 2022 00:29:06 +0800</lastBuildDate><item><title>HYE2022</title><link>https://francis.run/HYE2022/</link><pubDate>Sat, 01 Jan 2022 00:29:06 +0800</pubDate><guid>https://francis.run/HYE2022/</guid><description>&lt;div class="embed music" align="center">
+&lt;iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=369 height=86
+src="//music.163.com/outchain/player?type=2&amp;auto=1&amp;height=66&amp;id=1299326404">
+&lt;/iframe>
+&lt;/div>
+&lt;p>嗯，Hugo Ink 主题的 Bug 终于修复了，可以开始小结了，本来写了一段，被 Hugo 的 &lt;code>strclice bounds out of rang&lt;/code> 的 panic 搞崩溃了。
+虽然此时已经 2022 了，但也不着急，也就是晚睡一会，可以慢慢的写，点开陈婧霏享受新年的第一天。&lt;/p>
+&lt;h2 id="2021">2021&lt;/h2>
+&lt;p>2021 对我来说是短暂的，充实的，快乐的，是值得回忆的一年，是收获颇丰的一年。短暂是因为它对我来说只有 9 个月，有三个月是在阴霾里度过的，就不再提起了吧。
+还是主要回忆下这短暂的 9 个月的时光。刚从朋友圈回来，大家都在努力的回忆着 2021，互相祝福着 2022，而我，才开始努力的回忆&amp;hellip;&amp;hellip;&lt;/p>
+&lt;p>3 月末，告别了一段时间的阴霾，逐渐的开始变化，思绪、情感、生活、工作都逐渐正常了起来，一切都好了起来，每天也都很充实，很快乐。
+差不多桃花开了的时候，和小伙伴们去了北京的周边，溜达溜达，散了散心，享受了三月的桃花余韵，沐了初春的绿意和夕阳。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;/th>
+&lt;th>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/001.png" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/002.png" alt="">&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>还 ✅ 了新技能&amp;ndash;射箭。公司附近也开了一家，很久都没去了，这个土豆记下吧，不忙的时候就可以去放松一下。&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/003.jpg" alt="">&lt;/p>
+&lt;p>4 月，去看了陈婧霏北京的 Live，还跟着小段打入了后援会 😄。和喜欢陈婧霏的人一起喜欢陈婧霏真好，他们来自全国各地，有的还在读书，不远万里从桂林/成都飞到北京。
+有的还在上班，请假坐高铁来看她，能和这群有活力的人混在一起，十分快乐。当然写小结的时候也是听陈婧霏的哇。&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/004.jpg" alt="">&lt;/p>
+&lt;p>夏天就是一直在干饭，有时候中午回去吃牛 X 的，有时候下午去吃牛 X 的，有时候晚上去吃牛 X 的，干饭小分队峰值十几人，除了上班，就是一直在干饭，感谢带我干饭的小伙伴们
+让我为这个寒冷的冬天储备了充足的脂肪。&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/005.jpg" alt="">&lt;/p>
+&lt;p>当然，夏天不止于干饭，还见了杭州和成都，见了好朋友，见了好伙伴，见了想见的人，吃了没见过的好吃的，走了没走过的路，思考了曾经从来没有思考过的人生，窥探到了一丝纯洁的灵魂。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>夏日乌镇&lt;/th>
+&lt;th>木心美术馆&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/012.png" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/013.png" alt="">&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/014.jpg" alt="">&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/015.jpg" alt="">&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>夏日&lt;/th>
+&lt;th>成都&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/006.jpg" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/007.jpg" alt="">&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/008.jpg" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/009.jpg" alt="">&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/010.jpg" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/011.jpg" alt="">&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>北京秋天，来的好像没那么着急，我脑海中甚至没有太多关于秋天的记忆，好像只有几片秋叶和贴的秋膘还有小段的演出，然后就匆匆入了冬。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;/th>
+&lt;th>&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/016.jpg" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/017.jpg" alt="">&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/018.jpg" alt="">&lt;/td>
+&lt;td>&lt;img src="https://francis.run/img/2021-summary/019.jpg" alt="">&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/020.jpg" alt="">&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/021.jpg" alt="">&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/2021-summary/022.jpg" alt="">&lt;/p>
+&lt;p>除此之外就是一些社区的活动了，今年主要在跑 GDG 的活动：WTM / CTalk / DevFest，也主持过两场 CTalk，也收获很多，其他的社区活动基本没有。
+好像从去年开始不太爱跑别的活动了，当然也是因为大部分活动都转到了线上，这个还是可以记个土豆，没事的时候可以跑跑。然后就是开源也搞了搞，最近巨忙，
+就抽不出时间来了，有空肯定会发发版，更一更代码，修修 Bug 的。Rust 依然不紧不慢的学习中，边学边用，边用边学，就保持就好啦。
+给自己今年整体打个分的话就给 🌟🌟🌟🌟✨ 吧。&lt;/p>
+&lt;p>&lt;img src="https://francis.run/img/github-wrapped.png" alt="">&lt;/p>
+&lt;h2 id="2022-">2022 🥔：&lt;/h2>
+&lt;p>🥔 1：开源库更代码，修 Bug，发版，再跑跑别的社区&lt;/p>
+&lt;p>🥔 2：再去几个别人呆腻的地方&lt;/p>
+&lt;p>🥔 3：看完 &lt;code>查拉图斯特拉如是说&lt;/code> 和 &lt;code>资本论&lt;/code> 以及 &lt;code>传习录&lt;/code>&lt;/p>
+&lt;p>🥔 4：Live? 音乐会？🎸 再扒拉扒拉？&lt;/p>
+&lt;p>🥔 5：最后再减减肉吧&lt;/p></description></item><item><title>蠕虫</title><link>https://francis.run/blog/ruchong/</link><pubDate>Mon, 26 Jul 2021 00:48:30 +0800</pubDate><guid>https://francis.run/blog/ruchong/</guid><description>&lt;h2 id="-蠕虫">🐛 蠕虫&lt;/h2>
 &lt;blockquote>
 &lt;p>(2021年7月21日 北京)&lt;/p>
 &lt;/blockquote>
@@ -31,7 +136,7 @@
 &lt;p>一丝尘土&lt;/p></description></item><item><title>Wiki Graph</title><link>https://francis.run/blog/wiki-graph/</link><pubDate>Sat, 16 Jan 2021 04:40:36 +0800</pubDate><guid>https://francis.run/blog/wiki-graph/</guid><description>&lt;p>项目以 MIT LICENSE 托管在 GitHub[1]，
 Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务托管。
 该项目源于一次远程面试，以下内容摘自面试邮件。 &lt;a href="https://gist.github.com/defclass/8c4f6da71629d861f9a554ad7580c1ef">详情&lt;/a>&lt;/p>
-&lt;p>&lt;img src="https://wiki-graph.francis.run/images/index.png" alt="">&lt;/p>
+&lt;p>&lt;img src="https://wiki-graph.francis.run/images/index.png" alt="img">&lt;/p>
 &lt;h3 id="面试题">面试题：&lt;/h3>
 &lt;blockquote>
 &lt;p>在你提供的 web app 上（请确保可以正常访问），用户搜索某个主题，比如 Knowledge base，
@@ -259,9 +364,7 @@ Kyligence 提供的 Kyligence Enterprise 是基于 Apache Kylin
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
-&lt;/div></description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0800</pubDate><guid>https://francis.run/blog/alluxio/</guid><description>&lt;p>&lt;a href="https://www.alluxio.io">Alluxio&lt;/a>
-是一个开源的高容错的分布式内存文件系统，目前在很多公司中使用，
-主要用来做大数据平台的缓存等。本文的主要内容是关于 Alluxio 的安装和简单的分析，仅供参考。&lt;/p>
+&lt;/div></description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0800</pubDate><guid>https://francis.run/blog/alluxio/</guid><description>&lt;p>&lt;a href="https://www.alluxio.io">Alluxio&lt;/a>是一个开源的高容错的分布式内存文件系统，目前在很多公司中使用，主要用来做大数据平台的缓存等。本文的主要内容是关于 Alluxio 的安装和简单的分析，仅供参考。&lt;/p>
 &lt;div class="embed zohoshow">
 &lt;iframe src="https://show.zohopublic.com/publish/f9a269fae9a09139842c8855c5a0949dcb6c8/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
 width="890" height="520" style="border:1px solid #000;max-width: 100%;"
