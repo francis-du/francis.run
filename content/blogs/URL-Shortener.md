@@ -3,6 +3,7 @@ title: "URL Shortener"
 date: 2020-12-07T17:16:21+08:00
 url: /blog/Url-shortener/
 image: https://simpleicons.org/icons/fujitsu.svg
+description: A simple app that is build on Cloudflare Workers using Short.io API.
 tags:
   - serverless
   - cloudflare 
