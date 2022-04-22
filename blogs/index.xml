@@ -1,4 +1,14 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Blogs</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sat, 01 Jan 2022 00:29:06 +0800</lastBuildDate><item><title>HYE2022</title><link>https://francis.run/HYE2022/</link><pubDate>Sat, 01 Jan 2022 00:29:06 +0800</pubDate><guid>https://francis.run/HYE2022/</guid><description>&lt;div class="embed music" align="center">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Blogs</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sat, 23 Apr 2022 01:05:57 +0800</lastBuildDate><item><title>April</title><link>https://francis.run/April/</link><pubDate>Sat, 23 Apr 2022 01:05:57 +0800</pubDate><guid>https://francis.run/April/</guid><description>&lt;p>&lt;img src="https://francis.run/img/april/also_sprach_zarathustra.png" alt="">&lt;/p>
+&lt;div class="container">
+&lt;div id="player-wrapper" class="Peace &amp;amp; Love">&lt;/div>
+&lt;/div>
+&lt;script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js">
+&lt;/script>
+&lt;script>
+var playerElement = document.getElementById("player-wrapper");
+var player = new Clappr.Player({source: "https://b2.francisdu.com/file/publicdocs/mp4/April.mp4", mute: false, height: 450, width: 800});
+player.attachTo(playerElement);
+&lt;/script></description></item><item><title>HYE2022</title><link>https://francis.run/HYE2022/</link><pubDate>Sat, 01 Jan 2022 00:29:06 +0800</pubDate><guid>https://francis.run/HYE2022/</guid><description>&lt;div class="embed music" align="center">
 &lt;iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=369 height=86
 src="//music.163.com/outchain/player?type=2&amp;auto=1&amp;height=66&amp;id=1299326404">
 &lt;/iframe>
