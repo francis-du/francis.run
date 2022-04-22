@@ -7,6 +7,6 @@
 
 <script>
     var playerElement = document.getElementById("player-wrapper");
-    var player = new Clappr.Player({source: {{ .Get 0 }}, mute: false, height: 450, width: 800});
+    var player = new Clappr.Player({source: {{ .Get 0 }}, mute: false, height: 450, width: '100%'});
     player.attachTo(playerElement);
 </script>
