@@ -22,7 +22,6 @@ hasCJKLanguage = true
     subtitle = "Blog"
     description = "💻 Big Data Engineer | 🦀 Rustacean | 🥳 Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing)"
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
-    disableDisqusTypes = ["page"]
     featherIconsCDN = true
     favicon = "img/icon.png"
     images = "img/icon.png"
@@ -30,10 +29,11 @@ hasCJKLanguage = true
     mode = "dark"
     busuanzi = true
     social_share = true
+    comment = true
     # customCSS = "css/custom.css"  # Custom CSS applied to default styles.
     # customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
     # customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
-
+    
 [author]
 name = "Francis Du"
 
