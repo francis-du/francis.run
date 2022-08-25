@@ -1,7 +1,7 @@
 ---
 title: "April"
 date: 2022-04-23T01:05:57+08:00
-url: /April/
+url: /blog/April/
 image: /img/April.jpg
 description: "April"
 tags:

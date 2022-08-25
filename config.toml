@@ -48,14 +48,24 @@ url = "/blogs"
 weight = 2
 
 [[menu.main]]
-name = "Tags"
-url = "/tags"
+name = "Albums"
+url = "/albums"
 weight = 3
 
 [[menu.main]]
 name = "Tags"
 url = "/tags"
 weight = 4
+
+[[menu.main]]
+name = "About"
+url = "/about"
+weight = 5
+
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 6
 
 [[params.social]]
 name = "Github"
