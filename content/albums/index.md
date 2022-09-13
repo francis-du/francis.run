@@ -7,14 +7,4 @@ tags:
   - Album
 ---
 
-## 人像
-
-{{< album smqfN2sKUtbp >}}
-
-## 风景
-
-{{< album 4mzufyVEkQCo >}}
-
-## 其他
-
-{{< album RxKkHUDEhvFE >}}
+建设中...
