@@ -241,22 +241,7 @@ Amcharts 将数据渲染成一个 Graph。&lt;/li>
 &lt;td>N&lt;/td>
 &lt;/tr>
 &lt;/tbody>
-&lt;/table></description></item><item><title>Apache Airflow &amp; Apache Dolphin Scheduler对比分析</title><link>https://francis.run/blog/apache-airflow_apache-dolphin-scheduler/</link><pubDate>Thu, 17 Oct 2019 15:06:21 +0800</pubDate><guid>https://francis.run/blog/apache-airflow_apache-dolphin-scheduler/</guid><description>&lt;p>&lt;a href="http://airflow.apache.org/">Apache Airflow&lt;/a> : 是由Airbnb公司开源
-的一款调度工具，项目于2014年启动，2015年开源，于2016年进入Apache孵化
-器进行孵化，目前已经从孵化器毕业为Apache顶级项目之一.
-Apache Airflow是一个以编程方式创作，安排和监控工作流的平台。Apache
-Airflow通过DAG来定义整个工作流，具有非常强大的表达能力。&lt;/p>
-&lt;p>&lt;a href="https://dolphinscheduler.apache.org/">Apache Dolphin Scheduler&lt;/a> :
-原名Easy Scheduler，由易观于2019年开源，之后9月份改名为Dolphin Scheduler，
-并进入Apache孵化器进行孵化。 Apache Dolphin Scheduler是一个分布式易
-扩展的可视化DAG工作流任务调度系统。致力于解决数据处理流程中错综复杂的依赖关系，
-使调度系统在数据处理流程中开箱即用&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/h37wb1fa958ebe7724b928ac6e4c8db93930c/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0800</pubDate><guid>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;p>&lt;img src="https://francis.run/img/hbase.png" alt="">&lt;/p>
+&lt;/table></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0800</pubDate><guid>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;p>&lt;img src="https://francis.run/img/hbase.png" alt="">&lt;/p>
 &lt;ol>
 &lt;li>克隆源码&lt;/li>
 &lt;/ol>
@@ -428,9 +413,20 @@ width="890" height="520" style="border:1px solid #000;max-width: 100%;"
 allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
 &lt;/iframe>
 &lt;/div></description></item><item><title>About</title><link>https://francis.run/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&amp;amp;pause=1000&amp;amp;color=28A172&amp;amp;center=true&amp;amp;vCenter=true&amp;amp;width=435&amp;amp;lines=%F0%9F%91%8B+Hi+there%2C+I+am+Francis." alt="">&lt;/p>
+&lt;p>&lt;a href="https://github.com/francis-du">&lt;img src="https://raw.githubusercontent.com/francis-du/francis-du/output/snake.svg" alt="snake gif">&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://github.com/francis-du">&lt;img src="https://user-images.githubusercontent.com/25944814/196489910-a1cd249b-0cfb-4596-803a-d0060bfabeea.png" alt="image">&lt;/a>&lt;/p>
 &lt;ul>
-&lt;li>🦀️ I’m currently learning &lt;a href="https://www.rust-lang.org/learn">Rust&lt;/a>&lt;/li>
-&lt;li>☎️ I live on &lt;a href="https://discord.gg/dd6JZteeyd">Discord&lt;/a> &amp;amp; &lt;a href="https://t.me/francisdu">Telegram&lt;/a>&lt;/li>
-&lt;li>There is my Github Snake&lt;/li>
+&lt;li>
+&lt;p>🦀️ I’m currently learning &lt;a href="https://www.rust-lang.org/learn">Rust&lt;/a>&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>📱 I live on&lt;/p>
+&lt;/li>
 &lt;/ul>
-&lt;p>&lt;a href="https://github.com/francis-du">&lt;img src="https://raw.githubusercontent.com/francis-du/francis-du/output/snake.svg" alt="snake gif">&lt;/a>&lt;/p></description></item><item><title>Albums</title><link>https://francis.run/albums/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/albums/</guid><description>&lt;p>建设中&amp;hellip;&lt;/p></description></item></channel></rss>
+&lt;p>&lt;a href="https://discord.gg/dd6JZteeyd">&lt;img src="https://user-images.githubusercontent.com/25944814/196490606-cc744c8a-390b-4263-bd7c-a299822315da.png" alt="image">&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://t.me/francisdu">&lt;img src="https://user-images.githubusercontent.com/25944814/196490470-68eb7799-46c5-4287-8b78-464670389d7b.png" alt="image">&lt;/a>&lt;/p>
+&lt;ul>
+&lt;li>💻 I&amp;rsquo;m working for&lt;/li>
+&lt;/ul>
+&lt;p>&lt;a href="https://github.com/apache/arrow-datafusion-python">&lt;img src="https://user-images.githubusercontent.com/25944814/196488416-cf78b8ef-fd10-491b-a898-da0d833cf0a7.png" alt="image">&lt;/a>&lt;/p>
+&lt;p>&lt;a href="https://github.com/apache/arrow-datafusion">&lt;img src="https://user-images.githubusercontent.com/25944814/196488140-33394dfd-677c-4639-97ca-c131606b21db.png" alt="image">&lt;/a>&lt;/p></description></item><item><title>Albums</title><link>https://francis.run/albums/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/albums/</guid><description>&lt;p>建设中&amp;hellip;&lt;/p></description></item></channel></rss>
