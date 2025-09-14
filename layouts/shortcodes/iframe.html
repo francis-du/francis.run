@@ -1,3 +1,121 @@
-<div class="embed iframe">
-    <iframe width="100%" height="500" src="{{ index .Params 0 }}" frameborder="0" allowfullscreen></iframe>
+{{ $url := index .Params 0 }}
+{{ $escaped_url := urls.Parse $url }}
+<div class="embed iframe" style="position: relative;">
+    <iframe 
+        width="100%" 
+        height="800" 
+        src="{{ $url }}" 
+        frameborder="0" 
+        allowfullscreen
+        allow="*"
+        referrerpolicy="origin"
+        loading="eager"
+        importance="high"
+        sandbox="allow-downloads allow-downloads-without-user-activation allow-forms allow-modals allow-orientation-lock allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation allow-top-navigation-by-user-activation allow-top-navigation-to-custom-protocols"
+        crossorigin="anonymous"
+        fetchpriority="high"
+        data-origin="{{ $escaped_url.Host }}"
+        data-protocol="{{ $escaped_url.Scheme }}"
+        onload="injectIframeHeaders(this)"></iframe>
 </div>
+
+<script>
+// 添加 CORS meta 标签
+const corsMetaTags = `
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';">
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
+    <meta http-equiv="Access-Control-Allow-Methods" content="GET, POST, PUT, DELETE, OPTIONS">
+    <meta http-equiv="Access-Control-Allow-Headers" content="*">
+    <meta http-equiv="Access-Control-Allow-Credentials" content="true">
+`;
+document.head.insertAdjacentHTML('beforeend', corsMetaTags);
+
+function injectIframeHeaders(iframe) {
+    const targetOrigin = '*';  // 允许所有源
+    const protocol = iframe.getAttribute('data-protocol');
+    
+    // 构造一个类似真实浏览器的请求头
+    const headers = {
+        'User-Agent': navigator.userAgent,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': navigator.language || 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Sec-Ch-Ua': '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
+        'Sec-Ch-Ua-Mobile': '?0',
+        'Sec-Ch-Ua-Platform': '"macOS"',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Upgrade-Insecure-Requests': '1',
+        'Cache-Control': 'max-age=0',
+        'Connection': 'keep-alive',
+        'DNT': '1'
+    };
+
+    // 通过 postMessage 发送请求头信息到 iframe
+    iframe.contentWindow.postMessage({
+        type: 'SET_HEADERS',
+        headers: headers,
+        origin: targetOrigin,
+        protocol: protocol,
+        referer: document.location.href,
+        // 添加其他浏览器特征
+        screen: {
+            width: window.screen.width,
+            height: window.screen.height,
+            colorDepth: window.screen.colorDepth,
+            pixelDepth: window.screen.pixelDepth
+        },
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        language: navigator.language,
+        platform: navigator.platform,
+        cookieEnabled: navigator.cookieEnabled,
+        doNotTrack: navigator.doNotTrack,
+        maxTouchPoints: navigator.maxTouchPoints,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        deviceMemory: navigator.deviceMemory,
+        connection: navigator.connection ? {
+            effectiveType: navigator.connection.effectiveType,
+            rtt: navigator.connection.rtt,
+            downlink: navigator.connection.downlink
+        } : null
+    }, targetOrigin);
+}
+
+// 添加动态视口高度调整
+function adjustIframeHeight() {
+    const iframe = document.querySelector('.embed.iframe iframe');
+    if (iframe) {
+        iframe.style.height = window.innerHeight + 'px';
+    }
+}
+
+// 监听窗口大小变化
+window.addEventListener('resize', adjustIframeHeight);
+// 初始调整
+window.addEventListener('load', adjustIframeHeight);
+</script>
+
+<style>
+.embed.iframe {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #fff;
+}
+
+.embed.iframe iframe {
+    border: none;
+    position: relative;
+    width: 100%;
+    transition: height 0.3s ease;
+}
+
+/* 添加移动设备的响应式支持 */
+@media (max-width: 768px) {
+    .embed.iframe iframe {
+        height: 100vh !important;
+    }
+}
+</style>
