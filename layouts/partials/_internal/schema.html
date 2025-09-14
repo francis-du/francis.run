@@ -19,7 +19,13 @@
     "headline": {{ .Title | jsonify }},
     "name": {{ .Title | jsonify }},
     "description": {{ with .Description }}{{ . | jsonify }}{{ else }}{{ .Summary | jsonify }}{{ end }},
-    "keywords": {{ with .Keywords }}{{ . | jsonify }}{{ else }}{{ with .Params.tags }}{{ . | jsonify }}{{ end }}{{ end }},
+    {{- with .Keywords -}}
+    "keywords": {{ . | jsonify }},
+    {{- else -}}
+    {{- with .Params.tags -}}
+    "keywords": {{ . | jsonify }},
+    {{- end -}}
+    {{- end -}}
     "wordcount": {{ .WordCount }},
     "url": {{ .Permalink | jsonify }},
     "datePublished": {{ .Date.Format "2006-01-02T15:04:05-07:00" | jsonify }},
