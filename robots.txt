@@ -1,2 +1,7 @@
 User-agent: *
 Disallow: /img/*
+Disallow: /gallery/*
+Disallow: /gallery/images/*
+
+Sitemap: https://francis.run/sitemap.xml
+Sitemap: https://francisdu.com/sitemap.xml
