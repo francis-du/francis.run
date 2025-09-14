@@ -2,10 +2,11 @@
 title: "Wiki Graph"
 date: 2021-01-16T04:40:36+08:00
 url: /blog/wiki-graph/
-description: Wikipida Graph
+description: "Wikipida Graph"
 tag:
 - Rust
 - Wikipedia
+images: []
 ---
 
 项目以 MIT LICENSE 托管在 GitHub[1]，

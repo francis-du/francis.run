@@ -1,0 +1,7 @@
+{{/* Robust stub: only range if $imgParams is a slice/array using Hugo's reflect.IsSlice */}}
+{{- $imgParams := . -}}
+{{- if (and $imgParams (reflect.IsSlice $imgParams)) -}}
+  {{- range $imgParams }}
+    {{/* ...your image logic here... */}}
+  {{- end }}
+{{- end -}}

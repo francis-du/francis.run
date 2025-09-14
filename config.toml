@@ -1,7 +1,6 @@
 baseURL = "https://francis.run/"
 title = "Francis Du"
 copyright = "© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)"
-paginate = 6
 
 pygmentsstyle = "vs"
 pygmentscodefences = true
@@ -18,23 +17,28 @@ enableInlineShortcodes = true
 enableRobotsTXT = true
 hasCJKLanguage = true
 
+# 允许原始 HTML
+[markup.goldmark.renderer]
+unsafe = true
+
+# 忽略原始 HTML 警告
+ignoreLogs = ['warning-goldmark-raw-html']
+
 [params]
     subtitle = "Blog"
-    description = "💻 Big Data Engineer | 🦀 Rustacean | 🥳 Co-organizer [@GDG Beijing](https://gdg.community.dev/gdg-beijing)"
+    description = "💻 Data Engineer | 🦀 Rustacean | 📷 Photographer"
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
-    featherIconsCDN = true
     favicon = "img/icon.png"
-    images = "img/icon.png"
     title = "Francis Blog"
     mode = "dark"
     busuanzi = true
     social_share = true
     comment = true
-    # customCSS = "css/custom.css"  # Custom CSS applied to default styles.
-    # customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
-    # customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
     
-[author]
+[pagination]
+pagerSize = 10 
+
+[params.author]
 name = "Francis Du"
 
 [[menu.main]]
@@ -62,15 +66,15 @@ name = "About"
 url = "/about"
 weight = 5
 
-[[menu.main]]
-name = "Tags"
-url = "/tags"
-weight = 6
-
 [[params.social]]
 name = "Github"
 icon = "github"
 url = "https://github.com/francis-du"
+
+[[params.social]]
+name = "Telegram"
+icon = "send"
+url = "https://t.me/francisdu"
 
 [[params.social]]
 name = "Twitter"
