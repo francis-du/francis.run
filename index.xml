@@ -1,4 +1,38 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 28 Sep 2022 14:52:34 +0800</lastBuildDate><item><title>Arrow Datafusion Chapter 01</title><link>https://francis.run/blog/arrow_datafusion_chapter_01/</link><pubDate>Wed, 28 Sep 2022 14:52:34 +0800</pubDate><guid>https://francis.run/blog/arrow_datafusion_chapter_01/</guid><description>&lt;h2 id="todo">TODO&lt;/h2></description></item><item><title>April</title><link>https://francis.run/blog/April/</link><pubDate>Sat, 23 Apr 2022 01:05:57 +0800</pubDate><guid>https://francis.run/blog/April/</guid><description>&lt;p>&lt;img src="https://francis.run/img/april/also_sprach_zarathustra.png" alt="">&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Francis Du</title><link>https://francis.run/</link><atom:link href="https://francis.run/index.xml" rel="self" type="application/rss+xml"/><description>Francis Du</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Mon, 01 Apr 2024 00:00:00 +0000</lastBuildDate><item><title>半活</title><link>https://francis.run/blog/%E5%8D%8A%E6%B4%BB/</link><pubDate>Mon, 01 Apr 2024 00:00:00 +0000</pubDate><guid>https://francis.run/blog/%E5%8D%8A%E6%B4%BB/</guid><description>&lt;p>我到底&lt;/p>
+&lt;p>是活着，还是正在死去&lt;/p>
+&lt;p>是死去，还是等待着重生&lt;/p>
+&lt;p>是正在重生，还是即将毁灭&lt;/p>
+&lt;p>到底是消亡还是湮灭&lt;/p>
+&lt;hr>
+&lt;p>我是一座座尸体&lt;/p>
+&lt;p>是山，是水&lt;/p>
+&lt;p>是花，是草，&lt;/p>
+&lt;p>我是一片片山脉&lt;/p>
+&lt;p>是天空，是飓风&lt;/p>
+&lt;p>是乌云，是暴雨&lt;/p>
+&lt;p>我是一阵阵风&lt;/p>
+&lt;p>是电闪，是雷鸣&lt;/p>
+&lt;p>是地下的烈火，是水上的冰层&lt;/p>
+&lt;hr>
+&lt;p>我什么也不是&lt;/p>
+&lt;p>我不曾活着，也不曾死去&lt;/p>
+&lt;p>我从来都不是我自己&lt;/p>
+&lt;p>我，半活&lt;/p>
+&lt;p>一半死了，一半正在死去&lt;/p></description></item><item><title>夕阳</title><link>https://francis.run/blog/%E5%A4%95%E9%98%B3/</link><pubDate>Wed, 31 Jan 2024 00:00:00 +0000</pubDate><guid>https://francis.run/blog/%E5%A4%95%E9%98%B3/</guid><description>&lt;p>追随着黄昏&lt;/p>
+&lt;p>目送你离开&lt;/p>
+&lt;p>也许是山川&lt;/p>
+&lt;p>也许是汪洋&lt;/p>
+&lt;p>隐去耀眼的芒&lt;/p>
+&lt;p>在原地彷徨&lt;/p>
+&lt;p>眼里是谁的光&lt;/p>
+&lt;hr>
+&lt;p>我无法追赶你的光亮&lt;/p>
+&lt;p>你只是夕阳&lt;/p>
+&lt;p>你掉落的是谁的芒&lt;/p>
+&lt;p>是谁扯走一片微凉&lt;/p>
+&lt;p>别处依旧耀阳&lt;/p>
+&lt;p>那遗落了的&lt;/p>
+&lt;p>是谁的夕阳&lt;/p></description></item><item><title>April</title><link>https://francis.run/blog/April/</link><pubDate>Sat, 23 Apr 2022 01:05:57 +0800</pubDate><guid>https://francis.run/blog/April/</guid><description>&lt;p>&lt;img src="https://francis.run/img/april/also_sprach_zarathustra.png" alt="">&lt;/p>
 &lt;div class="container">
 &lt;div id="player-wrapper" class="Peace &amp;amp; Love">&lt;/div>
 &lt;/div>
@@ -8,117 +42,7 @@
 var playerElement = document.getElementById("player-wrapper");
 var player = new Clappr.Player({source: "https://b2.francisdu.com/file/publicdocs/mp4/April.mp4", mute: false, height: 450, width: '100%'});
 player.attachTo(playerElement);
-&lt;/script></description></item><item><title>HYE2022</title><link>https://francis.run/blog/HYE2022/</link><pubDate>Sat, 01 Jan 2022 00:29:06 +0800</pubDate><guid>https://francis.run/blog/HYE2022/</guid><description>&lt;div class="embed music" align="center">
-&lt;iframe frameborder="no" border="0" marginwidth="0" marginheight="0" width=369 height=86
-src="//music.163.com/outchain/player?type=2&amp;auto=1&amp;height=66&amp;id=1299326404">
-&lt;/iframe>
-&lt;/div>
-&lt;p>嗯，Hugo Ink 主题的 Bug 终于修复了，可以开始小结了，本来写了一段，被 Hugo 的 &lt;code>strclice bounds out of rang&lt;/code> 的 panic 搞崩溃了。
-虽然此时已经 2022 了，但也不着急，也就是晚睡一会，可以慢慢的写，点开陈婧霏享受新年的第一天。&lt;/p>
-&lt;h2 id="2021">2021&lt;/h2>
-&lt;p>2021 对我来说是短暂的，充实的，快乐的，是值得回忆的一年，是收获颇丰的一年。短暂是因为它对我来说只有 9 个月，有三个月是在阴霾里度过的，就不再提起了吧。
-还是主要回忆下这短暂的 9 个月的时光。刚从朋友圈回来，大家都在努力的回忆着 2021，互相祝福着 2022，而我，才开始努力的回忆&amp;hellip;&amp;hellip;&lt;/p>
-&lt;p>3 月末，告别了一段时间的阴霾，逐渐的开始变化，思绪、情感、生活、工作都逐渐正常了起来，一切都好了起来，每天也都很充实，很快乐。
-差不多桃花开了的时候，和小伙伴们去了北京的周边，溜达溜达，散了散心，享受了三月的桃花余韵，沐了初春的绿意和夕阳。&lt;/p>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>&lt;/th>
-&lt;th>&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/001.png" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/002.png" alt="">&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;p>还 ✅ 了新技能&amp;ndash;射箭。公司附近也开了一家，很久都没去了，这个土豆记下吧，不忙的时候就可以去放松一下。&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/003.jpg" alt="">&lt;/p>
-&lt;p>4 月，去看了陈婧霏北京的 Live，还跟着小段打入了后援会 😄。和喜欢陈婧霏的人一起喜欢陈婧霏真好，他们来自全国各地，有的还在读书，不远万里从桂林/成都飞到北京。
-有的还在上班，请假坐高铁来看她，能和这群有活力的人混在一起，十分快乐。当然写小结的时候也是听陈婧霏的哇。&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/004.jpg" alt="">&lt;/p>
-&lt;p>夏天就是一直在干饭，有时候中午回去吃牛 X 的，有时候下午去吃牛 X 的，有时候晚上去吃牛 X 的，干饭小分队峰值十几人，除了上班，就是一直在干饭，感谢带我干饭的小伙伴们
-让我为这个寒冷的冬天储备了充足的脂肪。&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/005.jpg" alt="">&lt;/p>
-&lt;p>当然，夏天不止于干饭，还见了杭州和成都，见了好朋友，见了好伙伴，见了想见的人，吃了没见过的好吃的，走了没走过的路，思考了曾经从来没有思考过的人生，窥探到了一丝纯洁的灵魂。&lt;/p>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>夏日乌镇&lt;/th>
-&lt;th>木心美术馆&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/012.png" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/013.png" alt="">&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/014.jpg" alt="">&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/015.jpg" alt="">&lt;/p>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>夏日&lt;/th>
-&lt;th>成都&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/006.jpg" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/007.jpg" alt="">&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/008.jpg" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/009.jpg" alt="">&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/010.jpg" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/011.jpg" alt="">&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;p>北京秋天，来的好像没那么着急，我脑海中甚至没有太多关于秋天的记忆，好像只有几片秋叶和贴的秋膘还有小段的演出，然后就匆匆入了冬。&lt;/p>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>&lt;/th>
-&lt;th>&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/016.jpg" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/017.jpg" alt="">&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/018.jpg" alt="">&lt;/td>
-&lt;td>&lt;img src="https://francis.run/img/2021-summary/019.jpg" alt="">&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/020.jpg" alt="">&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/021.jpg" alt="">&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/2021-summary/022.jpg" alt="">&lt;/p>
-&lt;p>除此之外就是一些社区的活动了，今年主要在跑 GDG 的活动：WTM / CTalk / DevFest，也主持过两场 CTalk，也收获很多，其他的社区活动基本没有。
-好像从去年开始不太爱跑别的活动了，当然也是因为大部分活动都转到了线上，这个还是可以记个土豆，没事的时候可以跑跑。然后就是开源也搞了搞，最近巨忙，
-就抽不出时间来了，有空肯定会发发版，更一更代码，修修 Bug 的。Rust 依然不紧不慢的学习中，边学边用，边用边学，就保持就好啦。
-给自己今年整体打个分的话就给 🌟🌟🌟🌟✨ 吧。&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/github-wrapped.png" alt="">&lt;/p>
-&lt;h2 id="2022-">2022 🥔：&lt;/h2>
-&lt;p>🥔 1：开源库更代码，修 Bug，发版，再跑跑别的社区&lt;/p>
-&lt;p>🥔 2：再去几个别人呆腻的地方&lt;/p>
-&lt;p>🥔 3：看完 &lt;code>查拉图斯特拉如是说&lt;/code> 和 &lt;code>资本论&lt;/code> 以及 &lt;code>传习录&lt;/code>&lt;/p>
-&lt;p>🥔 4：Live? 音乐会？🎸 再扒拉扒拉？&lt;/p>
-&lt;p>🥔 5：最后再减减肉吧&lt;/p></description></item><item><title>蠕虫</title><link>https://francis.run/blog/ruchong/</link><pubDate>Mon, 26 Jul 2021 00:48:30 +0800</pubDate><guid>https://francis.run/blog/ruchong/</guid><description>&lt;h2 id="-蠕虫">🐛 蠕虫&lt;/h2>
-&lt;blockquote>
-&lt;p>(2021年7月21日 北京)&lt;/p>
-&lt;/blockquote>
-&lt;hr>
-&lt;p>脑子里有条&lt;/p>
+&lt;/script></description></item><item><title>蠕虫</title><link>https://francis.run/blog/ruchong/</link><pubDate>Mon, 26 Jul 2021 00:48:30 +0800</pubDate><guid>https://francis.run/blog/ruchong/</guid><description>&lt;p>脑子里有条&lt;/p>
 &lt;p>还未破茧的蛹&lt;/p>
 &lt;p>一蠕一动&lt;/p>
 &lt;p>一动一蠕&lt;/p>
@@ -150,8 +74,7 @@ Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务�
 &lt;h3 id="面试题">面试题：&lt;/h3>
 &lt;blockquote>
 &lt;p>在你提供的 web app 上（请确保可以正常访问），用户搜索某个主题，比如 Knowledge base，
-可以显示 Wikipedia 上相关的页面以及页面之间的关系。具体展示和交互形式不限，语言和技术栈也不限。&lt;/p>
-&lt;/blockquote>
+可以显示 Wikipedia 上相关的页面以及页面之间的关系。具体展示和交互形式不限，语言和技术栈也不限。&lt;/p>&lt;/blockquote>
 &lt;ul>
 &lt;li>实现思路：&lt;/li>
 &lt;/ul>
@@ -171,8 +94,7 @@ Amcharts 将数据渲染成一个 Graph。&lt;/li>
 &lt;p>&lt;img src="https://wiki-graph.francis.run/images/graph.png" alt="">&lt;/p>
 &lt;h3 id="回答问题">回答问题：&lt;/h3>
 &lt;blockquote>
-&lt;p>请谈一谈你为什么对 Logseq 感兴趣，以及你对知识管理或其它笔记软件的理解。&lt;/p>
-&lt;/blockquote>
+&lt;p>请谈一谈你为什么对 Logseq 感兴趣，以及你对知识管理或其它笔记软件的理解。&lt;/p>&lt;/blockquote>
 &lt;ol>
 &lt;li>首先我觉得 Logseq 的招聘方式非常棒，这种社区招聘我第一次见，这让我为之兴奋，
 可以激发我的兴趣，让我花两天的时间来完整的解决一个问题，从设想到实现，从实现到用作品应聘。
@@ -185,248 +107,6 @@ Amcharts 将数据渲染成一个 Graph。&lt;/li>
 &lt;/ol>
 &lt;p>[1].&lt;a href="https://github.com/francis-du/wiki-graph">源码地址: https://github.com/francis-du/wiki-graph&lt;/a>&lt;/p>
 &lt;p>[2].&lt;a href="https://wiki-graphs.herokuapp.com">在线体验地址：https://wiki-graphs.herokuapp.com&lt;/a>&lt;/p>
-&lt;p>[3].&lt;a href="https://wiki-graph.francis.run">在线文档地址：https://wiki-graph.francis.run&lt;/a>&lt;/p></description></item><item><title>URL Shortener</title><link>https://francis.run/blog/Url-shortener/</link><pubDate>Mon, 07 Dec 2020 17:16:21 +0800</pubDate><guid>https://francis.run/blog/Url-shortener/</guid><description>&lt;h2 id="whats-it">What&amp;rsquo;s it&lt;/h2>
-&lt;p>URL-Shortener is a simple app that is build on Cloudflare Workers using Short.io API.&lt;/p>
-&lt;p>&lt;a href="https://short.francis.run/?link=https%3A%2F%2Ffrancis.run">&lt;img src="https://raw.githubusercontent.com/francis-du/url-shortener/main/src/static/img/index.png" alt="index">&lt;/a>&lt;/p>
-&lt;h2 id="how-to-use">How to use&lt;/h2>
-&lt;p>&lt;a href="https://deploy.workers.cloudflare.com/?url=https://github.com/francis-du/url-shortener">&lt;img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare Workers">&lt;/a>&lt;/p>
-&lt;h3 id="web-ui">Web UI&lt;/h3>
-&lt;ul>
-&lt;li>
-&lt;p>Open Website &lt;code>https://short.francis.run&lt;/code>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Paste the long link you want to shorten.&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Click the Go button to generate a short link.&lt;/p>
-&lt;/li>
-&lt;/ul>
-&lt;h3 id="get-request">Get request&lt;/h3>
-&lt;ul>
-&lt;li>
-&lt;p>Request Url &lt;code>https://short.francis.run&lt;/code>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>Request parameters and return response data&lt;/p>
-&lt;/li>
-&lt;/ul>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>parameters&lt;/th>
-&lt;th>description&lt;/th>
-&lt;th>required&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>?link=&amp;quot;&amp;quot;&lt;/td>
-&lt;td>link, which you want to shorten&lt;/td>
-&lt;td>Y&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>?api=&amp;ldquo;true&amp;rdquo;&lt;/td>
-&lt;td>Return json data - Required&lt;/td>
-&lt;td>Y&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>?title=&amp;quot;&amp;quot;&lt;/td>
-&lt;td>title of created URL to be shown in short.cm admin panel&lt;/td>
-&lt;td>N&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>?path&amp;quot;&amp;quot;&lt;/td>
-&lt;td>optional path part of newly created link. If empty - it will be generated automatically&lt;/td>
-&lt;td>N&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table></description></item><item><title>HBase源码阅读环境搭建</title><link>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</link><pubDate>Sun, 28 Jul 2019 21:01:41 +0800</pubDate><guid>https://francis.run/blog/HBase%E6%BA%90%E7%A0%81%E9%98%85%E8%AF%BB%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/</guid><description>&lt;p>&lt;img src="https://francis.run/img/hbase.png" alt="">&lt;/p>
-&lt;ol>
-&lt;li>克隆源码&lt;/li>
-&lt;/ol>
-&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>git clone git@github.com:apache/hbase.git
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol>
-&lt;li>选择分支&lt;/li>
-&lt;/ol>
-&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>git checkout branch-2.2(自己选一个分支)
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="3">
-&lt;li>修改脚本
-如果你的操作系统是Windows，请修改脚本 &lt;code>hbase\hbase-common\src\saveVersion.sh&lt;/code>
-这里的&lt;code>${hostname}&lt;/code> &lt;code>${user}&lt;/code> 都改成你的用户名，或者写死，随便都可以。
-原因是因为在 cygwin 环境下执行此脚本的时候会多获取一个回车，
-会导自动生成的Version.java类无法编译。&lt;/li>
-&lt;/ol>
-&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000">// 要修改的地方
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000">&lt;/span>Line 45 url=&lt;span style="color:#a31515">&amp;#34;git://${hostname}{cwd}&amp;#34;&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>Line 76 &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String user = &lt;span style="color:#a31515">&amp;#34;${user}&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000">// 自动生成的 Version 类
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000">&lt;/span>&lt;span style="color:#008000">/*
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000"> * Generated by src/saveVersion.sh
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000"> */&lt;/span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#00f">package&lt;/span> org.apache.hadoop.hbase;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#00f">import&lt;/span> org.apache.yetus.audience.InterfaceAudience;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>@InterfaceAudience.Private
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">class&lt;/span> &lt;span style="color:#2b91af">Version&lt;/span> {
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String version = &lt;span style="color:#a31515">&amp;#34;2.2.1-SNAPSHOT&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String revision = &lt;span style="color:#a31515">&amp;#34;ac0375685291b72f45a800ebb1cca02901042bb7&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String user = &lt;span style="color:#a31515">&amp;#34;francis&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String date = &lt;span style="color:#a31515">&amp;#34;Sun Jul 28 17:23:04 2019&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String url = &lt;span style="color:#a31515">&amp;#34;git://francis/cygdrive/d/Java/hbase&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#00f">public&lt;/span> &lt;span style="color:#00f">static&lt;/span> &lt;span style="color:#00f">final&lt;/span> String srcChecksum = &lt;span style="color:#a31515">&amp;#34;88f3dc17f75ffda6176faa649593b54e&amp;#34;&lt;/span>;
-&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>}
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="4">
-&lt;li>修改pom
-     如果你的操作系统是Windows，请修改pom文件 &lt;code>hbase\hbase-common\pom.xml&lt;/code>&lt;/li>
-&lt;/ol>
-&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-java" data-lang="java">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000">// 把这里的 bash 改成 sh，否则你的 windows 无法执行以上脚本
-&lt;/span>&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#008000">&lt;/span>Line 95 &amp;lt;exec executable=&lt;span style="color:#a31515">&amp;#34;sh&amp;#34;&lt;/span> failonerror=&lt;span style="color:#a31515">&amp;#34;true&amp;#34;&lt;/span>&amp;gt;
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="5">
-&lt;li>编译源码&lt;/li>
-&lt;/ol>
-&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-fallback" data-lang="fallback">&lt;span style="display:flex;">&lt;span>mvn clean install -DskipTests assembly:single
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;ol start="6">
-&lt;li>调试配置&lt;/li>
-&lt;/ol>
-&lt;ul>
-&lt;li>配置并启动 HMaster&lt;/li>
-&lt;/ul>
-&lt;p>&lt;code>配置 HMaster 启动参数：如果不配置 log4j, HMaster无法启动&lt;/code>&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/hmaster.png" alt="">
-&lt;code>HMaster 启动成功&lt;/code>&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/hmaster-run.png" alt="">
-&lt;code>进入HBase Web UI 查看 http://localhost:16010,启动HMaster之后会默认给你启动一个Hregionserver.&lt;/code>&lt;/p>
-&lt;p>&lt;img src="https://francis.run/img/hbase-webui.png" alt="">&lt;/p>
-&lt;ul>
-&lt;li>配置并启动 HHbase Shell&lt;/li>
-&lt;/ul>
-&lt;p>&lt;code>配置 HBase Shell 启动参数&lt;/code>
-&lt;img src="https://francis.run/img/hbase-shell.png" alt="">&lt;/p>
-&lt;p>&lt;code>HBase Shell 启动成功&lt;/code>
-&lt;img src="https://francis.run/img/hbase-shell-run.png" alt="">&lt;/p></description></item><item><title>OushuDB &amp; HashDB分析报告</title><link>https://francis.run/blog/OushuDB_HashDB/</link><pubDate>Thu, 25 Jul 2019 18:01:57 +0800</pubDate><guid>https://francis.run/blog/OushuDB_HashDB/</guid><description>&lt;p>偶数科技：北京偶数科技有限公司于2016年12月29日成立。法定代表人常雷，
-也是&lt;code>Apache HAWQ&lt;/code>的创始人。是一家AI和大数据软件提供商，旗下有产品
-Oushu DB(数据仓库)，LittleBoy(人工智能平台)，Lava(云平台)三款产品。
-是微软加速器成员企业，专注于为国内外企业提供云平台上的数据管理服务。
-Oushu DB是由Apache HAWQ创始团队打造的新一代数据仓库(New Data Warehouse)。
-该产品采用了存储与计算分离技术架构，具有MPP的所有优点，还具有弹性，
-支持混合工作负载和高扩展性等优点。 同时支持公有云与私有云. 遵循ANSI-SQL标准，
-兼容Oracle，Greenplum Database和PostgreSQL，提供PB级数据交互式查询能力，
-提供对主要BI工具的描述性分析和AI支持。OushuDB已在金融、电信、制造、
-医疗和互联网等行业得到广泛的部署和应用。  试用OushuDB公有云版本&lt;/p>
-&lt;p>酷克数据：北京酷克数据科技有限公司始建于2016年03月24日，由前 Apache HAWQ
-创始团队成员创立，核心团队由来自 Pivotal，Teradata，IBM，Yahoo! 等公司资
-深的分布式数据库、云计算和 Hadoop 专家组成，已获得顶级风险投资基金的投资。
-我们专注于 SQL on Cloud 云端数据仓库，致力于降低企业进行大数据分析的门槛，
-推动数据民主化。HashData主要基于云计算，提供一个低成本、高性能、可扩展又简
-单易用的数据仓库服务。HashData 数据仓库服务在提供标准SQL的同时，能够访问如
-对象存储、HDFS等多种外部数据源，并且支持CSV、Parquet、Avro等多种数据存储格式。
-让您能够方便快捷地将HashData与其他组件互联互通、协同工作。提供基于Web的管理界面。
-用户不但可以通过点击鼠标轻松的启动、停止数据仓库服务，还可以实现数据仓库扩容、
-节点性能监控等功能。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a26b7fb7ac70348432d949cf961954f6ccd/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>Treadata's Kylo 分析报告</title><link>https://francis.run/blog/Treadata-s_Kylo/</link><pubDate>Thu, 25 Jul 2019 17:51:02 +0800</pubDate><guid>https://francis.run/blog/Treadata-s_Kylo/</guid><description>&lt;p>&lt;a href="https://kylo.io/">Kylo&lt;/a> 是希腊语中的意思是“流动” ，它是一个基于
-Apache Hadoop 和 Apache Spark 构建的功能丰富的数据湖平台管理工具。
-Kylo 提供 &lt;code>Turnkey&lt;/code>(一站式解决方案)、业务友好的数据湖解决方案，
-并支持自助数据摄取和数据准备以及数据发掘。 Kylo 的 Web 应用层提供
-面向业务用户的功能，包括数据分析师，数据管理员，数据科学家和IT运营
-人员。Kylo 集成了有关元数据获取、安全性和数据质量的最佳实践。此外，
-Kylo提供灵活的数据处理框架(利用&lt;code>Apache NiFi&lt;/code>)，用于构建批处理或流
-传输管道模板，以及在不影响治理要求的情况下实现自助服务功能。 Kylo
-由 &lt;code>Think Big&lt;/code>(被 &lt;code>Teradata&lt;/code> 收购)开发，并在全球十几家大公司中使用。
-Think Big为全球最大的组织提供大数据和分析咨询服务。Think Big 一直是
-开源 Hadoop 生态系统的主要受益者，并选择开源Kylo以回馈社区并提升价值。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a2695a55bc96af14dc3a2c51d9da714f491/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>Kyligence 安装及初步分析报告</title><link>https://francis.run/blog/kyligence/</link><pubDate>Thu, 25 Jul 2019 17:36:08 +0800</pubDate><guid>https://francis.run/blog/kyligence/</guid><description>&lt;p>&lt;a href="https://kyligence.io/">Kyligence&lt;/a> 于2016年3月成立于上海，
-中文名为上海跬智信息技术有限公司，是由首个来自中国的Apache软
-件基金会开源项目Apache Kylin 核心团队组建的数据科技公司。
-Kyligence 提供的 Kyligence Enterprise 是基于 Apache Kylin
-的企业级智能大数据分析平台，为用户提供PB级数据集上的亚秒级查询能力，
-并引入了大量机器学习技术，提供自动建模功能智能化能力，大大提升了大
-数据分析生产力。&lt;/p>
-&lt;p>Kyligence Cloud 是Kyligence云计算的核心产品，已在亚马逊 AWS 云平台、
-微软Azure云平台、阿里云云平台等上线，可提供快捷高效的数据分析解决方案
-以支持企业日益增长的云端分析业务。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a264f657ed2a8ea47a8b0936771cd877c84/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>Alluxio安装及初步分析报告</title><link>https://francis.run/blog/alluxio/</link><pubDate>Tue, 16 Jul 2019 15:06:21 +0800</pubDate><guid>https://francis.run/blog/alluxio/</guid><description>&lt;p>&lt;a href="https://www.alluxio.io">Alluxio&lt;/a>是一个开源的高容错的分布式内存文件系统，目前在很多公司中使用，主要用来做大数据平台的缓存等。本文的主要内容是关于 Alluxio 的安装和简单的分析，仅供参考。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a269fae9a09139842c8855c5a0949dcb6c8/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>TiDB 和 Splice Machine的初步对比</title><link>https://francis.run/blog/TiDB_Splice-Machine/</link><pubDate>Tue, 16 Jul 2019 14:37:28 +0800</pubDate><guid>https://francis.run/blog/TiDB_Splice-Machine/</guid><description>&lt;p>&lt;a href="https://github.com/splicemachine/spliceengine">Splice Machine&lt;/a> 和
-&lt;a href="https://github.com/pingcap/tidb">TiDB&lt;/a> 都是优秀的开源 HTAP 数据库，
-一个针对大数据技术栈更加友好，完全不脱离大数据组件，比如 Hadoop/HBase/Spark 。
-另一个脱离了大数据技术栈，走自主研发(TiKV)。相比 TiDB 而言，Splice Machine
-具有更加完整的关系型数据库功能。奈何 Splice Machine 在国内的用户比较少，
-导致了其知名度不如 TiDB 。TiDB 在国内拥有活跃的社区，版本更新迭代相当的快，
-目前 TiDB 的客户主要在互联网行业，其中银行、金融行业的超大型客户比较少，
-因此其稳定性需要时间来验证。Splice Machine 在国外已经有很大规模的应用场景了，
-比如国外知名的信用卡商 Visa 等超大型用户。两款产品各有优缺点，因此我们不做评价，
-用户总会选择适合自己的来用。目前在 HTAP 领域也有其他的产品，我个人也有试用过一些，
-以后会整理出来进行分享。目前仅对这两款产品做一个简单的分析，仅供参考。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a26dec6f5c59a70462a95a19bc9ab75f343/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>SequoiaDB-巨杉数据库初步分析报告</title><link>https://francis.run/blog/SequoiaDB_%E5%B7%A8%E6%9D%89%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</link><pubDate>Tue, 16 Jul 2019 14:30:28 +0800</pubDate><guid>https://francis.run/blog/SequoiaDB_%E5%B7%A8%E6%9D%89%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%9D%E6%AD%A5%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/</guid><description>&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a26ae2a0de74aed4985b0cba463d9a17d8f/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>Cloudera 商业云战略及CDP平台介绍</title><link>https://francis.run/blog/cloudera-cdp/</link><pubDate>Sun, 14 Jul 2019 21:34:25 +0800</pubDate><guid>https://francis.run/blog/cloudera-cdp/</guid><description>&lt;p>今年年初写的，最近在写一些大数据行业的分析报告，目前有数据库、
-各种 ETL 软件以及各种商业软件的试用报告。最近会找一些脱敏之后
-然后发出来，给需要的朋友，或者和朋友做交流用在线的 PPT 播放方
-式也比较方便，我用的是 &lt;a href="https://show.zoho.com">Zoho Show&lt;/a>
-嵌入代码到 Markdown 里，感兴趣的小伙伴可以去试试。&lt;/p>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a26ef96bc56963d452b8ce26a8517a7e08e/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>Stream Sets Data Connector分析报告</title><link>https://francis.run/blog/Stream-Sets_Data_Connector/</link><pubDate>Fri, 05 Jul 2019 13:33:31 +0800</pubDate><guid>https://francis.run/blog/Stream-Sets_Data_Connector/</guid><description>&lt;p>最近在工作中有用到&lt;code>Stream Sets&lt;/code>公司开源&lt;code>DataOps&lt;/code>工具&lt;code>Data Connector&lt;/code>，
-因此有了以下分析报告，该 PPT 主要是分为三部分来介绍&lt;code>Stream Set Open Sorce Data Connector&lt;/code>:&lt;/p>
-&lt;ol>
-&lt;li>第一部分主要介绍了&lt;code>Stream Sets&lt;/code>公司以及创始人&lt;/li>
-&lt;li>第二部分主要介绍了&lt;code>Stream Sets&lt;/code>公司的一些产品&lt;/li>
-&lt;li>第三部分主要介绍了&lt;code>DataOps&lt;/code>的概念&lt;/li>
-&lt;li>第四部分是一个 Demo ,这个是在公司内网环境下的，因此在这里没法看&lt;/li>
-&lt;/ol>
-&lt;div class="embed zohoshow">
-&lt;iframe src="https://show.zohopublic.com/publish/f9a26ab7e918c082c42eeb3a405004e856391/params?toolbar=true&amp;menu=true&amp;loop=true&amp;viewtype=2"
-width="890" height="520" style="border:1px solid #000;max-width: 100%;"
-allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true">
-&lt;/iframe>
-&lt;/div></description></item><item><title>About</title><link>https://francis.run/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&amp;amp;pause=1000&amp;amp;color=28A172&amp;amp;center=true&amp;amp;vCenter=true&amp;amp;width=435&amp;amp;lines=%F0%9F%91%8B+Hi+there%2C+I+am+Francis." alt="">&lt;/p>
-&lt;p>&lt;a href="https://github.com/francis-du">&lt;img src="https://raw.githubusercontent.com/francis-du/francis-du/output/snake.svg" alt="snake gif">&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://github.com/francis-du">&lt;img src="https://user-images.githubusercontent.com/25944814/196489910-a1cd249b-0cfb-4596-803a-d0060bfabeea.png" alt="image">&lt;/a>&lt;/p>
-&lt;ul>
-&lt;li>
-&lt;p>🦀️ I’m currently learning &lt;a href="https://www.rust-lang.org/learn">Rust&lt;/a>&lt;/p>
-&lt;/li>
-&lt;li>
-&lt;p>📱 I live on&lt;/p>
-&lt;/li>
-&lt;/ul>
-&lt;p>&lt;a href="https://discord.gg/dd6JZteeyd">&lt;img src="https://user-images.githubusercontent.com/25944814/196490606-cc744c8a-390b-4263-bd7c-a299822315da.png" alt="image">&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://t.me/francisdu">&lt;img src="https://user-images.githubusercontent.com/25944814/196490470-68eb7799-46c5-4287-8b78-464670389d7b.png" alt="image">&lt;/a>&lt;/p>
-&lt;ul>
-&lt;li>💻 I&amp;rsquo;m working for&lt;/li>
-&lt;/ul>
-&lt;p>&lt;a href="https://github.com/apache/arrow-datafusion-python">&lt;img src="https://user-images.githubusercontent.com/25944814/196488416-cf78b8ef-fd10-491b-a898-da0d833cf0a7.png" alt="image">&lt;/a>&lt;/p>
-&lt;p>&lt;a href="https://github.com/apache/arrow-datafusion">&lt;img src="https://user-images.githubusercontent.com/25944814/196488140-33394dfd-677c-4639-97ca-c131606b21db.png" alt="image">&lt;/a>&lt;/p></description></item><item><title>Albums</title><link>https://francis.run/albums/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/albums/</guid><description>&lt;p>建设中&amp;hellip;&lt;/p></description></item></channel></rss>
+&lt;p>[3].&lt;a href="https://wiki-graph.francis.run">在线文档地址：https://wiki-graph.francis.run&lt;/a>&lt;/p></description></item><item><title>About</title><link>https://francis.run/about/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/about/</guid><description>&lt;p>&lt;img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&amp;amp;pause=1000&amp;amp;color=28A172&amp;amp;center=true&amp;amp;vCenter=true&amp;amp;width=435&amp;amp;lines=%F0%9F%91%8B+Hi+there%2C+I+am+Francis." alt="">&lt;/p>
+&lt;p>&lt;a href="https://github.com/francis-du">&lt;img src="https://gh-readme-profile.vercel.app/api?username=francis-du&amp;amp;theme=dark&amp;amp;hide=contributed&amp;amp;show=reviews&amp;amp;border_width=0.4&amp;amp;border_radius=2&amp;amp;hide_border=true" alt="">&lt;/a>&lt;/p></description></item><item><title>Albums</title><link>https://francis.run/albums/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://francis.run/albums/</guid><description>&lt;iframe height=2500 width=100% src="https://www.xiaohongshu.com/user/profile/644a0966000000001002b32b" frameborder=0 allowfullscreen>
+&lt;/iframe></description></item></channel></rss>
