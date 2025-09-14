@@ -1,21 +1,21 @@
 baseURL = "https://francis.run/"
 title = "Francis Du"
-copyright = "© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)"
-
 pygmentsstyle = "vs"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
-
 googleAnalytics = "UA-169239941-1"
 disqusShortname = "francis-run"
 dataDir = "data"
 contentDir = "content"
-
 enableEmoji = true
 enableGitInfo = true
 enableInlineShortcodes = true
 enableRobotsTXT = true
 hasCJKLanguage = true
+timeout = 600000
+theme = ["hugo-shortcode-gallery"]
+copyright = "© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)"
+
 
 # 允许原始 HTML
 [markup.goldmark.renderer]
@@ -34,6 +34,18 @@ ignoreLogs = ['warning-goldmark-raw-html']
     busuanzi = true
     social_share = true
     comment = true
+    galleryRowHeight = 200
+    galleryMargins = 5
+    galleryResizeOptions= "800x800 q88 Lanczos"
+    galleryPreviewType = "blur"
+    galleryThumbnailHoverEffect = "enlarge"
+    galleryShowExif="true"
+    galleryLoadJQuery="true"
+    galleryEmbedPreview="true"
+
+
+[imaging.exif]
+    includeFields = ".*"
     
 [pagination]
 pagerSize = 10 
@@ -52,19 +64,24 @@ url = "/blogs"
 weight = 2
 
 [[menu.main]]
-name = "Albums"
-url = "/albums"
+name = "Tags"
+url = "/tags"
 weight = 3
 
 [[menu.main]]
-name = "Tags"
-url = "/tags"
+name = "Gallery"
+url = "/gallery"
 weight = 4
+
+[[menu.main]]
+name = "Red Note"
+url = "/rednote"
+weight = 5
 
 [[menu.main]]
 name = "About"
 url = "/about"
-weight = 5
+weight = 6
 
 [[params.social]]
 name = "Github"

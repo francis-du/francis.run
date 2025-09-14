@@ -1,4 +1,4 @@
-[![hugo](https://github.com/francis-du/francis.run/workflows/hugo/badge.svg)](https://github.com/francis-du/francis.run/actions?query=workflow%3Ahugo)
+[![hugo](https://github.com/francis-du/francis.run/actions/workflows/hugo.yml/badge.svg)](https://github.com/francis-du/francis.run/actions)
 
 # New article
 
