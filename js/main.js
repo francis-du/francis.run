@@ -1,5 +1,11 @@
 document.addEventListener("DOMContentLoaded", function(){
+  // Render feather icons (social links, etc.)
+  if (window.feather) {
+    feather.replace({ "stroke-width": 2, width: 24, height: 24 });
+  }
+
   var toggle = document.getElementById("scheme-toggle");
+  if (!toggle) { return; }
 
   var scheme = "light";
   var savedScheme = localStorage.getItem("scheme");
