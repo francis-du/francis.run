@@ -19,16 +19,18 @@ a Rustacean and open-source tinkerer by night, and a photographer whenever the l
 
 - **数据工程 · Data Engineering** — 设计与维护数据管道、分布式存储与计算（如 HBase 等大数据组件），让数据可靠地流动起来。
 - **Rust 开发 · Systems & Tooling** — 用 Rust 写命令行工具、Web 服务和小型系统项目，享受它带来的性能与安全感。
+- **AI Agent · Vibe Coding** 🤖 — 从事 **AI Agent 的开发与评测/评估（Eval）** 工作：既有 Agent 应用的开发经验，也在设计和使用 **Agent Eval 评估框架**，用可量化的方式衡量 Agent 的能力、稳定性与效果。
 - **开源 · Open Source** — 在 [GitHub](https://github.com/francis-du) 上分享代码与实验，例如 [wiki-graph](https://github.com/francis-du/wiki-graph)：一个把 Wikipedia 页面及其关系可视化成图谱的项目。
 - **摄影 · Photography** — 用镜头记录旅途与日常，作品收在本站的 [相册](/gallery) 里。
 
 ### 🧰 技术栈 / Tech Stack
 
-`Rust` · `Python` · `Data Engineering` · `Distributed Systems` · `HBase` · `Hugo` · `Linux`
+`Rust` · `Python` · `Data Engineering` · `AI Agents` · `Agent Eval` · `LLM` · `Distributed Systems` · `HBase` · `Linux`
 
 ### 📊 GitHub
 
-[![Francis' GitHub stats](https://github-readme-stats.vercel.app/api?username=francis-du&show_icons=true&hide_border=true&title_color=28A172&icon_color=28A172&hide=contribs)](https://github.com/francis-du)
+[![GitHub followers](https://img.shields.io/github/followers/francis-du?label=Followers&style=for-the-badge&color=28A172&labelColor=1a1a1a&logo=github)](https://github.com/francis-du?tab=followers)
+[![Profile](https://img.shields.io/badge/GitHub-francis--du-28A172?style=for-the-badge&logo=github&labelColor=1a1a1a)](https://github.com/francis-du)
 
 ### 🔗 联系我 / Get in touch
 
