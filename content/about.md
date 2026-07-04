@@ -23,10 +23,6 @@ a Rustacean and open-source tinkerer by night, and a photographer whenever the l
 - **开源 · Open Source** — 在 [GitHub](https://github.com/francis-du) 上分享代码与实验，例如 [wiki-graph](https://github.com/francis-du/wiki-graph)：一个把 Wikipedia 页面及其关系可视化成图谱的项目。
 - **摄影 · Photography** — 用镜头记录旅途与日常，作品收在本站的 [相册](/gallery) 里。
 
-### 🧰 技术栈 / Tech Stack
-
-`Rust` · `Python` · `Data Engineering` · `AI Agents` · `Agent Eval` · `LLM` · `Distributed Systems` · `HBase` · `Linux`
-
 ### 🔗 联系我 / Get in touch
 
 - 🐙 GitHub — [github.com/francis-du](https://github.com/francis-du)
