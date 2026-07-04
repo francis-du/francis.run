@@ -565,10 +565,9 @@ pre {
     float: left;
 }
 #share-buttons > div > svg { height: 16px; fill: var(--text-faint); margin-top: 10px; transition: fill 0.2s var(--ease); }
-#share-buttons > div > svg > a { height: 16px; fill: var(--text-faint); margin-top: 10px; }
 #share-buttons > div:hover { cursor: pointer; }
 #share-buttons > div.facebook:hover > svg { fill: #3B5998; }
-#share-buttons > div.twitter:hover > svg > a { fill: #55ACEE; }
+#share-buttons > div.twitter:hover > svg { fill: #1d9bf0; }
 #share-buttons > div.linkedin:hover > svg { fill: #0077b5; }
 #share-buttons > div.mail:hover > svg { fill: #7D7D7D; }
 #share-buttons > div.facebook > svg { height: 18px; margin-top: 9px; }
