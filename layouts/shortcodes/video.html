@@ -1,12 +1,17 @@
-<div class="container">
-    <div id="player-wrapper" class="{{ .Get 1 }}"></div>
-</div>
-
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js">
-</script>
-
-<script>
-    var playerElement = document.getElementById("player-wrapper");
-    var player = new Clappr.Player({source: {{ .Get 0 }}, mute: false, height: 450, width: '100%'});
-    player.attachTo(playerElement);
-</script>
+{{- /*
+	Native HTML5 video player.
+	Replaces the old Clappr + jsDelivr setup, which Cloudflare Rocket Loader
+	broke by rewriting/deferring the <script> tags. Native <video> is untouched
+	by Rocket Loader, needs no external JS, and streams via HTTP range requests
+	so large files start playing quickly (preload="metadata").
+	Usage: {{< video "https://.../file.mp4" "Optional caption" >}}
+*/ -}}
+{{- $src := .Get 0 -}}
+{{- $title := .Get 1 -}}
+<figure class="video-embed">
+	<video controls preload="metadata" playsinline controlslist="nodownload">
+		<source src="{{ $src | safeURL }}" type="video/mp4">
+		<p>你的浏览器不支持视频播放，<a href="{{ $src | safeURL }}">点击下载视频</a>。</p>
+	</video>
+	{{- with $title }}<figcaption>{{ . }}</figcaption>{{ end -}}
+</figure>

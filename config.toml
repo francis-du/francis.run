@@ -26,7 +26,7 @@ ignoreLogs = ['warning-goldmark-raw-html']
 
 [params]
     subtitle = "Blog"
-    description = "💻 Data Engineer | 🦀 Rustacean | 📷 Photographer"
+    description = "💻 Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖 Vibe Coder"
     avatar = "https://avatars1.githubusercontent.com/u/25944814"
     favicon = "img/icon.png"
     title = "Francis Blog"
@@ -36,7 +36,10 @@ ignoreLogs = ['warning-goldmark-raw-html']
     comment = true
     galleryRowHeight = 200
     galleryMargins = 5
-    galleryResizeOptions= "800x800 q88 Lanczos"
+    # Lightbox image: served downscaled so the viewer opens fast (was loading full originals).
+    galleryImageResizeOptions = "1920x1920 q80 Lanczos"
+    # Grid thumbnail: crisp on retina while staying lightweight.
+    galleryThumbnailResizeOptions = "600x400 q80 Lanczos"
     galleryPreviewType = "blur"
     galleryThumbnailHoverEffect = "enlarge"
     galleryShowExif="true"

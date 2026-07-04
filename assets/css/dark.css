@@ -1,0 +1,33 @@
+/* Dark theme — overrides the tokens defined in main.css :root */
+html.dark {
+    --bg: #17171a;
+    --bg-soft: #1f1f24;
+    --bg-code: #232329;
+    --text: #e4e4e7;
+    --text-soft: #a1a1aa;
+    --text-faint: #71717a;
+    --border: #2a2a30;
+    --border-strong: #35353d;
+    --accent: #74d69b;      /* light green */
+    --accent-soft: rgba(116, 214, 155, 0.15);
+    --accent-contrast: #17171a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.35), 0 16px 44px rgba(0, 0, 0, 0.5);
+}
+
+html.dark body { color: var(--text); background-color: var(--bg); }
+
+html.dark ::selection { background: var(--accent); color: #17171a; }
+html.dark ::-moz-selection { background: var(--accent); color: #17171a; }
+
+html.dark a:hover { opacity: 0.85; }
+
+html.dark .site-description a,
+html.dark .site-description a:hover { color: var(--text-soft); text-decoration: underline; }
+
+html.dark .site-title a { color: var(--text); }
+
+html.dark .recent-posts .post-header,
+html.dark .list .post-header { background: var(--bg-soft); }
+
+html.dark .header .avatar img { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong); }

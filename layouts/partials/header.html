@@ -4,6 +4,21 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="cf-2fa-verify" content="D6tJ9oDrU0oNLP1c6rQcGtf27PTl37">
 
+	{{/* Set colour scheme before first paint to avoid a flash (FOUC).
+	     data-cf-async="false" opts this out of Cloudflare Rocket Loader so it
+	     is not deferred (which would re-introduce the flash). */}}
+	<script data-cf-async="false">
+		(function () {
+			try {
+				var s = localStorage.getItem("scheme");
+				if (!s) s = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+				if (s === "dark") document.documentElement.className = "dark";
+			} catch (e) {}
+		})();
+	</script>
+	<meta name="theme-color" content="#faf6ee" media="(prefers-color-scheme: light)">
+	<meta name="theme-color" content="#17171a" media="(prefers-color-scheme: dark)">
+
 	{{- if isset .Site.Params "favicon" -}}
 		<link rel="icon" type="image/png" href="{{ .Site.BaseURL }}{{ .Site.Params.favicon }}" />
 	{{- end -}}
@@ -50,31 +65,28 @@
 	{{- partial "_internal/schema" . -}}
 	{{- template "_internal/opengraph.html" . -}}
 	{{- template "_internal/twitter_cards.html" . -}}
-	<link href='https://fonts.googleapis.com/css?family=Playfair+Display:700' rel='stylesheet' type='text/css'>
-	<link rel="stylesheet" type="text/css" media="screen" href="{{ .Site.BaseURL }}css/normalize.css" />
-	<link rel="stylesheet" type="text/css" media="screen" href="{{ .Site.BaseURL }}css/main.css" />
-	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-	<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			feather.replace({
-				'stroke-width': 2,
-				'width': 24,
-				'height': 24
-			});
-		});
-	</script>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
+
+	{{/* Bundle + minify + fingerprint all CSS into a single cache-busted file */}}
+	{{- $normalize := resources.Get "css/normalize.css" -}}
+	{{- $main := resources.Get "css/main.css" -}}
+	{{- $dark := resources.Get "css/dark.css" -}}
+	{{- $css := slice $normalize $main $dark | resources.Concat "css/bundle.css" -}}
+	{{- if hugo.IsProduction -}}
+		{{- $css = $css | minify | fingerprint -}}
+	{{- end -}}
+	<link rel="stylesheet" href="{{ $css.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $css.Data.Integrity }}"{{ end }}>
+
 	{{- if isset .Site.Params "customcss" }}
 		<link rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}{{ .Site.Params.customCSS }}" />
 	{{ end }}
 
-	<link id="dark-scheme" rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}css/dark.css" />
-	{{- if isset .Site.Params "customdarkcss" }}
-			<link id="dark-scheme" rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}{{ .Site.Params.customDarkCSS }}" />
-	{{- end }}
-
-
-		<script src="{{ .Site.BaseURL }}js/main.js"></script>
+	{{/* Icons + theme toggle: self-hosted, deferred so they don't block render */}}
+	<script defer src="{{ .Site.BaseURL }}js/feather.min.js"></script>
+	<script defer src="{{ .Site.BaseURL }}js/main.js"></script>
 	{{- if isset .Site.Params "customjs" -}}
-		{{- range .Site.Params.customJS }}<script src="{{ $.Site.BaseURL }}{{ . }}"></script>{{- end }}
+		{{- range .Site.Params.customJS }}<script defer src="{{ $.Site.BaseURL }}{{ . }}"></script>{{- end }}
 	{{- end }}
 </head>
