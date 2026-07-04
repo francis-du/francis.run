@@ -13,7 +13,7 @@ images: []
 Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务托管。
 该项目源于一次远程面试，以下内容摘自面试邮件。 [详情](https://gist.github.com/defclass/8c4f6da71629d861f9a554ad7580c1ef)
 
-![img](https://wiki-graph.francis.run/images/index.png)
+![img](/img/wiki-graph/index.png)
 
 ### 面试题：
 
@@ -34,7 +34,7 @@ Web 服务[2]使用 Heroku 部署， 在线文档[3]使用 GitHub Pages 服务�
 6. 前端页面中当用户输入查询关键字并点击 Search 按钮或者回车的时候，会请求 Web Service 返回的树结构数据，然后用
    Amcharts 将数据渲染成一个 Graph。
 
-![](https://wiki-graph.francis.run/images/graph.png)
+![](/img/wiki-graph/graph.png)
 
 ### 回答问题：
 
