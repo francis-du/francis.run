@@ -27,11 +27,6 @@ a Rustacean and open-source tinkerer by night, and a photographer whenever the l
 
 `Rust` · `Python` · `Data Engineering` · `AI Agents` · `Agent Eval` · `LLM` · `Distributed Systems` · `HBase` · `Linux`
 
-### 📊 GitHub
-
-[![GitHub followers](https://img.shields.io/github/followers/francis-du?label=Followers&style=for-the-badge&color=28A172&labelColor=1a1a1a&logo=github)](https://github.com/francis-du?tab=followers)
-[![Profile](https://img.shields.io/badge/GitHub-francis--du-28A172?style=for-the-badge&logo=github&labelColor=1a1a1a)](https://github.com/francis-du)
-
 ### 🔗 联系我 / Get in touch
 
 - 🐙 GitHub — [github.com/francis-du](https://github.com/francis-du)
