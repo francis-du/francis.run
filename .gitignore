@@ -8,6 +8,7 @@
 /resources/_gen/
 /.idea
 /.vscode
+/.claude
 
 # Executable may be added to repository
 hugo.exe
