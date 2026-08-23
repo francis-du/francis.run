@@ -6,6 +6,10 @@
 		</div>
 	</div>
 	<div class="matter">
+		<div class="post-kicker">
+			{{ with .Params.tags }}{{ with index . 0 }}<span>{{ . }}</span><i aria-hidden="true"></i>{{ end }}{{ end }}
+			<span>{{ .ReadingTime }} min read</span>
+		</div>
 		<h4 class="title small">
 			<a href="{{ .RelPermalink }}">{{.Title}}{{ if .Draft }}<sup class="draft-label">DRAFT</sup>{{ end }}</a>
 		</h4>
@@ -19,4 +23,5 @@
 			{{ end }}
 		</span>
 	</div>
+	<span class="post-arrow" aria-hidden="true">↗</span>
 </div>

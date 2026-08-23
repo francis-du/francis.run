@@ -9,6 +9,7 @@ html.dark {
     --border: #2a2a30;
     --border-strong: #35353d;
     --accent: #74d69b;      /* light green */
+    --accent-bright: #74d69b;
     --accent-soft: rgba(116, 214, 155, 0.15);
     --accent-contrast: #17171a;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
@@ -28,6 +29,11 @@ html.dark .site-description a:hover { color: var(--text-soft); text-decoration: 
 html.dark .site-title a { color: var(--text); }
 
 html.dark .recent-posts .post-header,
-html.dark .list .post-header { background: var(--bg-soft); }
+html.dark .list .post-header { background: rgba(31, 31, 36, 0.76); }
+
+html.dark .recent-posts .post-header:hover,
+html.dark .list .post-header:hover { background: #232328; }
+html.dark .button.primary { color: #17221c; }
+html.dark .tag-cloud a { background: rgba(31, 31, 36, 0.76); }
 
 html.dark .header .avatar img { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong); }

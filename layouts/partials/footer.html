@@ -1,12 +1,8 @@
 <div class="footer wrapper">
 	<nav class="nav">
-		{{- if .Site.Params.busuanzi -}}
-		<div class="inline" style="float:left;">
-			PV: <span id="busuanzi_value_site_pv"></span> / UV: <span id="busuanzi_value_site_uv"></span>
-		</div>
-		{{- end -}}
-		<div class="inline">
-			2019 - {{ now.Format "2006" }} {{ with .Site.Copyright | markdownify }} {{ . | safeHTML }} {{ end }}
+		<div class="inline footer-signature">
+			<span>2019 — {{ now.Format "2006" }}</span>
+			<span>Built with curiosity in Shanghai.</span>
 		</div>
 	</nav>
 </div>

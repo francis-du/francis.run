@@ -2,6 +2,7 @@
 <html prefix="og:http://ogp.me/ns#">
 {{ partial "header.html" . }}
 <body>
+	<div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
 	<div class="container wrapper">
 		{{ partial "head.html" . }}
 
@@ -17,6 +18,7 @@
 				{{ end }}
 				<div class="matter">
 					<h1 class="title">{{ .Title }}</h1>
+					<div class="article-meta"><span>{{ .ReadingTime }} min read</span><span>{{ .WordCount }} words</span></div>
 				</div>
 			</div>
 					

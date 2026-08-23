@@ -31,7 +31,6 @@ ignoreLogs = ['warning-goldmark-raw-html']
     favicon = "img/icon.png"
     title = "Francis Blog"
     mode = "dark"
-    busuanzi = true
     social_share = true
     comment = true
     galleryRowHeight = 200
