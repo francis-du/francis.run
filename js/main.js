@@ -5,6 +5,18 @@ document.addEventListener("DOMContentLoaded", function(){
   }
 
   var toggle = document.getElementById("scheme-toggle");
+  var progress = document.getElementById("reading-progress-bar");
+  if (progress) {
+    var updateProgress = function () {
+      var height = document.documentElement.scrollHeight - window.innerHeight;
+      var value = height > 0 ? Math.min(100, (window.scrollY / height) * 100) : 0;
+      progress.style.width = value + "%";
+    };
+    updateProgress();
+    window.addEventListener("scroll", updateProgress, { passive: true });
+    window.addEventListener("resize", updateProgress);
+  }
+
   if (!toggle) { return; }
 
   var scheme = "light";
@@ -27,7 +39,8 @@ document.addEventListener("DOMContentLoaded", function(){
     lightscheme(toggle, container);
   }
 
-  toggle.addEventListener("click", () => {
+  toggle.addEventListener("click", (event) => {
+    event.preventDefault();
     if (toggle.className === "light") {
       darkscheme(toggle, container);
     } else if (toggle.className === "dark") {
@@ -40,12 +53,16 @@ function darkscheme(toggle, container) {
   localStorage.setItem("scheme", "dark");
   toggle.innerHTML = feather.icons.sun.toSvg();
   toggle.className = "dark";
-  container.className = "dark";
+  toggle.setAttribute("aria-label", "切换到浅色模式");
+  toggle.setAttribute("title", "切换到浅色模式");
+  container.classList.add("dark");
 }
 
 function lightscheme(toggle, container) {
   localStorage.setItem("scheme", "light");
   toggle.innerHTML = feather.icons.moon.toSvg();
   toggle.className = "light";
-  container.className = "";
+  toggle.setAttribute("aria-label", "切换到深色模式");
+  toggle.setAttribute("title", "切换到深色模式");
+  container.classList.remove("dark");
 }
