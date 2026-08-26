@@ -1,29 +1,35 @@
 <div class="header">
-	{{ if .Site.Params.Avatar }}
-		<div class="avatar">
-			<a href="{{ .Site.BaseURL }}">
-				<img src="{{ .Site.Params.Avatar }}" alt="{{ .Site.Title }}" />
-			</a>
+	<div class="header-profile">
+		{{ if .Site.Params.Avatar }}
+			<div class="avatar">
+				<a href="{{ .Site.BaseURL }}">
+					<img src="{{ .Site.Params.Avatar }}" alt="{{ .Site.Title }}" width="66" height="66" decoding="async" />
+				</a>
+			</div>
+		{{ end }}
+
+		<div class="profile-copy">
+			<h1 class="site-title"><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}<span class="title-dot">.</span></a></h1>
+			{{- if isset .Site.Params "description" -}}
+			<div class="site-description"><p>{{ .Site.Params.Description | markdownify }}</p></div>
+			{{- end -}}
 		</div>
-	{{ end }}
-	<h1 class="site-title"><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}<span class="title-dot">.</span></a></h1>
-	<div class="site-description">
-		{{- if isset .Site.Params "description" -}}
-		<p>{{ .Site.Params.Description | markdownify }}</p>
-		{{- end -}}
-		<nav class="nav social">
-			<ul class="flat">
-				{{- range $index, $key := .Site.Params.Social -}}
-					<li><a href="{{ $key.url }}" title="{{ $key.name }}" class="social-icon"><i data-feather="{{ $key.icon }}" class="feather"></i></a></li>
-				{{- end -}}
-			</ul>
-		</nav>
-		{{- if or (eq .Site.Params.mode "auto") (eq .Site.Params.mode "dark") -}}
-		<span class="scheme-toggle"><a href="#" id="scheme-toggle"></a>
-		{{- end -}}
+
+		<div class="header-actions">
+			<nav class="nav social" aria-label="Social links">
+				<ul class="flat">
+					{{- range $index, $key := .Site.Params.Social -}}
+						<li><a href="{{ $key.url }}" title="{{ $key.name }}" aria-label="{{ $key.name }}" class="social-icon"><i data-feather="{{ $key.icon }}" class="feather"></i></a></li>
+					{{- end -}}
+				</ul>
+			</nav>
+			{{- if or (eq .Site.Params.mode "auto") (eq .Site.Params.mode "dark") -}}
+			<span class="scheme-toggle"><a href="#" id="scheme-toggle" aria-label="切换颜色主题"></a></span>
+			{{- end -}}
+		</div>
 	</div>
 
-	<nav class="nav">
+	<nav class="nav main-nav" aria-label="Primary navigation">
 		<ul class="flat">
 			{{- range .Site.Menus.main -}}
 			<li>

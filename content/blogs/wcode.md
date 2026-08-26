@@ -18,6 +18,8 @@ images:
 
 <p class="project-links"><a href="https://wcode.francis.run/" target="_blank" rel="noopener">官网与文档 ↗</a><a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener">GitHub ↗</a></p>
 
+> 这篇保留的是 wcode 第一版的实现状态，我不会跟着后续代码逐段回写。现在的版本已经继续做了 Design State、Product Scope、Verification、Evidence、Reconciliation 和 Project Observatory，见 [wcode 最近做成什么样了](/blog/wcode-2026/)。
+
 我平时会同时用几个 AI 的 Web 端。它们的模型和对话体验已经很好了，但一碰到本地项目，事情就变得很别扭：要么手动复制代码，要么换到另一个 Coding Agent，要么再申请 API Key、单独付一份 Token 账单。
 
 但我并不想再造一个 Agent。

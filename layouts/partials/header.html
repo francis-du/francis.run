@@ -82,6 +82,9 @@
 	{{/* Icons + theme toggle: self-hosted, deferred so they don't block render */}}
 	<script defer src="{{ .Site.BaseURL }}js/feather.min.js"></script>
 	<script defer src="{{ .Site.BaseURL }}js/main.js"></script>
+	{{- if eq .Section "gallery" }}
+	<script defer src="{{ .Site.BaseURL }}js/gallery.js"></script>
+	{{- end }}
 	{{- if isset .Site.Params "customjs" -}}
 		{{- range .Site.Params.customJS }}<script defer src="{{ $.Site.BaseURL }}{{ . }}"></script>{{- end }}
 	{{- end }}

@@ -304,17 +304,6 @@ pre {
     letter-spacing: 1px;
 }
 
-/* Homepage hero ----------------------------------------------------------- */
-.home-hero {
-    margin: 4px 0 58px;
-    padding: 18px 0 42px;
-    border-bottom: 1px solid var(--border);
-}
-.home-hero::before,
-.home-hero::after {
-    display: none;
-}
-.hero-copy { position: relative; }
 .eyebrow {
     display: inline-flex;
     align-items: center;
@@ -325,48 +314,6 @@ pre {
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
-.status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--accent-bright);
-    box-shadow: 0 0 0 4px var(--accent-soft);
-}
-.home-hero h2 {
-    max-width: 610px;
-    margin: 13px 0 12px;
-    font-size: clamp(2rem, 5vw, 3rem);
-    line-height: 1.15;
-    letter-spacing: -0.04em;
-}
-.home-hero h2 em {
-    color: var(--accent);
-    font-family: var(--font-serif);
-    font-weight: 700;
-}
-.home-hero p {
-    max-width: 520px;
-    margin: 0;
-    color: var(--text-soft);
-    font-size: 1rem;
-}
-.hero-actions { display: flex; gap: 10px; margin-top: 22px; }
-.button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 10px 17px;
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
-    color: var(--text-soft);
-    font-size: 0.86rem;
-    font-weight: 650;
-    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease);
-}
-.button:hover { transform: translateY(-2px); box-shadow: var(--shadow); color: var(--accent); }
-.button.primary { color: var(--accent-contrast); border-color: var(--accent); background: var(--accent); }
-.button.primary:hover { color: var(--accent-contrast); background: #27784f; }
 .section-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 24px; }
 .section-heading h2 { margin: 5px 0 0; font-size: 1.7rem; }
 .section-heading > a { color: var(--text-soft); font-size: 0.84rem; font-weight: 600; }
@@ -611,7 +558,6 @@ pre {
     .recent-posts .post-header, .list .post-header { padding: 16px; gap: 14px; }
     .post-header .meta .date .day { font-size: 2.1em; }
     table { display: block; overflow-x: auto; }
-    .home-hero { padding: 12px 0 36px; margin-bottom: 48px; }
 }
 
 @media (max-width: 560px) {
@@ -626,10 +572,6 @@ pre {
     .header nav::-webkit-scrollbar { display: none; }
     .header nav:not(.social) a { padding: 5px 8px; }
     .header .site-description nav.social { overflow: visible; }
-    .home-hero { padding: 8px 0 32px; }
-    .home-hero h2 { margin-top: 14px; letter-spacing: -0.045em; }
-    .home-hero p { font-size: 0.92rem; }
-    .hero-actions { flex-wrap: wrap; }
     .section-heading h2 { font-size: 1.45rem; }
     .recent-posts .post-header, .list .post-header { gap: 12px; padding: 15px 14px; }
     .post-header .meta .date { width: 44px; }
@@ -745,3 +687,169 @@ pre {
 #share-buttons > div.twitter > svg { height: 20px; margin-top: 8px; }
 #share-buttons > div.linkedin > svg { height: 19px; margin-top: 7px; }
 #share-buttons > div.mail > svg { height: 14px; margin-top: 11px; }
+
+/* ==========================================================================
+   Responsive header — profile, actions and navigation are separate layout
+   regions so mobile never has to squeeze bio text and six controls together.
+   ========================================================================== */
+.header-profile {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+}
+.header .avatar {
+    float: none;
+    margin: 0;
+}
+.header .profile-copy { min-width: 0; }
+.header .site-title { margin: 0 0 7px; }
+.header .site-description {
+    display: block;
+    color: var(--text-soft);
+    font-size: 0.9rem;
+}
+.header .site-description p {
+    margin: 0;
+    max-width: 520px;
+    line-height: 1.55;
+}
+.header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+}
+.header .header-actions nav.social {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+}
+.header .header-actions nav.social ul {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.header .header-actions nav.social li { margin: 0; }
+.header .header-actions nav.social a,
+.header .header-actions .scheme-toggle a {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: var(--text-soft);
+}
+.header .header-actions nav.social a:hover,
+.header .header-actions .scheme-toggle a:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+.header .header-actions nav.social svg,
+.header .header-actions .scheme-toggle svg {
+    width: 20px;
+    height: 20px;
+    max-height: none;
+}
+.header .header-actions .scheme-toggle {
+    display: flex;
+    align-items: center;
+    height: 38px;
+}
+.header .header-actions .scheme-toggle a.dark svg { fill: #f5c518; color: #f5c518; }
+.header .header-actions .scheme-toggle a.light svg { fill: var(--text-soft); color: var(--text-soft); }
+.header .main-nav { margin-top: 18px; }
+.header .main-nav ul {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    width: max-content;
+    min-width: 100%;
+}
+
+/* Gallery page ------------------------------------------------------------ */
+.gallery-page .container.wrapper { max-width: 1040px; }
+.gallery-page .gallery-post > .post-header { margin-bottom: 28px; }
+.gallery-page .gallery-post > .post-header h1.title { font-size: 2.5rem; }
+.gallery-page .markdown { font-size: 1rem; }
+.gallery-page .markdown > p:first-child { font-size: inherit; }
+.gallery-page .gallery-wrapper { margin-bottom: 56px; }
+.gallery-page .justified-gallery a.galleryImg { background-image: none; }
+.gallery-page .justified-gallery > .jg-entry { border-radius: 8px; }
+.gallery-page .markdown > blockquote {
+    margin: 42px 0 14px;
+    padding: 0 0 10px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    border-radius: 0;
+    background: none;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    font-style: normal;
+    font-weight: 600;
+}
+.gallery-page .markdown > blockquote:first-child { margin-top: 0; }
+.gallery-page .markdown > blockquote p { margin: 0; }
+
+@media (max-width: 560px) {
+    .header-profile {
+        grid-template-columns: 56px minmax(0, 1fr);
+        align-items: start;
+        gap: 0 14px;
+    }
+    .header .avatar { grid-row: 1; }
+    .header .avatar img { width: 56px; height: 56px; }
+    .header .site-title { margin: 1px 0 6px; font-size: 1.35rem; }
+    .header .site-description { font-size: 0.78rem; }
+    .header .site-description p {
+        max-width: none;
+        line-height: 1.5;
+        text-wrap: pretty;
+    }
+    .header-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        margin-top: 12px;
+        gap: 2px;
+        min-width: 0;
+    }
+    .header .header-actions nav.social a,
+    .header .header-actions .scheme-toggle a {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+    }
+    .header .header-actions nav.social svg,
+    .header .header-actions .scheme-toggle svg {
+        width: 19px;
+        height: 19px;
+    }
+    .header .header-actions .scheme-toggle { height: 34px; }
+    .header .main-nav {
+        margin-top: 16px;
+        padding: 12px 0 4px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        -webkit-overflow-scrolling: touch;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+    .header .main-nav::-webkit-scrollbar { display: none; }
+    .header .main-nav ul {
+        gap: 2px;
+        min-width: max-content;
+        padding-right: 12px;
+    }
+    .header .main-nav li { scroll-snap-align: start; margin: 0; }
+    .header .main-nav a { white-space: nowrap; }
+
+    .gallery-page .container { padding: 0 12px; }
+    .gallery-page .gallery-post > .post-header { margin-bottom: 22px; }
+    .gallery-page .gallery-post > .post-header h1.title { font-size: 2rem; }
+    .gallery-page .gallery-wrapper { margin-bottom: 42px; }
+    .gallery-page .justified-gallery > .jg-entry { border-radius: 6px; }
+    .gallery-page .markdown > blockquote { margin-top: 34px; font-size: 0.82rem; }
+}

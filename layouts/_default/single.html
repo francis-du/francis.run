@@ -1,50 +1,57 @@
 <!DOCTYPE html>
 <html prefix="og:http://ogp.me/ns#">
 {{ partial "header.html" . }}
-<body>
+{{- $isGallery := eq .Section "gallery" -}}
+<body{{ if $isGallery }} class="gallery-page"{{ end }}>
+	{{- if not $isGallery }}
 	<div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
+	{{- end }}
 	<div class="container wrapper">
 		{{ partial "head.html" . }}
 
-		<div class="post">
+		<div class="post{{ if $isGallery }} gallery-post{{ end }}">
 			<div class="post-header">
 				{{ if ne .Date.Year 1 }}
 					<div class="meta">
 						<div class="date">
 							<span class="day">{{ dateFormat "02" .Date }}</span>
-							<span class="rest">{{ if $.Site.Data.month }}{{ index $.Site.Data.month (printf "%d" .Date.Month) }} {{ .Date.Year }}{{ else }}{{ dateFormat "Jan 2006" .Date }}{{ end }}</span>
+							<span class="rest">{{ if hugo.Data.month }}{{ index hugo.Data.month (printf "%d" .Date.Month) }} {{ .Date.Year }}{{ else }}{{ dateFormat "Jan 2006" .Date }}{{ end }}</span>
 						</div>
 					</div>
 				{{ end }}
 				<div class="matter">
 					<h1 class="title">{{ .Title }}</h1>
+					{{- if not $isGallery }}
 					<div class="article-meta"><span>{{ .ReadingTime }} min read</span><span>{{ .WordCount }} words</span></div>
+					{{- end }}
 				</div>
 			</div>
-					
+
 			<div class="markdown">
 				{{ .Content }}
 			</div>
 
-			{{- if .Site.Params.social_share -}}
-				{{- partial "social_share.html" . -}}
-			{{- end -}}
+			{{- if not $isGallery }}
+				{{- if .Site.Params.social_share -}}
+					{{- partial "social_share.html" . -}}
+				{{- end -}}
 
-			<div class="tags">
-				{{ if ne .Type "page" }}
-					{{ if gt .Params.tags 0 }}
-						<ul class="flat">
-							{{ range .Params.tags }}
-							<li><a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}">{{ . }}</a></li>
-							{{ end }}
-						</ul>
+				<div class="tags">
+					{{ if ne .Type "page" }}
+						{{ if gt .Params.tags 0 }}
+							<ul class="flat">
+								{{ range .Params.tags }}
+								<li><a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}">{{ . }}</a></li>
+								{{ end }}
+							</ul>
+						{{ end }}
 					{{ end }}
-				{{ end }}
-			</div>
+				</div>
 
-			{{- if .Site.Params.comment -}}
-				{{- partial "utteranc.html" . -}}
-			{{- end -}}
+				{{- if .Site.Params.comment -}}
+					{{- partial "utteranc.html" . -}}
+				{{- end -}}
+			{{- end }}
 		</div>
 	</div>
 	{{- partial "footer.html" . -}}

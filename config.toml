@@ -33,17 +33,18 @@ ignoreLogs = ['warning-goldmark-raw-html']
     mode = "dark"
     social_share = true
     comment = true
+    # Keep hugo-shortcode-gallery's native jquery.lazy + Swipebox + JustifiedGallery stack.
+    # Use generated WebP derivatives, and keep tiny previews external instead of inlining Base64 per photo.
     galleryRowHeight = 200
-    galleryMargins = 5
-    # Lightbox image: served downscaled so the viewer opens fast (was loading full originals).
-    galleryImageResizeOptions = "1920x1920 q80 Lanczos"
-    # Grid thumbnail: crisp on retina while staying lightweight.
-    galleryThumbnailResizeOptions = "600x400 q80 Lanczos"
+    galleryRowMargins = 5
+    galleryImageResizeOptions = "1920x1920 webp q82 Lanczos"
+    galleryThumbnailResizeOptions = "720x720 webp q78 Lanczos"
     galleryPreviewType = "blur"
     galleryThumbnailHoverEffect = "enlarge"
-    galleryShowExif="true"
-    galleryLoadJQuery="true"
-    galleryEmbedPreview="true"
+    galleryShowExif = true
+    galleryLoadJQuery = true
+    galleryEmbedPreview = false
+    gallerySwipeboxParameters = "removeBottomBarOnMobile: false"
 
 
 [imaging.exif]
