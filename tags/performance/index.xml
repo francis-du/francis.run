@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Performance | Francis Du</title><link>https://francis.run/tags/performance/</link><atom:link href="https://francis.run/tags/performance/index.xml" rel="self" type="application/rss+xml"/><description>Performance</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 23:40:00 +0800</lastBuildDate><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：&lt;strong&gt;还是不够快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个“慢”很容易全甩给模型。&lt;/p&gt;
+&lt;p&gt;但我看了一轮调用链以后，发现里面有不少完全是 Runtime 自己造成的等待。&lt;/p&gt;
+&lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
+&lt;p&gt;这些东西单次看都不大，Agent 连续改几十个文件时就很明显。&lt;/p&gt;
+&lt;p&gt;所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;h2 id="第一处每个小编辑都-fsync-太贵了"&gt;第一处：每个小编辑都 &lt;code&gt;fsync&lt;/code&gt; 太贵了&lt;/h2&gt;
+&lt;p&gt;wcode 的文件写入一直比较保守。&lt;/p&gt;
+&lt;p&gt;已有文件不是原地 &lt;code&gt;truncate&lt;/code&gt;，而是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read + verify SHA
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;create temp file in same directory
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;write content
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;atomic replace
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个设计我不准备改。&lt;/p&gt;
+&lt;p&gt;真正拖速度的是之前为了追求磁盘级耐久性，还会做：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;temp file sync_all
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rename
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;parent directory sync_all
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说，一个很小的 &lt;code&gt;apply_edits&lt;/code&gt; 也可能触发两次强制刷盘。&lt;/p&gt;
+&lt;p&gt;在本地 SSD 上偶尔看不明显，但到了 macOS APFS、虚拟机、网络盘或者 Windows，一连串小 edit 的 latency 会直接堆起来。&lt;/p&gt;
+&lt;p&gt;这里我重新看了 Design State 的约束。&lt;/p&gt;
+&lt;p&gt;wcode 真正必须保证的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA stale-write protection
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;same-directory atomic replacement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;create-new cannot overwrite raced target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;path / symlink / hardlink safety
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它不是数据库，也没有承诺“每一个 Agent 小编辑在机器突然断电后都必须已经物理落盘”。&lt;/p&gt;
+&lt;p&gt;所以现在交互式 Coding Path 去掉了每个小写入的强制 data + directory fsync。&lt;/p&gt;
+&lt;p&gt;Atomic Replace 还在。&lt;/p&gt;
+&lt;p&gt;这两个概念不要混在一起：&lt;strong&gt;原子性保留了，强制持久化延迟拿掉了。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="第二处project_context-原来有两个串行全仓库扫描"&gt;第二处：&lt;code&gt;project_context&lt;/code&gt; 原来有两个串行全仓库扫描&lt;/h2&gt;
+&lt;p&gt;Agent 进入一个新项目以后，我通常希望它先跑 &lt;code&gt;project_context&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这里会做不少事情：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;找 Manifest；&lt;/li&gt;
+&lt;li&gt;读 Repository Guidance；&lt;/li&gt;
+&lt;li&gt;推导 Verification Checks；&lt;/li&gt;
+&lt;li&gt;跑 Convention；&lt;/li&gt;
+&lt;li&gt;跑 Language Quality Matrix。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Profile 本身已经有 Cache。&lt;/p&gt;
+&lt;p&gt;但 Convention 和 Language Quality 之前还是串行执行。&lt;/p&gt;
+&lt;p&gt;这两个操作都可能扫一遍仓库。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Convention Scan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Language Quality Scan
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其实它们之间没有数据依赖。&lt;/p&gt;
+&lt;p&gt;现在直接 &lt;code&gt;rayon::join&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌─ Convention Scan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context ┤
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └─ Language Quality Scan
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;结果语义不变，但大仓库第一次进入时的 wall-clock 更合理。&lt;/p&gt;
+&lt;h2 id="第三处搜索不应该先收集完整文件列表"&gt;第三处：搜索不应该先收集完整文件列表&lt;/h2&gt;
+&lt;p&gt;以前 &lt;code&gt;search_code/search_many&lt;/code&gt; 的逻辑大致是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;WalkDir 整个目录
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;收集 Vec&amp;lt;PathBuf&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rayon 并行读文件
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;搜索
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这意味着哪怕我要的前几十条结果很快就能找到，也要先把目录完整走完并分配一个 Path Vec。&lt;/p&gt;
+&lt;p&gt;现在改成了边遍历边送给 Rayon Worker：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;WalkDir → par_bridge → read/search
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一旦结果数量够了，后续 Worker 可以尽早退出。&lt;/p&gt;
+&lt;p&gt;大仓库里这类改动比在小 Fixture 上测出来的数字更有意义。&lt;/p&gt;
+&lt;h2 id="第四处同文件多个-edit-不应该重复建-line-index"&gt;第四处：同文件多个 Edit 不应该重复建 Line Index&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;apply_edits&lt;/code&gt; 支持一次对同一个原始 SHA 做多处编辑。&lt;/p&gt;
+&lt;p&gt;如果每个 Edit 都带 &lt;code&gt;start_line/end_line&lt;/code&gt;，以前每一条都会重新遍历整份内容去算行首 Byte Offset。&lt;/p&gt;
+&lt;p&gt;也就是 N 个 Edit，可能做 N 次 Line Scan。&lt;/p&gt;
+&lt;p&gt;现在只要这一批里有人用了 Line Bound，就先建一次 Line Start Index，所有 Edit 共享。&lt;/p&gt;
+&lt;p&gt;对于几千行文件一次改很多位置，这属于很便宜但应该做的优化。&lt;/p&gt;
+&lt;h2 id="第五处read_file-不需要为整份文件保存-vecstr"&gt;第五处：&lt;code&gt;read_file&lt;/code&gt; 不需要为整份文件保存 &lt;code&gt;Vec&amp;lt;&amp;amp;str&amp;gt;&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;读取工具有 1 MiB 上限，所以以前直接：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-rust" data-lang="rust"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00f"&gt;let&lt;/span&gt; lines: Vec&amp;lt;&amp;amp;&lt;span style="color:#2b91af"&gt;str&lt;/span&gt;&amp;gt; = content.lines().collect();
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;功能完全没问题。&lt;/p&gt;
+&lt;p&gt;但 Agent 大多数时候只拿 100～500 行。&lt;/p&gt;
+&lt;p&gt;现在先算总行数，再只对需要返回的 Range 做 &lt;code&gt;skip/take&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;不是一个惊人的 Benchmark，但这是典型的 Runtime Hot Path：每一次都跑，能少一次完整分配就少一次。&lt;/p&gt;
+&lt;h2 id="第六处默认并行度再往上提"&gt;第六处：默认并行度再往上提&lt;/h2&gt;
+&lt;p&gt;之前默认值是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;logical CPU × 8
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;clamp 64..128
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在改成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;logical CPU × 12
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;clamp 96..192
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Harness 的硬上限仍然是 256，CLI 还是可以显式：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode -j 256
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为什么不直接默认 256？&lt;/p&gt;
+&lt;p&gt;因为这个 Semaphore 不只有小文件 IO，还会承载一部分 CPU 和外部进程任务。&lt;/p&gt;
+&lt;p&gt;我希望默认更激进，但不是把所有机器都当成 32 核工作站。&lt;/p&gt;
+&lt;p&gt;8 核现在默认 96，10 核 120，16 核及以上最多到 192。&lt;/p&gt;
+&lt;p&gt;这个档位更适合 Agent 一次并行导航和修改多个文件。&lt;/p&gt;
+&lt;h2 id="更重要的是让模型少发-tool-call"&gt;更重要的是：让模型少发 Tool Call&lt;/h2&gt;
+&lt;p&gt;Runtime 再快，如果 Agent 还是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read A
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit A
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read B
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit B
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read C
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit C
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;MCP Round Trip 一样会浪费很多时间。&lt;/p&gt;
+&lt;p&gt;所以 Project Context 的 Workflow 现在会明确提示：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;同文件多个修改 → apply_edits
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;多个已知现有文件 → apply_file_edits
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;多个新文件 → create_files
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;已知互不依赖的任务 → parallel_tools
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一次遍历能解决 → search_many / read_files
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我越来越觉得 Tool Harness 的性能不是单个函数跑多快。&lt;/p&gt;
+&lt;p&gt;它至少有三层：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;模型要不要一次提出足够完整的操作
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tool Runtime 能不能批量/并行调度
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;底层文件和索引操作有没有多余工作
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只优化最后一层，体感还是会卡。&lt;/p&gt;
+&lt;h2 id="安全检查没有为了速度删掉"&gt;安全检查没有为了速度删掉&lt;/h2&gt;
+&lt;p&gt;性能优化最容易走到另一个极端：觉得 &lt;code&gt;canonicalize&lt;/code&gt;、SHA、Symlink Check、Lock 都贵，干脆少查一点。&lt;/p&gt;
+&lt;p&gt;这轮我没有这么做。&lt;/p&gt;
+&lt;p&gt;保留的边界包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Workspace Root；&lt;/li&gt;
+&lt;li&gt;Protected Path；&lt;/li&gt;
+&lt;li&gt;Parent Traversal；&lt;/li&gt;
+&lt;li&gt;Symlink Component；&lt;/li&gt;
+&lt;li&gt;Unix Hard Link Write；&lt;/li&gt;
+&lt;li&gt;SHA-256 stale revision；&lt;/li&gt;
+&lt;li&gt;写锁后的路径重新解析；&lt;/li&gt;
+&lt;li&gt;Atomic Replace；&lt;/li&gt;
+&lt;li&gt;No-shell Command；&lt;/li&gt;
+&lt;li&gt;Pending Authorization。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我拿掉的是重复工作和不必要的同步，不是安全模型。&lt;/p&gt;
+&lt;h2 id="现在还剩什么可以继续优化"&gt;现在还剩什么可以继续优化&lt;/h2&gt;
+&lt;p&gt;这一轮之后，我觉得还有几块值得继续盯：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;project_context&lt;/code&gt; 的两个仓库扫描虽然并行了，但未来最好共享一次 File Inventory，而不是各走一遍目录。&lt;/li&gt;
+&lt;li&gt;MCP Tool Result 为兼容 &lt;code&gt;content + structuredContent&lt;/code&gt; 会有重复序列化/内存占用，大结果还有优化空间。&lt;/li&gt;
+&lt;li&gt;Software Graph 第一次建立时，Language/Tree-sitter Parser 初始化和目录候选选择还可以继续做更细的缓存。&lt;/li&gt;
+&lt;li&gt;Monitor 的指标必须保持便宜，不能为了展示吞吐量反过来拖 Tool Call。&lt;/li&gt;
+&lt;li&gt;多 Workspace 同时工作时，需要继续观察 Rayon、Tokio &lt;code&gt;spawn_blocking&lt;/code&gt; 和全局 Semaphore 三层调度会不会互相争资源。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;我不准备为了追一个漂亮 Benchmark 把这些全部一次性复杂化。&lt;/p&gt;
+&lt;p&gt;更实际的标准还是：&lt;strong&gt;拿它去真实项目写代码，哪一步明显在等，就把那一步拆出来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这也是我现在优化 wcode 的方式。&lt;/p&gt;
+&lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>

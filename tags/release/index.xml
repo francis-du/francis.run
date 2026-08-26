@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Release | Francis Du</title><link>https://francis.run/tags/release/</link><atom:link href="https://francis.run/tags/release/index.xml" rel="self" type="application/rss+xml"/><description>Release</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 23:30:00 +0800</lastBuildDate><item><title>wcode v0.3：从本地代码桥到 Software Intelligence Runtime</title><link>https://francis.run/blog/wcode-v0-3/</link><pubDate>Wed, 26 Aug 2026 23:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-3/</guid><description>&lt;p&gt;wcode 的 v0.3 是一次比较明显的方向变化。&lt;/p&gt;
+&lt;p&gt;v0.2 发布时，我给它的定位还很简单：&lt;strong&gt;一个轻量的 Code Agent plugin，把你已经在用的 AI Client 接到本地仓库。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个定位没有消失。Remote MCP、OAuth、Workspace、Tree-sitter、代码读写、Git Review 和 Verification 这些底层能力都还在。&lt;/p&gt;
+&lt;p&gt;但如果只看 v0.3 的代码和界面，它已经不太像一个“桥”了。&lt;/p&gt;
+&lt;p&gt;我现在更愿意把它叫做：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Software Intelligence Runtime for AI-native development.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;模型仍然负责写代码，wcode 开始负责另一件更难长期维护的事：软件到底应该是什么、现在是什么、哪里变了、风险在哪里、什么证据说明这次修改真的完成了。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;h2 id="v02-当时解决了什么"&gt;v0.2 当时解决了什么&lt;/h2&gt;
+&lt;p&gt;我重新看了一遍 &lt;code&gt;v0.2&lt;/code&gt; Tag 里的 README。&lt;/p&gt;
+&lt;p&gt;当时的主线非常明确：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;AI Client
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Remote MCP + OAuth
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├─ search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├─ symbols
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├─ read / edit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├─ project context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├─ git review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └─ verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;configured workspace roots
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一句话就是：&lt;strong&gt;不要再造一个 Agent，把本地代码能力安全地提供给现有 Agent。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;v0.2 已经有不少我现在仍然很看重的基础：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个 Rust 原生二进制；&lt;/li&gt;
+&lt;li&gt;Remote MCP + OAuth 2.1 / PKCE；&lt;/li&gt;
+&lt;li&gt;Cloudflare Quick Tunnel；&lt;/li&gt;
+&lt;li&gt;多客户端接入；&lt;/li&gt;
+&lt;li&gt;Workspace Root 隔离；&lt;/li&gt;
+&lt;li&gt;Tree-sitter Symbol Navigation；&lt;/li&gt;
+&lt;li&gt;SHA-256 Guarded Edit；&lt;/li&gt;
+&lt;li&gt;Git-aware Review；&lt;/li&gt;
+&lt;li&gt;有界并发和实时 TUI。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;但它回答的主要还是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;模型怎么安全地碰本地代码？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;v0.3 想回答的问题已经变成：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;多个模型、人和工具不断修改一个项目以后，怎么还知道这个软件为什么是现在这样？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="最大变化design-state-进入了开发闭环"&gt;最大变化：Design State 进入了开发闭环&lt;/h2&gt;
+&lt;p&gt;v0.3 里最重要的东西不是某个新 Tool，而是 &lt;code&gt;.wcode&lt;/code&gt; Design State。&lt;/p&gt;
+&lt;p&gt;它把长期应该稳定存在的意图放进仓库：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Constraint
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance Criterion
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Decision
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些东西不是 Markdown 里的描述，而是带稳定 ID 和关系的结构化 Desired State。&lt;/p&gt;
+&lt;p&gt;于是一个功能可以真的形成链路：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component responsibility
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;File / Symbol
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance Criterion
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Test / Verification
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这也是为什么 v0.3 之后，wcode 不再只是给模型提供 &lt;code&gt;read_file&lt;/code&gt; / &lt;code&gt;apply_edits&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;Agent 可以先从需求和设计开始理解，再落到代码。&lt;/p&gt;
+&lt;h2 id="product-scope-把大仓库重新分区"&gt;Product Scope 把大仓库重新分区&lt;/h2&gt;
+&lt;p&gt;只做 Design State 还不够。&lt;/p&gt;
+&lt;p&gt;仓库一大，Agent 还是很容易把整个项目看成一个平面目录。&lt;/p&gt;
+&lt;p&gt;所以 v0.3 有了 canonical Product Scope Registry：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;runtime
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;integrations
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantics
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;traceability
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;reconciliation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;experience
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它同时参与源码架构分类、&lt;code&gt;scope_status&lt;/code&gt;、&lt;code&gt;software_context&lt;/code&gt;、MCP Tool Metadata 和 Agent Workflow。&lt;/p&gt;
+&lt;p&gt;我现在给 Agent 一个任务时，可以先确定它属于哪个 Product Scope，再缩小上下文。&lt;/p&gt;
+&lt;p&gt;这比“先 grep 全仓库再说”稳定很多。&lt;/p&gt;
+&lt;h2 id="software-graph-不再只是一个索引"&gt;Software Graph 不再只是一个索引&lt;/h2&gt;
+&lt;p&gt;Tree-sitter 仍然是 always-on 的语法底座，但 v0.3 把 Graph 扩成了可以混合多种 Provenance 的 Software Digital Twin。&lt;/p&gt;
+&lt;p&gt;基础事实仍明确标注：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider = tree-sitter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;precision = syntax
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果真实 Language Server 返回 Document Symbol、Call Hierarchy 或 Implementation，才会进入 semantic precision。&lt;/p&gt;
+&lt;p&gt;外部 SCIP / Compiler / Runtime Provider 也可以进入同一张 Graph，但每条关系都保留自己的 Provider、Precision 和 Revision。&lt;/p&gt;
+&lt;p&gt;Graph 现在还会保留 meaningful revision history，可以看节点和关系到底怎么变，而不是只看当前快照。&lt;/p&gt;
+&lt;h2 id="v03-的主界面不是-graph-球图"&gt;v0.3 的主界面不是 Graph 球图&lt;/h2&gt;
+&lt;p&gt;我做过一版能拖、能缩放的 Graph Canvas。&lt;/p&gt;
+&lt;p&gt;后来删掉主视图了。&lt;/p&gt;
+&lt;p&gt;不是 Graph 没用了，而是“看一团节点”不是我真正想解决的问题。&lt;/p&gt;
+&lt;p&gt;现在 WebUI 是 requirement-first 的 &lt;strong&gt;Project Observatory&lt;/strong&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Desired State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Actual State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Change
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Proof
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Convergence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一个 Requirement 下面可以直接看到：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;功能意图；&lt;/li&gt;
+&lt;li&gt;Component 责任和声明依赖；&lt;/li&gt;
+&lt;li&gt;当前真实实现；&lt;/li&gt;
+&lt;li&gt;Acceptance / Verification；&lt;/li&gt;
+&lt;li&gt;Constraint / ADR；&lt;/li&gt;
+&lt;li&gt;当前 Git Change；&lt;/li&gt;
+&lt;li&gt;Evidence；&lt;/li&gt;
+&lt;li&gt;Convergence Blocker；&lt;/li&gt;
+&lt;li&gt;Graph Revision。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;TUI 按 &lt;code&gt;W&lt;/code&gt; 会直接打开当前焦点 Workspace 的 Project Observatory。&lt;/p&gt;
+&lt;h2 id="verification-从跑过测试变成-evidence"&gt;Verification 从“跑过测试”变成 Evidence&lt;/h2&gt;
+&lt;p&gt;v0.2 已经有 &lt;code&gt;verify_project&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;v0.3 里 Verification 的变化，不是多跑几个命令，而是&lt;strong&gt;结果开始有身份和 Revision&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;现在可以记录：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁产生的 Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;针对哪个 Code Revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;针对哪个 Design Revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;使用什么 Policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;结果是 Pass / Fail / Disagree / Inconclusive
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Property、Mutation、Fuzz、Runtime Canary、Blind Reviewer 和 Human Approval 也进入同一套 Verification Mesh。&lt;/p&gt;
+&lt;p&gt;最重要的是：新的 Pass 不会把另一个 Producer 的 Fail 擦掉。&lt;/p&gt;
+&lt;p&gt;分歧就是 Evidence，而不是需要被 UI 平均掉的噪音。&lt;/p&gt;
+&lt;h2 id="reconciliation-把一次聊天变成可继续的状态"&gt;Reconciliation 把“一次聊天”变成可继续的状态&lt;/h2&gt;
+&lt;p&gt;v0.2 的典型开发闭环更像：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read → edit → test → done
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;v0.3 开始把“什么时候真的算 done”做成显式状态。&lt;/p&gt;
+&lt;p&gt;Reconciliation Plan 会把 Drift、Impact、Risk、Implementation 和 Verification Requirement 组织成有依赖的任务。&lt;/p&gt;
+&lt;p&gt;这些任务可以 Claim、Submit、Retry，并且持久化。&lt;/p&gt;
+&lt;p&gt;所以一个模型写代码、另一个模型 Review、第三个模型补测试，不需要共享同一个聊天上下文。&lt;/p&gt;
+&lt;p&gt;它们面对的是同一个软件状态和同一组 Evidence。&lt;/p&gt;
+&lt;h2 id="workspace-权限也比-v02-更细"&gt;Workspace 权限也比 v0.2 更细&lt;/h2&gt;
+&lt;p&gt;v0.2 的安全模型已经强调：不给模型一个 Shell。&lt;/p&gt;
+&lt;p&gt;v0.3 继续保留这个原则，但授权粒度细了很多。&lt;/p&gt;
+&lt;p&gt;现在模型如果请求一个还没有授权的裸可执行程序，例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hugo
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;flutter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deno
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mvn
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;gradle
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;wcode 不会因为它不在默认列表里直接永久拒绝，而是生成一个当前 Workspace 的 &lt;code&gt;CommandAccess&lt;/code&gt; Pending Request。&lt;/p&gt;
+&lt;p&gt;TUI 会显示待授权列表：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;↑/↓ 选择
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Y 批准当前请求
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;N 拒绝当前请求
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Project Observatory 的 Access Panel 也能处理同一批 Pending Request，并管理 Workspace 和已授权命令。&lt;/p&gt;
+&lt;p&gt;批准的是&lt;strong&gt;这个 Workspace 的这个 Program&lt;/strong&gt;，不是开放一个 Shell。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;bash&lt;/code&gt;、&lt;code&gt;sh&lt;/code&gt;、&lt;code&gt;pwsh&lt;/code&gt;、&lt;code&gt;cmd&lt;/code&gt; 这类 Shell Interpreter，以及带路径的 Program Name，仍然是硬边界。&lt;/p&gt;
+&lt;p&gt;Repository-aware Argument 还可能再触发单独的 &lt;code&gt;RiskyExecution&lt;/code&gt; 授权。&lt;/p&gt;
+&lt;p&gt;删除则仍然更严格：exact one-shot。&lt;/p&gt;
+&lt;h2 id="并发和写入也做了实际性能优化"&gt;并发和写入也做了实际性能优化&lt;/h2&gt;
+&lt;p&gt;v0.2 已经支持有界并发，但 v0.3 的 Scheduler 已经可以理解 Read / Write / Create / Move / Delete 的路径冲突。&lt;/p&gt;
+&lt;p&gt;当前默认全局并行度调整成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;logical CPU × 12
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;clamp 96..192
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hard max 256
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;同一个文件的多个 &lt;code&gt;apply_edits&lt;/code&gt; 如果 SHA 相同、Range 不冲突，可以先合并再提交。&lt;/p&gt;
+&lt;p&gt;另外这次还专门处理了我在真实项目里感觉到的“写代码还是慢”：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;交互式小文件写入保留同目录临时文件 + atomic replace，但不再每次都强制 data fsync + directory fsync；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;project_context&lt;/code&gt; 的 Convention Scan 和 Language Quality Scan 并行执行；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;search_code/search_many&lt;/code&gt; 改成目录遍历过程中直接进入并行搜索，不再先收集完整文件列表；&lt;/li&gt;
+&lt;li&gt;多 Edit 共享一次 Line Index；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;read_file&lt;/code&gt; 不再先给整个文件分配一份 Line Vector；&lt;/li&gt;
+&lt;li&gt;Project Context 会明确让 Agent 优先用 &lt;code&gt;apply_file_edits&lt;/code&gt; / &lt;code&gt;create_files&lt;/code&gt; 做批量写入。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;安全边界没有因为这些优化被拿掉：SHA、Atomic Replace、Path Isolation、Symlink / Hardlink、Protected Path 仍然存在。&lt;/p&gt;
+&lt;h2 id="v02--v03我会怎么概括"&gt;v0.2 → v0.3，我会怎么概括&lt;/h2&gt;
+&lt;p&gt;如果只留一张表，大概是这样：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;v0.2&lt;/th&gt;
+&lt;th&gt;v0.3&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;产品中心&lt;/td&gt;
+&lt;td&gt;Local Code Bridge&lt;/td&gt;
+&lt;td&gt;Software Intelligence Runtime&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;模型关系&lt;/td&gt;
+&lt;td&gt;给现有 Agent 本地工具&lt;/td&gt;
+&lt;td&gt;模型是可替换 Builder / Reviewer&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Desired State&lt;/td&gt;
+&lt;td&gt;无&lt;/td&gt;
+&lt;td&gt;Design State&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;源码边界&lt;/td&gt;
+&lt;td&gt;Workspace&lt;/td&gt;
+&lt;td&gt;Workspace + Product Scope&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Code Intelligence&lt;/td&gt;
+&lt;td&gt;Tree-sitter Symbol&lt;/td&gt;
+&lt;td&gt;Composite Software Graph + Provider Provenance&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;改动理解&lt;/td&gt;
+&lt;td&gt;Git Review&lt;/td&gt;
+&lt;td&gt;Drift + Impact + Risk&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;验证&lt;/td&gt;
+&lt;td&gt;Project-native checks&lt;/td&gt;
+&lt;td&gt;Verification Mesh + Revision-exact Evidence&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;长任务&lt;/td&gt;
+&lt;td&gt;普通 Tool Call&lt;/td&gt;
+&lt;td&gt;MCP 2026 Durable Tasks&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;完成状态&lt;/td&gt;
+&lt;td&gt;一次调用结束&lt;/td&gt;
+&lt;td&gt;Reconciliation / Convergence&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;UI&lt;/td&gt;
+&lt;td&gt;TUI + Setup Hub&lt;/td&gt;
+&lt;td&gt;TUI + Setup Hub + Project Observatory&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;授权&lt;/td&gt;
+&lt;td&gt;粗粒度 Trust Flag&lt;/td&gt;
+&lt;td&gt;Pending Request + TUI/WebUI selective approval&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;v0.2 解决的是“把 AI 接进来”。&lt;/p&gt;
+&lt;p&gt;v0.3 更像是在回答：“接进来以后，怎么让这个项目长期不失控。”&lt;/p&gt;
+&lt;p&gt;我现在觉得这才是 wcode 真正有意思的方向。&lt;/p&gt;
+&lt;p&gt;相关实现细节可以继续看 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;wcode 最近做成什么样了&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-design-state/"&gt;Design State&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-verification/"&gt;Verification&lt;/a&gt; 和 &lt;a href="https://francis.run/blog/wcode-security/"&gt;Security&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>

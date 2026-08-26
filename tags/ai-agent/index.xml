@@ -1,5 +1,697 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>AI Agent | Francis Du</title><link>https://francis.run/tags/ai-agent/</link><atom:link href="https://francis.run/tags/ai-agent/index.xml" rel="self" type="application/rss+xml"/><description>AI Agent</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sun, 23 Aug 2026 18:30:00 +0800</lastBuildDate><item><title>我写了 wcode：把 Web AI 接到本地代码库</title><link>https://francis.run/blog/wcode/</link><pubDate>Sun, 23 Aug 2026 18:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="打开 wcode 官网"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode 官网" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>AI Agent | Francis Du</title><link>https://francis.run/tags/ai-agent/</link><atom:link href="https://francis.run/tags/ai-agent/index.xml" rel="self" type="application/rss+xml"/><description>AI Agent</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 23:40:00 +0800</lastBuildDate><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：&lt;strong&gt;还是不够快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个“慢”很容易全甩给模型。&lt;/p&gt;
+&lt;p&gt;但我看了一轮调用链以后，发现里面有不少完全是 Runtime 自己造成的等待。&lt;/p&gt;
+&lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
+&lt;p&gt;这些东西单次看都不大，Agent 连续改几十个文件时就很明显。&lt;/p&gt;
+&lt;p&gt;所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;h2 id="第一处每个小编辑都-fsync-太贵了"&gt;第一处：每个小编辑都 &lt;code&gt;fsync&lt;/code&gt; 太贵了&lt;/h2&gt;
+&lt;p&gt;wcode 的文件写入一直比较保守。&lt;/p&gt;
+&lt;p&gt;已有文件不是原地 &lt;code&gt;truncate&lt;/code&gt;，而是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read + verify SHA
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;create temp file in same directory
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;write content
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;atomic replace
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个设计我不准备改。&lt;/p&gt;
+&lt;p&gt;真正拖速度的是之前为了追求磁盘级耐久性，还会做：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;temp file sync_all
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rename
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;parent directory sync_all
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说，一个很小的 &lt;code&gt;apply_edits&lt;/code&gt; 也可能触发两次强制刷盘。&lt;/p&gt;
+&lt;p&gt;在本地 SSD 上偶尔看不明显，但到了 macOS APFS、虚拟机、网络盘或者 Windows，一连串小 edit 的 latency 会直接堆起来。&lt;/p&gt;
+&lt;p&gt;这里我重新看了 Design State 的约束。&lt;/p&gt;
+&lt;p&gt;wcode 真正必须保证的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA stale-write protection
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;same-directory atomic replacement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;create-new cannot overwrite raced target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;path / symlink / hardlink safety
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它不是数据库，也没有承诺“每一个 Agent 小编辑在机器突然断电后都必须已经物理落盘”。&lt;/p&gt;
+&lt;p&gt;所以现在交互式 Coding Path 去掉了每个小写入的强制 data + directory fsync。&lt;/p&gt;
+&lt;p&gt;Atomic Replace 还在。&lt;/p&gt;
+&lt;p&gt;这两个概念不要混在一起：&lt;strong&gt;原子性保留了，强制持久化延迟拿掉了。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="第二处project_context-原来有两个串行全仓库扫描"&gt;第二处：&lt;code&gt;project_context&lt;/code&gt; 原来有两个串行全仓库扫描&lt;/h2&gt;
+&lt;p&gt;Agent 进入一个新项目以后，我通常希望它先跑 &lt;code&gt;project_context&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这里会做不少事情：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;找 Manifest；&lt;/li&gt;
+&lt;li&gt;读 Repository Guidance；&lt;/li&gt;
+&lt;li&gt;推导 Verification Checks；&lt;/li&gt;
+&lt;li&gt;跑 Convention；&lt;/li&gt;
+&lt;li&gt;跑 Language Quality Matrix。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Profile 本身已经有 Cache。&lt;/p&gt;
+&lt;p&gt;但 Convention 和 Language Quality 之前还是串行执行。&lt;/p&gt;
+&lt;p&gt;这两个操作都可能扫一遍仓库。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Convention Scan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Language Quality Scan
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其实它们之间没有数据依赖。&lt;/p&gt;
+&lt;p&gt;现在直接 &lt;code&gt;rayon::join&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌─ Convention Scan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context ┤
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └─ Language Quality Scan
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;结果语义不变，但大仓库第一次进入时的 wall-clock 更合理。&lt;/p&gt;
+&lt;h2 id="第三处搜索不应该先收集完整文件列表"&gt;第三处：搜索不应该先收集完整文件列表&lt;/h2&gt;
+&lt;p&gt;以前 &lt;code&gt;search_code/search_many&lt;/code&gt; 的逻辑大致是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;WalkDir 整个目录
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;收集 Vec&amp;lt;PathBuf&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rayon 并行读文件
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;搜索
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这意味着哪怕我要的前几十条结果很快就能找到，也要先把目录完整走完并分配一个 Path Vec。&lt;/p&gt;
+&lt;p&gt;现在改成了边遍历边送给 Rayon Worker：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;WalkDir → par_bridge → read/search
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;一旦结果数量够了，后续 Worker 可以尽早退出。&lt;/p&gt;
+&lt;p&gt;大仓库里这类改动比在小 Fixture 上测出来的数字更有意义。&lt;/p&gt;
+&lt;h2 id="第四处同文件多个-edit-不应该重复建-line-index"&gt;第四处：同文件多个 Edit 不应该重复建 Line Index&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;apply_edits&lt;/code&gt; 支持一次对同一个原始 SHA 做多处编辑。&lt;/p&gt;
+&lt;p&gt;如果每个 Edit 都带 &lt;code&gt;start_line/end_line&lt;/code&gt;，以前每一条都会重新遍历整份内容去算行首 Byte Offset。&lt;/p&gt;
+&lt;p&gt;也就是 N 个 Edit，可能做 N 次 Line Scan。&lt;/p&gt;
+&lt;p&gt;现在只要这一批里有人用了 Line Bound，就先建一次 Line Start Index，所有 Edit 共享。&lt;/p&gt;
+&lt;p&gt;对于几千行文件一次改很多位置，这属于很便宜但应该做的优化。&lt;/p&gt;
+&lt;h2 id="第五处read_file-不需要为整份文件保存-vecstr"&gt;第五处：&lt;code&gt;read_file&lt;/code&gt; 不需要为整份文件保存 &lt;code&gt;Vec&amp;lt;&amp;amp;str&amp;gt;&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;读取工具有 1 MiB 上限，所以以前直接：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-rust" data-lang="rust"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00f"&gt;let&lt;/span&gt; lines: Vec&amp;lt;&amp;amp;&lt;span style="color:#2b91af"&gt;str&lt;/span&gt;&amp;gt; = content.lines().collect();
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;功能完全没问题。&lt;/p&gt;
+&lt;p&gt;但 Agent 大多数时候只拿 100～500 行。&lt;/p&gt;
+&lt;p&gt;现在先算总行数，再只对需要返回的 Range 做 &lt;code&gt;skip/take&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;不是一个惊人的 Benchmark，但这是典型的 Runtime Hot Path：每一次都跑，能少一次完整分配就少一次。&lt;/p&gt;
+&lt;h2 id="第六处默认并行度再往上提"&gt;第六处：默认并行度再往上提&lt;/h2&gt;
+&lt;p&gt;之前默认值是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;logical CPU × 8
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;clamp 64..128
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在改成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;logical CPU × 12
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;clamp 96..192
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Harness 的硬上限仍然是 256，CLI 还是可以显式：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode -j 256
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;为什么不直接默认 256？&lt;/p&gt;
+&lt;p&gt;因为这个 Semaphore 不只有小文件 IO，还会承载一部分 CPU 和外部进程任务。&lt;/p&gt;
+&lt;p&gt;我希望默认更激进，但不是把所有机器都当成 32 核工作站。&lt;/p&gt;
+&lt;p&gt;8 核现在默认 96，10 核 120，16 核及以上最多到 192。&lt;/p&gt;
+&lt;p&gt;这个档位更适合 Agent 一次并行导航和修改多个文件。&lt;/p&gt;
+&lt;h2 id="更重要的是让模型少发-tool-call"&gt;更重要的是：让模型少发 Tool Call&lt;/h2&gt;
+&lt;p&gt;Runtime 再快，如果 Agent 还是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read A
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit A
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read B
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit B
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read C
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit C
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;MCP Round Trip 一样会浪费很多时间。&lt;/p&gt;
+&lt;p&gt;所以 Project Context 的 Workflow 现在会明确提示：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;同文件多个修改 → apply_edits
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;多个已知现有文件 → apply_file_edits
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;多个新文件 → create_files
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;已知互不依赖的任务 → parallel_tools
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一次遍历能解决 → search_many / read_files
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我越来越觉得 Tool Harness 的性能不是单个函数跑多快。&lt;/p&gt;
+&lt;p&gt;它至少有三层：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;模型要不要一次提出足够完整的操作
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tool Runtime 能不能批量/并行调度
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;底层文件和索引操作有没有多余工作
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只优化最后一层，体感还是会卡。&lt;/p&gt;
+&lt;h2 id="安全检查没有为了速度删掉"&gt;安全检查没有为了速度删掉&lt;/h2&gt;
+&lt;p&gt;性能优化最容易走到另一个极端：觉得 &lt;code&gt;canonicalize&lt;/code&gt;、SHA、Symlink Check、Lock 都贵，干脆少查一点。&lt;/p&gt;
+&lt;p&gt;这轮我没有这么做。&lt;/p&gt;
+&lt;p&gt;保留的边界包括：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Workspace Root；&lt;/li&gt;
+&lt;li&gt;Protected Path；&lt;/li&gt;
+&lt;li&gt;Parent Traversal；&lt;/li&gt;
+&lt;li&gt;Symlink Component；&lt;/li&gt;
+&lt;li&gt;Unix Hard Link Write；&lt;/li&gt;
+&lt;li&gt;SHA-256 stale revision；&lt;/li&gt;
+&lt;li&gt;写锁后的路径重新解析；&lt;/li&gt;
+&lt;li&gt;Atomic Replace；&lt;/li&gt;
+&lt;li&gt;No-shell Command；&lt;/li&gt;
+&lt;li&gt;Pending Authorization。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我拿掉的是重复工作和不必要的同步，不是安全模型。&lt;/p&gt;
+&lt;h2 id="现在还剩什么可以继续优化"&gt;现在还剩什么可以继续优化&lt;/h2&gt;
+&lt;p&gt;这一轮之后，我觉得还有几块值得继续盯：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;project_context&lt;/code&gt; 的两个仓库扫描虽然并行了，但未来最好共享一次 File Inventory，而不是各走一遍目录。&lt;/li&gt;
+&lt;li&gt;MCP Tool Result 为兼容 &lt;code&gt;content + structuredContent&lt;/code&gt; 会有重复序列化/内存占用，大结果还有优化空间。&lt;/li&gt;
+&lt;li&gt;Software Graph 第一次建立时，Language/Tree-sitter Parser 初始化和目录候选选择还可以继续做更细的缓存。&lt;/li&gt;
+&lt;li&gt;Monitor 的指标必须保持便宜，不能为了展示吞吐量反过来拖 Tool Call。&lt;/li&gt;
+&lt;li&gt;多 Workspace 同时工作时，需要继续观察 Rayon、Tokio &lt;code&gt;spawn_blocking&lt;/code&gt; 和全局 Semaphore 三层调度会不会互相争资源。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;我不准备为了追一个漂亮 Benchmark 把这些全部一次性复杂化。&lt;/p&gt;
+&lt;p&gt;更实际的标准还是：&lt;strong&gt;拿它去真实项目写代码，哪一步明显在等，就把那一步拆出来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这也是我现在优化 wcode 的方式。&lt;/p&gt;
+&lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：MCP 负责能力，Skill 只负责工作习惯</title><link>https://francis.run/blog/wcode-mcp-agent/</link><pubDate>Wed, 26 Aug 2026 03:16:00 +0800</pubDate><guid>https://francis.run/blog/wcode-mcp-agent/</guid><description>&lt;p&gt;第一版 wcode 基本是围着 MCP 写的。&lt;/p&gt;
+&lt;p&gt;那时候最核心的问题是：Web 端模型怎么安全访问本地代码。&lt;/p&gt;
+&lt;p&gt;现在 Software Intelligence、Verification、Reconciliation 都长出来以后，MCP 在项目里的位置反而更简单了。&lt;/p&gt;
+&lt;p&gt;它就是能力接口。&lt;/p&gt;
+&lt;h2 id="本地-agent-没必要绕公网"&gt;本地 Agent 没必要绕公网&lt;/h2&gt;
+&lt;p&gt;如果 Agent 本身就在本机，比如 Claude Code、Codex、Grok Build 这类，没必要为了调用本地仓库先走一圈 Tunnel 和 OAuth。&lt;/p&gt;
+&lt;p&gt;直接：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace /absolute/path/to/repository mcp-stdio
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;stdio 和 HTTP 后面没有两套业务实现。&lt;/p&gt;
+&lt;p&gt;最终用的还是同一个：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Harness
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Software Intelligence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification / Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tools
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Prompts
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Resources
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tasks
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Transport 不一样，能力边界应该一样。&lt;/p&gt;
+&lt;p&gt;这件事我比较在意，因为很多工具做到后面会出现“本地模式一套，Remote 模式另一套”，最后修安全问题要修两遍。&lt;/p&gt;
+&lt;h2 id="web--cloud-还是-http--oauth"&gt;Web / Cloud 还是 HTTP + OAuth&lt;/h2&gt;
+&lt;p&gt;ChatGPT、Grok Web、Claude Web 这类产品从云端访问本机，还是需要公网可达地址。&lt;/p&gt;
+&lt;p&gt;所以第一版里的 Streamable HTTP、OAuth、PKCE、Resource Binding、Quick Tunnel 都还在。&lt;/p&gt;
+&lt;p&gt;这些底层细节我在 &lt;a href="https://francis.run/blog/wcode/"&gt;第一版文章&lt;/a&gt; 写过，这里不展开。&lt;/p&gt;
+&lt;p&gt;后面主要补的是协议兼容和长任务。&lt;/p&gt;
+&lt;p&gt;现代 MCP 请求可以声明 Tasks Extension。现在只把确实可能很慢的操作做成 Durable Task，例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_provider_refresh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification_execute_stages
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;客户端声明 Tasks，就可以拿 Handle 后轮询；不声明，仍然走同步调用。&lt;/p&gt;
+&lt;p&gt;我不想为了跟最新协议，把还能正常工作的客户端全部逼着一起升级。&lt;/p&gt;
+&lt;h2 id="tool-现在也带-product-scope-信息"&gt;Tool 现在也带 Product Scope 信息&lt;/h2&gt;
+&lt;p&gt;这块是后来才加的。&lt;/p&gt;
+&lt;p&gt;wcode 自己的能力已经很多，如果 Agent 只看到几十个 Tool Name，很容易把它们理解成一张平面列表。&lt;/p&gt;
+&lt;p&gt;现在 Product Scope Registry 会同时用于源码分区、&lt;code&gt;software_context&lt;/code&gt;、Semantic Scope 和 MCP Tool Metadata。&lt;/p&gt;
+&lt;p&gt;也就是说，Agent 不只知道有个 &lt;code&gt;risk_status&lt;/code&gt;，还可以发现它属于哪些 Product Scope；&lt;code&gt;scope_status&lt;/code&gt; 也能直接看当前仓库源码映射和未归类文件。&lt;/p&gt;
+&lt;p&gt;这不是为了给 Tool 多加标签。&lt;/p&gt;
+&lt;p&gt;主要是让 Agent 在开始做事之前先知道“我现在在哪个能力边界里”，不要动不动就全仓库搜索。&lt;/p&gt;
+&lt;h2 id="skill-不应该偷偷带执行权限"&gt;Skill 不应该偷偷带执行权限&lt;/h2&gt;
+&lt;p&gt;现在可以导出一个 Agent Plugin / Skill：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace &lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;$PWD&lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt; agent-plugin --output wcode-agent-plugin
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;目录很小：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode-agent-plugin/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── plugin.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── .claude-plugin/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ └── plugin.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── README.md
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── skills/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── wcode-software-intelligence/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── SKILL.md
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我故意没往里面塞 Hook、JS/Python Script、Credential，也没把 Workspace 配置偷偷写进去。&lt;/p&gt;
+&lt;p&gt;我后来把这个边界总结成一句很普通的话：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Skill = workflow
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;MCP = capability
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Skill 可以告诉 Agent 我希望它先做：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;workspace_info
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;scope_status
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design_status
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;project_context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;software_context(scopes=...)
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;修改以后再走 Review、Impact、Risk、Verification。&lt;/p&gt;
+&lt;p&gt;但 Skill 自己不能因为“装上了”就突然得到 Shell、删除文件或者运行仓库程序的权限。&lt;/p&gt;
+&lt;p&gt;权限还是 Runtime 的事。&lt;/p&gt;
+&lt;h2 id="workspace-我一直要求显式"&gt;Workspace 我一直要求显式&lt;/h2&gt;
+&lt;p&gt;持久化 Agent 配置里，我更推荐写绝对路径：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace /absolute/path/to/repository mcp-stdio
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而不是让 Plugin 根据当前 &lt;code&gt;cwd&lt;/code&gt; 自动猜仓库。&lt;/p&gt;
+&lt;p&gt;这不是审美问题。&lt;/p&gt;
+&lt;p&gt;Agent 从子目录启动、Plugin 自己有工作目录、IDE 改了 Project Root，这些情况都很常见。自动向上找父目录一旦找错，影响的是权限边界，不只是路径显示不好看。&lt;/p&gt;
+&lt;p&gt;所以 Workspace 是 wcode Runtime 的显式参数。&lt;/p&gt;
+&lt;p&gt;Skill 不替我决定。&lt;/p&gt;
+&lt;h2 id="授权也不交给-skill"&gt;授权也不交给 Skill&lt;/h2&gt;
+&lt;p&gt;现在 wcode 对高风险执行和删除都有本地 Authorization Flow。&lt;/p&gt;
+&lt;p&gt;例如一个 Language Server Refresh 如果没有预先通过 &lt;code&gt;--allow-risky-exec&lt;/code&gt; 放开，可以先产生 Authorization Request；我在 TUI 里批准后，Agent 再重试。&lt;/p&gt;
+&lt;p&gt;Delete 则是 exact one-shot approval。&lt;/p&gt;
+&lt;p&gt;这些动作 Skill 都不会自动替我确认。&lt;/p&gt;
+&lt;p&gt;我觉得这一点很重要：Skill 可以告诉 Agent“遇到授权就说明原因并等待人处理”，但它不能为了让流程顺滑，顺手把信任边界也一起扩大。&lt;/p&gt;
+&lt;h2 id="换模型这件事因此变得没那么重"&gt;换模型这件事因此变得没那么重&lt;/h2&gt;
+&lt;p&gt;以前我会比较在意某个 Agent 有没有自己独特的 Memory、Rule、Project Context。&lt;/p&gt;
+&lt;p&gt;现在当然还是会在意模型能力，但项目状态不太想绑在它身上了。&lt;/p&gt;
+&lt;p&gt;Verification Plan、Evidence、Reconciliation、Graph History、Semantic Registry 这些长期状态都留在 wcode。&lt;/p&gt;
+&lt;p&gt;一个 Agent 只要能调用 MCP，就能接同一个 Workspace；安装同一份 Skill，只是更容易遵循同一套工作习惯。&lt;/p&gt;
+&lt;p&gt;从 Claude 换到 Codex，或者 Web 端换成本地 Agent，模型上下文会变，但项目本身不应该跟着清零。&lt;/p&gt;
+&lt;p&gt;这也是我现在比较满意的一点：MCP 没有越做越大，反而被压回了它最合适的位置。&lt;/p&gt;
+&lt;p&gt;最后还是会回到最底层的问题：这些 Agent 到底能在我的机器上做什么。Workspace、命令执行和授权的边界，我单独写在 &lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>wcode：我为什么开始把 edit file 往后放</title><link>https://francis.run/blog/wcode-reconciliation/</link><pubDate>Wed, 26 Aug 2026 03:15:00 +0800</pubDate><guid>https://francis.run/blog/wcode-reconciliation/</guid><description>&lt;p&gt;写 Coding Agent 很容易最后都收敛到几个工具：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read_file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit_file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run_test
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第一版 wcode 也差不多。&lt;/p&gt;
+&lt;p&gt;当时我花很多时间把这些工具做得安全一点：路径不能逃出 Workspace，写入有 SHA，命令不经过 Shell，验证有固定 Harness。&lt;/p&gt;
+&lt;p&gt;这些当然还重要。&lt;/p&gt;
+&lt;p&gt;但用久以后我发现，&lt;code&gt;edit_file&lt;/code&gt; 其实不是最难的部分。&lt;/p&gt;
+&lt;p&gt;真正让我头疼的是一个稍微大一点的修改：为什么要改？这次到底影响什么？哪件事必须先做？什么时候算完成？如果一个模型做到一半退出了，第二个模型从哪里接？&lt;/p&gt;
+&lt;p&gt;所以我后来开始把 &lt;code&gt;edit file&lt;/code&gt; 往后放，前面先补 Reconciliation。&lt;/p&gt;
+&lt;h2 id="我先想要的是一个能恢复的-plan"&gt;我先想要的是一个能恢复的 Plan&lt;/h2&gt;
+&lt;p&gt;现在一条链大概是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Actual State / Git Change
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Drift
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Impact
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Reconciliation Plan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification / Human Approval
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Plan 不是一句“修好这个问题”。&lt;/p&gt;
+&lt;p&gt;它会带上这次 Design Change、发现的 Drift、Impact、Risk、Change Intent 和 Verification Requirement，然后再拆成有依赖的 Task。&lt;/p&gt;
+&lt;p&gt;这听起来有点重，但我做它的原因其实很现实：&lt;strong&gt;聊天记录不是工作状态。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="session-断掉比想象中常见"&gt;Session 断掉比想象中常见&lt;/h2&gt;
+&lt;p&gt;模型会换，工具会重连，Web Session 会过期，有时我自己也会中途停下来改别的东西。&lt;/p&gt;
+&lt;p&gt;如果任务做到一半，所有进度都只存在上一段 Conversation 里，下一次基本又得从头解释。&lt;/p&gt;
+&lt;p&gt;所以 Reconciliation Plan 和 Execution 都会持久化。&lt;/p&gt;
+&lt;p&gt;执行者面对的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;claim
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;submit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;retry
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;status
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Claim 只能拿当前依赖已经满足的 Task。&lt;/p&gt;
+&lt;p&gt;Submit 会留下执行结果和 Evidence。&lt;/p&gt;
+&lt;p&gt;失败就是失败，不会因为任务“差不多做完了”自动翻成成功。要继续就 Retry。&lt;/p&gt;
+&lt;p&gt;这套状态机没有多复杂，但它给不同模型之间提供了一个比聊天记录稳定得多的交接面。&lt;/p&gt;
+&lt;h2 id="代码写完不等于修改完成"&gt;“代码写完”不等于“修改完成”&lt;/h2&gt;
+&lt;p&gt;我后来很想把这两个状态拆开。&lt;/p&gt;
+&lt;p&gt;以前 Agent 写完最后一个 Patch，往往心理上任务就已经结束了，测试变成一个尾巴：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;TODO: run tests
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Reconciliation 里 Verification 和 Human Approval 可以是实际的系统 Gate。&lt;/p&gt;
+&lt;p&gt;只有对应 Evidence 到了，Task 才继续往后走。&lt;/p&gt;
+&lt;p&gt;所以：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Implementation complete
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;和：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Change converged
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不是同一个状态。&lt;/p&gt;
+&lt;p&gt;这个区别在安全相关修改里尤其明显。代码可能十分钟前已经写完，但 Security Review、Maintainability Review、Full Verification 还没结束，那我就不希望系统把它显示成“完成”。&lt;/p&gt;
+&lt;h2 id="plan-没有超级写权限"&gt;Plan 没有超级写权限&lt;/h2&gt;
+&lt;p&gt;Reconciliation 做到这里，很容易给它加一条捷径：既然 Plan 已经知道要改什么，那直接让执行器 Patch 不就行了。&lt;/p&gt;
+&lt;p&gt;我没有这么做。&lt;/p&gt;
+&lt;p&gt;真正的文件修改仍然走 Workspace 原来的边界：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Workspace root isolation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA-256 precondition
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;atomic write
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;symlink / hardlink safety
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;protected path policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;authorization
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;假设 Plan 是十分钟前生成的，这十分钟里我手动改了目标文件。&lt;/p&gt;
+&lt;p&gt;执行者拿旧 SHA 去写，照样失败。&lt;/p&gt;
+&lt;p&gt;Plan 不能因为“自己是计划”就压过现在的文件状态。&lt;/p&gt;
+&lt;p&gt;这条限制看起来会让自动化麻烦一点，但我觉得值得。&lt;/p&gt;
+&lt;h2 id="并行也没有直接全开"&gt;并行也没有直接全开&lt;/h2&gt;
+&lt;p&gt;现在 &lt;code&gt;parallel_tools&lt;/code&gt; 已经能处理不只是 Read/Discovery，也包括一部分独立的 Workspace Write。&lt;/p&gt;
+&lt;p&gt;但不是把一堆写操作扔进 Tokio 就结束了。&lt;/p&gt;
+&lt;p&gt;Scheduler 会先按路径做 Resource Model：哪些操作读同一个文件、哪些写同一个文件、Move / Delete / Create 有没有父子目录依赖。&lt;/p&gt;
+&lt;p&gt;独立的可以 fan out；冲突的先排序。&lt;/p&gt;
+&lt;p&gt;同一个文件上的 &lt;code&gt;apply_edits&lt;/code&gt; 只有在 SHA 一样、Edit 本身不冲突时才会合并成一次原子提交。&lt;/p&gt;
+&lt;p&gt;这和 Reconciliation 的想法很接近：不是追求“看起来同时跑了很多东西”，而是先搞清楚哪些事情真的互相独立。&lt;/p&gt;
+&lt;h2 id="continuous-reconciliation-我现在还是很谨慎"&gt;Continuous Reconciliation 我现在还是很谨慎&lt;/h2&gt;
+&lt;p&gt;“Reconciliation” 这个词很容易让人联想到 Kubernetes Controller：不停观察 Desired / Actual，然后自动把实际状态修回去。&lt;/p&gt;
+&lt;p&gt;wcode 确实有往这个方向走的设计，但我暂时不想让代码库也变成那种全自动 Controller。&lt;/p&gt;
+&lt;p&gt;软件修改和副本数不一样。&lt;/p&gt;
+&lt;p&gt;有些 Drift 很机械，可以自动发现；但“这里应该不应该改”“设计到底是不是变了”“这个抽象还值不值得留”，很多时候不适合无条件自动推进。&lt;/p&gt;
+&lt;p&gt;所以我目前更关心的是把：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;观察
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;计划
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;执行
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;验证
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;证据
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这几段先做成可靠的状态。&lt;/p&gt;
+&lt;p&gt;自动化程度以后再加。&lt;/p&gt;
+&lt;h2 id="不同模型终于不用共享一段脑内上下文"&gt;不同模型终于不用共享一段脑内上下文&lt;/h2&gt;
+&lt;p&gt;这是我现在最喜欢 Reconciliation 的地方。&lt;/p&gt;
+&lt;p&gt;一个模型可以做 Implementation，另一个做 Security Review，再换一个看 Maintainability 或补 Test。&lt;/p&gt;
+&lt;p&gt;它们不需要彼此复述上一段 Chat。&lt;/p&gt;
+&lt;p&gt;只要都通过 wcode，看到的是同一个 Requirement、同一个 Plan、同一个 revision 和同一组 Evidence。&lt;/p&gt;
+&lt;p&gt;模型当然还是会有各自的判断差异，但至少“项目现在做到哪了”不必由模型自己记。&lt;/p&gt;
+&lt;p&gt;再往外一层，就是怎么把这些能力交给不同 Agent，而又不把权限和工作流混在一起。我把这部分写在 &lt;a href="https://francis.run/blog/wcode-mcp-agent/"&gt;MCP 负责能力，Skill 只负责工作习惯&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>wcode：测试通过以后，我还想留下什么</title><link>https://francis.run/blog/wcode-verification/</link><pubDate>Wed, 26 Aug 2026 03:14:00 +0800</pubDate><guid>https://francis.run/blog/wcode-verification/</guid><description>&lt;p&gt;Coding Agent 很喜欢用一句话结束工作：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tests passed.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以前我也觉得差不多够了。&lt;/p&gt;
+&lt;p&gt;后来 wcode 自己改得越来越大，这句话开始经常让我不放心。&lt;/p&gt;
+&lt;p&gt;到底跑了哪几个测试？是 quick 还是 full？测试的时候源码是不是当前 revision？有没有 Static Check？有没有 Mutation / Fuzz？两个 Reviewer 意见不一样怎么办？代码虽然能跑，但这次是不是又把一个文件堆大了几百行？&lt;/p&gt;
+&lt;p&gt;所以最近我把 Verification 单独往前做了一层。&lt;/p&gt;
+&lt;h2 id="最基础的还是项目自己的检查"&gt;最基础的还是项目自己的检查&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 没有想发明新的测试框架。&lt;/p&gt;
+&lt;p&gt;Harness 先看项目实际有什么，再推导检查。&lt;/p&gt;
+&lt;p&gt;Rust 项目大概是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;quick
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; git diff --check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo fmt --check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo check --locked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;full
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo test --locked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo clippy --locked -- -D warnings
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo build --release --locked
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Node 就看 &lt;code&gt;package.json&lt;/code&gt; 里真实存在的 script，Makefile 也只跑确实定义过的 target。&lt;/p&gt;
+&lt;p&gt;这块我一直比较克制，因为“猜一个应该存在的命令然后执行”在 Agent 场景里不是好习惯。&lt;/p&gt;
+&lt;h2 id="risk-决定要不要继续往下走"&gt;Risk 决定要不要继续往下走&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 只是确定性基础检查。&lt;/p&gt;
+&lt;p&gt;再往上是 Verification Plan。&lt;/p&gt;
+&lt;p&gt;Plan 会根据这次变更的 Risk 决定要不要要求更多东西，例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;property
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mutation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fuzz
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;runtime canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;human approval
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;independent reviewer
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些不是写在 Prompt 里的“建议最好跑一下”。&lt;/p&gt;
+&lt;p&gt;如果 Plan 要求它，它就是 Gate。&lt;/p&gt;
+&lt;h2 id="executor-registry-是因为每个语言都不一样"&gt;Executor Registry 是因为每个语言都不一样&lt;/h2&gt;
+&lt;p&gt;Property、Mutation、Fuzz 在不同生态里完全不是一回事。&lt;/p&gt;
+&lt;p&gt;我不想在 Verification 里写一堆 &lt;code&gt;if rust ... else if python ...&lt;/code&gt;，所以做了统一的 Executor Registry。&lt;/p&gt;
+&lt;p&gt;现在会识别一批常见工具，比如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rust proptest / quickcheck / cargo-fuzz / cargo-mutants
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Python Hypothesis / mutmut
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;JS / TS fast-check / Stryker
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Java jqwik / PIT
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;C# FsCheck / Stryker
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;项目自己的验证程序也可以放到 &lt;code&gt;.wcode/executors.yaml&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;schema_version: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;executors:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - id: service-canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; stage: runtime_canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; languages: [go]
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; program: ./tools/check-canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; args: [--environment, staging]
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cwd: .
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; timeout_seconds: 60
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里有个安全问题不能省：这些东西都会执行仓库控制的代码。&lt;/p&gt;
+&lt;p&gt;以前我只有 &lt;code&gt;--allow-risky-exec&lt;/code&gt; 这个粗开关。现在仍然可以这么启动，适合我已经明确完全信任仓库的时候；但也可以让某个具体的 semantic refresh / runtime executor 先产生本地 Authorization Request，在 TUI 里批准这次 Session 里的精确操作，再重试。&lt;/p&gt;
+&lt;p&gt;我更常用后者。&lt;/p&gt;
+&lt;p&gt;只是跑一次工具，就没必要把整个进程后面的 risky execution 一起放开。&lt;/p&gt;
+&lt;h2 id="maintainability-现在也是-gate"&gt;Maintainability 现在也是 Gate&lt;/h2&gt;
+&lt;p&gt;这一块是后面补的。&lt;/p&gt;
+&lt;p&gt;我见过不少改动，测试全绿，功能也对，但代码明显开始往难维护的方向长。比如一个本来已经很大的文件又塞进去几百行，或者为了兼容一个特殊情况一路加 wrapper / branch，最后谁都不敢删。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;review_changes&lt;/code&gt; 现在会先提供一些很笨但有用的结构信号：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;文件这次跨过 1,000 行
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;新增代码高度集中在一个源码文件
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一次大改横跨多个 Product Scope
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些信号本身不能判定“代码烂”。&lt;/p&gt;
+&lt;p&gt;所以 Medium 及以上 Risk 的 Plan 还会创建一个独立的 maintainability reviewer。&lt;/p&gt;
+&lt;p&gt;它和 correctness reviewer 是两件事。&lt;/p&gt;
+&lt;p&gt;Correctness Pass 不能替它签字。&lt;/p&gt;
+&lt;p&gt;Maintainability Review 更关心的是：有没有更简单的做法、有没有散落的 special case、有没有多余的抽象层、有没有重复已有 helper、边界是不是开始泄漏。&lt;/p&gt;
+&lt;p&gt;我不想用“测试通过”给这些问题盖章。&lt;/p&gt;
+&lt;h2 id="reviewer-第一轮看不到别人怎么说"&gt;Reviewer 第一轮看不到别人怎么说&lt;/h2&gt;
+&lt;p&gt;Verification Plan 可以创建多个独立 Reviewer Job。&lt;/p&gt;
+&lt;p&gt;第一轮是 Blind Review。&lt;/p&gt;
+&lt;p&gt;Reviewer A 不会先看到 Reviewer B 的结论。&lt;/p&gt;
+&lt;p&gt;这个设计不是为了做什么复杂的多 Agent 社会实验，只是因为锚定效应太明显了。第二个 Reviewer 如果先看到第一个写着 Pass，经常会很自然地开始找理由支持它。&lt;/p&gt;
+&lt;p&gt;如果最后一个 Pass、一个 Fail，wcode 不会算票数。&lt;/p&gt;
+&lt;p&gt;会留下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Disagree
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;争议就是争议。&lt;/p&gt;
+&lt;p&gt;我宁愿停下来处理，也不想系统替我把它平均掉。&lt;/p&gt;
+&lt;h2 id="真正想留下的是-evidence"&gt;真正想留下的是 Evidence&lt;/h2&gt;
+&lt;p&gt;Verification 最后要落成 Evidence。&lt;/p&gt;
+&lt;p&gt;不是一句文本，而是带上下文的记录：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;producer
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;code revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;result
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;confidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;timestamp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;代码 revision 变了，旧 Plan 会被 stale blocker 卡住。&lt;/p&gt;
+&lt;p&gt;不同 Stage Producer 也各自保留最新结果，一个 Runner 的 Pass 不会去覆盖另一个 Runner 的 Fail。&lt;/p&gt;
+&lt;p&gt;现在 Stage 聚合是偏保守的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Fail &amp;gt; Disagree &amp;gt; Inconclusive &amp;gt; Pass
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;验证系统如果非要选一个方向，我宁愿它烦一点，也别太乐观。&lt;/p&gt;
+&lt;h2 id="这些运行状态没有塞进-git"&gt;这些运行状态没有塞进 Git&lt;/h2&gt;
+&lt;p&gt;Evidence、Verification Plan、Reviewer Job 这类状态会按 Workspace 持久化，但放在 wcode 自己的用户级 State 目录，不写进仓库。&lt;/p&gt;
+&lt;p&gt;原因也简单。&lt;/p&gt;
+&lt;p&gt;Git 里我想保留代码和 Design State。每跑一次测试都改仓库，只会制造一堆没必要的 Commit / Artifact 噪音。&lt;/p&gt;
+&lt;p&gt;模型断开或者 wcode 重启以后，这些状态还能重新加载。&lt;/p&gt;
+&lt;p&gt;这也是我后来开始做 Reconciliation 的前提：如果验证结果本身都只活在聊天里，那“换一个模型继续做”其实没有稳定交接面。&lt;/p&gt;
+&lt;p&gt;Evidence 能留下来以后，长任务才有可能真正跨 Session 继续。也就是从这里，我开始认真做 &lt;a href="https://francis.run/blog/wcode-reconciliation/"&gt;Reconciliation&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode 的 Design State：我为什么把需求写进仓库</title><link>https://francis.run/blog/wcode-design-state/</link><pubDate>Wed, 26 Aug 2026 03:11:00 +0800</pubDate><guid>https://francis.run/blog/wcode-design-state/</guid><description>&lt;p&gt;做 wcode 一段时间以后，我越来越不喜欢一种状态：代码里明明有很多约束，但这些约束只活在人脑里。&lt;/p&gt;
+&lt;p&gt;比如 Workspace Root 为什么不能随便放宽，为什么 Symlink 要单独挡，为什么一个旧 SHA 不能继续写文件。代码看得出来“怎么做”，但不一定看得出来“为什么不能改成别的样子”。&lt;/p&gt;
+&lt;p&gt;人长期待在项目里还好，换一个 Agent 进来，它看到的通常只有当前源码。&lt;/p&gt;
+&lt;p&gt;于是我开始把一部分“为什么”写进仓库。&lt;/p&gt;
+&lt;p&gt;不是 README，也不是另起一个 Wiki，而是一份机器也能读的 Design State。&lt;/p&gt;
+&lt;h2 id="其实就是几份-yaml"&gt;其实就是几份 YAML&lt;/h2&gt;
+&lt;p&gt;现在结构很普通：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;.wcode/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── project.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── design/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── product.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── requirements.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── components.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── constraints.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── acceptance.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── decisions.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;关键不在 YAML，而在稳定 ID。&lt;/p&gt;
+&lt;p&gt;例如 Workspace Root Isolation 可以有一个 Requirement：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- schema_version: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; id: REQ-SEC-001
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; title: Workspace root isolation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; intent: Remote models must never escape the configured workspace root.
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; priority: critical
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; implemented_by:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - component:workspace-security
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; acceptance:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - AC-SEC-001
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; constraints:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - CONSTRAINT-ROOT-ISOLATION
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Component 再指到真实实现。现在 wcode 的目录已经拆过几轮，Workspace Root 相关实现就在：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- schema_version: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; id: component:workspace-security
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; name: Workspace Security
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; implementation:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - kind: symbol
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; path: src/workspace/roots.rs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; symbol: Workspace::existing_path
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Acceptance 最后落到测试：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- schema_version: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; id: AC-SEC-001
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; title: Workspace traversal is blocked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; verification:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - kind: test
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; path: src/workspace/mod.rs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; symbol: tests::blocks_path_traversal_and_stale_writes
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后能顺着一条真实链走下去：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;REQ-SEC-001
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;component:workspace-security
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;src/workspace/roots.rs::Workspace::existing_path
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;AC-SEC-001
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;src/workspace/mod.rs::tests::blocks_path_traversal_and_stale_writes
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这件事看起来很朴素，但它改变了我给 Agent 下任务的方式。&lt;/p&gt;
+&lt;p&gt;以前会说：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;去看一下 workspace 相关代码，路径安全这里改一下。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;现在可以先从 Requirement 开始：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;看一下 workspace root isolation 现在的实现、约束和验证。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;文件名反而是后面的事情。&lt;/p&gt;
+&lt;h2 id="我不想维护第二份源码"&gt;我不想维护第二份源码&lt;/h2&gt;
+&lt;p&gt;Design State 最容易做过头。&lt;/p&gt;
+&lt;p&gt;如果每个函数、每个类型、每条调用关系都要手工抄进 YAML，那这东西一定会烂掉。代码一重构，Design State 马上过期，最后大家只能一起假装它还可信。&lt;/p&gt;
+&lt;p&gt;所以我现在只放那些值得稳定命名的东西：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component responsibility
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Constraint
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance Criterion
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;重要 Decision
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;至于“这个函数现在调用谁”“某个模块里有哪些 Symbol”，让代码索引和 Software Graph 自己算。&lt;/p&gt;
+&lt;p&gt;Design State 负责的是“应该是什么”，不是给源码做一份手写镜像。&lt;/p&gt;
+&lt;h2 id="product-scope-是后来补的一层"&gt;Product Scope 是后来补的一层&lt;/h2&gt;
+&lt;p&gt;项目拆大以后，我还遇到过另一个问题。&lt;/p&gt;
+&lt;p&gt;Design State 能告诉我 Requirement 属于什么能力，但 Agent 做源码导航时仍然可能在整个仓库里乱跑。&lt;/p&gt;
+&lt;p&gt;所以后来 wcode 又有了 Product Scope。&lt;/p&gt;
+&lt;p&gt;它和 Design State 不是一回事。&lt;/p&gt;
+&lt;p&gt;Design State 管稳定的产品意图，Product Scope 更像源码架构上的边界。现在 &lt;code&gt;scope_status&lt;/code&gt; 会检查源码落在哪些 Scope，还有没有没归类的文件；&lt;code&gt;software_context(scopes=...)&lt;/code&gt; 可以真的只在选定 Scope 里找相关源码。&lt;/p&gt;
+&lt;p&gt;我自己用下来，两个东西刚好互补：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State：为什么有这个能力
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Product Scope：这类能力大致落在哪块源码
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Software Graph：代码现在实际怎么连
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;比起把所有东西都塞进一张图里，这样更容易维护。&lt;/p&gt;
+&lt;h2 id="tree-sitter-解析到了也只能说明解析到了"&gt;Tree-sitter 解析到了，也只能说明解析到了&lt;/h2&gt;
+&lt;p&gt;Component 和 Acceptance 可以引用 Symbol，但基础解析还是 Tree-sitter。&lt;/p&gt;
+&lt;p&gt;所以结果会明确带：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider = tree-sitter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;precision = syntax
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这表示“这里有这个语法定义”，不是“编译器已经证明这就是最终绑定到的实现”。&lt;/p&gt;
+&lt;p&gt;这种区别有时候很烦，尤其写展示页面时，直接写成“已解析”会好看很多。&lt;/p&gt;
+&lt;p&gt;但我宁愿页面上多一个 &lt;code&gt;syntax&lt;/code&gt;，也不想让 Design State 借着结构化格式显得比底层事实更可靠。&lt;/p&gt;
+&lt;h2 id="我最后还是让-wcode-管自己"&gt;我最后还是让 wcode 管自己&lt;/h2&gt;
+&lt;p&gt;Design State 真正变得有用，是我开始拿它 Dogfood wcode 自己以后。&lt;/p&gt;
+&lt;p&gt;源码一移动，Traceability 会暴露旧路径；Requirement 加了 Acceptance 但测试没接上，也会直接出现 Gap。现在 Project Observatory 里还能从 Requirement 一路看到 Component、当前实现、Verification 和这次 Git Change。&lt;/p&gt;
+&lt;p&gt;这时候 &lt;code&gt;.wcode/design&lt;/code&gt; 才不是“又多了几份文档”。&lt;/p&gt;
+&lt;p&gt;它真的进入了开发流程。&lt;/p&gt;
+&lt;p&gt;当然它也会带来维护成本。改架构时，有时候代码改完还得回来修 Design mapping。这个成本我现在愿意付，因为不付的代价通常是几个月以后重新猜一遍为什么当初这么设计。&lt;/p&gt;
+&lt;p&gt;下一篇是 &lt;a href="https://francis.run/blog/wcode-software-graph/"&gt;Software Graph&lt;/a&gt;。Design State 解决“应该是什么”，Graph 解决的是另一个更麻烦的问题：代码现在到底是什么，而且我们对这个答案有多大把握。&lt;/p&gt;</description></item><item><title>wcode 最近做成什么样了</title><link>https://francis.run/blog/wcode-2026/</link><pubDate>Wed, 26 Aug 2026 03:10:00 +0800</pubDate><guid>https://francis.run/blog/wcode-2026/</guid><description>&lt;p&gt;我前几天写过一篇 &lt;a href="https://francis.run/blog/wcode/"&gt;wcode 的第一版介绍&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;那篇写的是最早的 wcode：我想在 Web 端继续用自己喜欢的模型，又想让它们安全地碰到本地代码，所以做了 Remote MCP、OAuth、Workspace、Tree-sitter、文件修改和命令执行。&lt;/p&gt;
+&lt;p&gt;这些东西现在都还在。&lt;/p&gt;
+&lt;p&gt;但写完第一版没多久，我发现项目已经不是那篇文章里的样子了。&lt;/p&gt;
+&lt;p&gt;不是底层推翻了。恰恰相反，底层越来越像基础设施，平时不太需要想它。真正让我反复改的是另一件事：&lt;strong&gt;一次代码修改结束以后，到底留下了什么。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;模型把代码改出来已经不算很难。难的是一个仓库被我、不同模型、不同工具来回改几十次以后，我还能不能回答这些问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这段代码为什么必须这样？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;它对应哪个需求？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这次修改实际碰到了哪些功能？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;原来的约束还成立吗？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;测试绿了，绿的是哪个 revision？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁 review 过？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;还有没有没处理完的东西？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Git 很擅长告诉我“哪里变了”，但它不会替我保存“为什么这么设计”。聊天记录更不适合做这个事情，换个模型基本就断了。&lt;/p&gt;
+&lt;p&gt;所以最近 wcode 的重心慢慢从“给模型一套本地工具”，变成了“把软件本身的状态留下来”。&lt;/p&gt;
+&lt;p&gt;现在粗略可以画成这样：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;.wcode Design State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Requirement / Constraint / Acceptance
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Product Scope ───── Source Code
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └──── Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Git Actual State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Drift / Impact / Risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Reconciliation Plan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这张图看起来比第一版复杂不少，但实际使用时反而更简单了：模型还是写代码，wcode 主要负责把它写代码前后那些容易丢掉的状态接起来。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;h2 id="我先把为什么放进仓库"&gt;我先把“为什么”放进仓库&lt;/h2&gt;
+&lt;p&gt;最先加的是 Design State。&lt;/p&gt;
+&lt;p&gt;现在项目可以有一份 &lt;code&gt;.wcode&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;.wcode/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── project.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── design/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── product.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── requirements.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── components.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── constraints.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── acceptance.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── decisions.yaml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我没有想把它做成另一种编程语言。里面主要是稳定 ID 和关系：Requirement 由哪个 Component 实现，Component 落在哪些代码上，Acceptance 最后由什么测试或检查来验证。&lt;/p&gt;
+&lt;p&gt;这样我再改 Workspace Security 时，入口不一定非得是“先打开哪个 Rust 文件”。可以先问：这个 Requirement 现在的实现和验证在哪里。&lt;/p&gt;
+&lt;p&gt;wcode 自己也在用这套 Design State。这个 Dogfood 很重要，因为只设计格式不用，很容易最后做出一堆看起来完整、实际没人愿意维护的 YAML。&lt;/p&gt;
+&lt;h2 id="仓库大了以后我又加了-product-scope"&gt;仓库大了以后，我又加了 Product Scope&lt;/h2&gt;
+&lt;p&gt;后来代码继续长，另一个问题出来了。&lt;/p&gt;
+&lt;p&gt;即使已经有 &lt;code&gt;software_context&lt;/code&gt;，一个任务如果每次都在整个仓库里找，返回的东西还是会越来越杂。尤其 wcode 自己同时有 Runtime、MCP、Workspace、Graph、Verification、UI，一句“看看安全问题”很容易把几个完全不同的模块一起捞回来。&lt;/p&gt;
+&lt;p&gt;所以现在有一套固定的 Product Scope。&lt;/p&gt;
+&lt;p&gt;它不是业务标签系统，更像 wcode 自己的能力分区。&lt;code&gt;scope_status&lt;/code&gt; 会告诉我源码现在落在哪些 Scope，还有哪些文件没有被归类；&lt;code&gt;software_context(scopes=...)&lt;/code&gt; 则可以真的把源码导航缩到选中的范围。&lt;/p&gt;
+&lt;p&gt;这个功能的起因很朴素：我不想项目目录已经拆得很清楚了，Agent 进来以后又把它当成一个巨大的平面文件夹。&lt;/p&gt;
+&lt;h2 id="software-graph-还在但我不再拿一团球当-ui"&gt;Software Graph 还在，但我不再拿一团球当 UI&lt;/h2&gt;
+&lt;p&gt;Tree-sitter 仍然是底座。&lt;/p&gt;
+&lt;p&gt;它不需要启动项目，也不需要信任仓库配置，就能拿到定义、Range、Qualified Name 和一部分语法级调用关系。这些关系进入 Software Graph 时会老老实实写：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider = tree-sitter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;precision = syntax
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果本机有对应 Language Server，而且我允许它运行，wcode 才会把真实返回的 Document Symbol、Call Hierarchy、Implementation 作为 semantic fact 加进去。&lt;/p&gt;
+&lt;p&gt;源码变了以后，旧 LSP 结果会因为 Source Hash 不一致变成 stale，不再混进新的分析。&lt;/p&gt;
+&lt;p&gt;Graph 也会留 meaningful history，可以看版本之间 Node / Edge 到底怎么变了。&lt;/p&gt;
+&lt;p&gt;一开始我给 WebUI 做过一个可以拖拽、缩放、筛选的 Graph Canvas。技术上没什么问题，但我自己用几次就觉得没意思。&lt;/p&gt;
+&lt;p&gt;我打开页面不是为了看一团会动的球。&lt;/p&gt;
+&lt;p&gt;我想看的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 Requirement 是什么
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁实现它
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;现在代码落在哪里
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance 怎么验证
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这次 Git 改动碰了什么
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;设计依赖和代码依赖有没有对上
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以现在主界面已经换成 requirement-first 的 &lt;strong&gt;Project Observatory&lt;/strong&gt;。低层 Software Graph 还在，而且仍然参与 Impact、Context 和历史 Diff，只是不再被当成“产品首页”。&lt;/p&gt;
+&lt;p&gt;这个改动我自己很喜欢。图是手段，不是目的。&lt;/p&gt;
+&lt;h2 id="risk-终于不用靠一句这里比较重要"&gt;Risk 终于不用靠一句“这里比较重要”&lt;/h2&gt;
+&lt;p&gt;以前让 Agent 改安全相关代码时，我经常会顺手补一句：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这个地方比较重要，多检查一下。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;现在回头看，这句话几乎没约束力。&lt;/p&gt;
+&lt;p&gt;wcode 会把 Git Change、Traceability Gap、Drift、Design 里声明的风险以及一些结构性变化合起来，再决定 Verification 要走多深。&lt;/p&gt;
+&lt;p&gt;最近还补了 Maintainability Review。&lt;/p&gt;
+&lt;p&gt;例如一个文件这次改动后从 1,000 行以下跨到 1,000 行以上，或者大量代码集中长在一个文件里，或者一次变更横跨多个 Product Scope，&lt;code&gt;review_changes&lt;/code&gt; 会把它们作为结构信号提出来。&lt;/p&gt;
+&lt;p&gt;这不是在声称“超过 1,000 行就一定烂”。它只是提醒：代码在往一个值得单独看一眼的方向长。&lt;/p&gt;
+&lt;p&gt;Medium 及以上风险的 Verification Plan 还会有独立的 maintainability reviewer。Correctness 过了，不代表结构就可以不看。&lt;/p&gt;
+&lt;h2 id="verification-现在会留下证据"&gt;Verification 现在会留下证据&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 还在做最普通的工程检查。&lt;/p&gt;
+&lt;p&gt;Rust 项目仍然是这些：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;quick
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; git diff --check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo fmt --check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo check --locked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;full
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo test --locked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo clippy --locked -- -D warnings
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo build --release --locked
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;更深一层的 Verification Plan 可以要求 Property、Mutation、Fuzz、Runtime Canary、独立 Reviewer 或 Human Approval。&lt;/p&gt;
+&lt;p&gt;我以前最不喜欢 Agent 最后只留一句：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tests passed.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在 Verification 会形成 Evidence，至少能知道是谁产生的、针对哪个 code revision、哪个 design revision、什么 policy、结果是什么。&lt;/p&gt;
+&lt;p&gt;Reviewer 结论冲突也不会被后来的 Pass 冲掉。冲突就是 &lt;code&gt;Disagree&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;“有争议”本身比“系统帮我平均成通过”更有用。&lt;/p&gt;
+&lt;h2 id="reconciliation-是我最近改得最多的一块"&gt;Reconciliation 是我最近改得最多的一块&lt;/h2&gt;
+&lt;p&gt;早期 Coding Agent 的流程基本是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;读 → 改 → 测 → 结束
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;现在我更关心“这个修改什么时候真的算结束”。&lt;/p&gt;
+&lt;p&gt;Reconciliation Plan 会把 Drift、Impact、Risk、Change Intent 和 Verification Requirement 组织成有依赖的任务。执行状态可以 Claim、Submit、Retry，而且会持久化。&lt;/p&gt;
+&lt;p&gt;所以一个模型做 Implementation，另一个模型来做 Security Review，再换一个补测试，不需要共享同一段聊天历史。&lt;/p&gt;
+&lt;p&gt;它们面对的是同一个 Plan、同一个 revision、同一组 Evidence。&lt;/p&gt;
+&lt;p&gt;不过 Reconciliation 没有一套隐藏的超级权限。真正改文件还是走 Workspace 的 Root、SHA、原子写入、Symlink/Hardlink 防护和授权逻辑。&lt;/p&gt;
+&lt;p&gt;Plan 不能覆盖现实里的文件状态。&lt;/p&gt;
+&lt;h2 id="有些权限我后来做得更细了"&gt;有些权限我后来做得更细了&lt;/h2&gt;
+&lt;p&gt;第一版只有比较粗的 &lt;code&gt;--allow-risky-exec&lt;/code&gt;：启动时显式告诉 wcode，这个进程可以跑 repository-aware 的高风险执行。&lt;/p&gt;
+&lt;p&gt;现在这条路径还在，但不是唯一方式。&lt;/p&gt;
+&lt;p&gt;Language Server、Runtime Executor 这类操作，如果当前没有进程级授权，也可以先生成一个本地 Authorization Request。我在 TUI 或受保护 WebUI 里批准这个具体操作，再重试。&lt;/p&gt;
+&lt;p&gt;现在还多了一层 &lt;code&gt;CommandAccess&lt;/code&gt;：模型请求一个当前 Workspace 尚未授权的裸可执行程序名时，会自动进入 Pending 列表。TUI 用 ↑/↓ 选择，&lt;code&gt;Y&lt;/code&gt; / &lt;code&gt;N&lt;/code&gt; 只处理当前选中请求；Project Observatory 也能逐条批准或拒绝，同时管理项目和已授权命令。批准某个 Program 不会开放 Shell，Shell Interpreter、路径逃逸和受保护资源仍是硬边界。&lt;/p&gt;
+&lt;p&gt;删除更严格：&lt;code&gt;delete_path&lt;/code&gt; 只能删普通文件或空目录，文件还要带当前 SHA，而且授权是 exact one-shot，用完就没了。&lt;/p&gt;
+&lt;p&gt;我更喜欢现在这个粒度。不是为了省一次确认，就把整个进程后面的高风险操作全部放开。&lt;/p&gt;
+&lt;h2 id="mcp-反而退到了后面"&gt;MCP 反而退到了后面&lt;/h2&gt;
+&lt;p&gt;第一版文章里 MCP 是主角，现在它更像接口层。&lt;/p&gt;
+&lt;p&gt;本地 Agent 直接走：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace /absolute/path/to/repo mcp-stdio
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Web / Cloud 端走 Streamable HTTP + OAuth。&lt;/p&gt;
+&lt;p&gt;后面还是同一个 Workspace、Harness、Software Intelligence 和 Evidence Runtime。&lt;/p&gt;
+&lt;p&gt;需要把工作习惯带到不同 Agent 时，可以导出一个很小的 Skill：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace &lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;$PWD&lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt; agent-plugin --output wcode-agent-plugin
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它只有 Metadata 和 &lt;code&gt;SKILL.md&lt;/code&gt;，不会顺手塞 Hook、脚本、Credential，也不会替我猜 Workspace。&lt;/p&gt;
+&lt;p&gt;Skill 告诉 Agent 怎么工作，MCP 决定它到底能做什么。我还是想把这两件事分开。&lt;/p&gt;
+&lt;h2 id="现在我怎么用"&gt;现在我怎么用&lt;/h2&gt;
+&lt;p&gt;平时还是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace &lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;$PWD&lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;进入一个不熟的仓库，我现在更习惯先看：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;workspace_info
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;scope_status
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design_status
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;project_context
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;再根据任务选 Scope，用 &lt;code&gt;software_context&lt;/code&gt; 找代码。&lt;/p&gt;
+&lt;p&gt;改完后才是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;review_changes
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ drift_status / impact_analysis / risk_status
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ reconciliation / verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ evidence_status
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;TUI 里 &lt;code&gt;I&lt;/code&gt; 看 Intelligence，&lt;code&gt;W&lt;/code&gt; 打开 Project Observatory。&lt;/p&gt;
+&lt;p&gt;这一套还在继续变，但方向已经和第一版很不一样了。第一版解决“怎么让模型安全地进仓库”，最近这些东西解决的是“它进来以后，项目怎么别越改越说不清楚”。&lt;/p&gt;
+&lt;p&gt;后面几篇我分开写：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-design-state/"&gt;Design State：我为什么把需求写进仓库&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-software-graph/"&gt;Software Graph：先承认自己不知道&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-traceability/"&gt;Git Diff 之外，我还想知道什么&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-verification/"&gt;测试通过以后，我还想留下什么&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-reconciliation/"&gt;我为什么开始把 edit file 往后放&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-mcp-agent/"&gt;MCP 负责能力，Skill 只负责工作习惯&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-performance/"&gt;我把 wcode 写代码这条链又压快了一轮&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;代码在 &lt;a href="https://github.com/francis-du/wcode"&gt;https://github.com/francis-du/wcode&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>我写了 wcode：把 Web AI 接到本地代码库</title><link>https://francis.run/blog/wcode/</link><pubDate>Sun, 23 Aug 2026 18:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="打开 wcode 官网"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode 官网" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p class="project-links"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;官网与文档 ↗&lt;/a&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这篇保留的是 wcode 第一版的实现状态，我不会跟着后续代码逐段回写。现在的版本已经继续做了 Design State、Product Scope、Verification、Evidence、Reconciliation 和 Project Observatory，见 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;wcode 最近做成什么样了&lt;/a&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;我平时会同时用几个 AI 的 Web 端。它们的模型和对话体验已经很好了，但一碰到本地项目，事情就变得很别扭：要么手动复制代码，要么换到另一个 Coding Agent，要么再申请 API Key、单独付一份 Token 账单。&lt;/p&gt;
 &lt;p&gt;但我并不想再造一个 Agent。&lt;/p&gt;
 &lt;p&gt;模型、上下文管理和 Agent Loop，Web 端都已经有了。我缺的只是一根管子，让它能在我允许的范围内读写本地代码。于是有了 &lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt;：一个用 Rust 写的 Remote MCP Bridge。&lt;/p&gt;

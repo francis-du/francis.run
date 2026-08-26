@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Testing | Francis Du</title><link>https://francis.run/tags/testing/</link><atom:link href="https://francis.run/tags/testing/index.xml" rel="self" type="application/rss+xml"/><description>Testing</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 03:14:00 +0800</lastBuildDate><item><title>wcode：测试通过以后，我还想留下什么</title><link>https://francis.run/blog/wcode-verification/</link><pubDate>Wed, 26 Aug 2026 03:14:00 +0800</pubDate><guid>https://francis.run/blog/wcode-verification/</guid><description>&lt;p&gt;Coding Agent 很喜欢用一句话结束工作：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tests passed.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;以前我也觉得差不多够了。&lt;/p&gt;
+&lt;p&gt;后来 wcode 自己改得越来越大，这句话开始经常让我不放心。&lt;/p&gt;
+&lt;p&gt;到底跑了哪几个测试？是 quick 还是 full？测试的时候源码是不是当前 revision？有没有 Static Check？有没有 Mutation / Fuzz？两个 Reviewer 意见不一样怎么办？代码虽然能跑，但这次是不是又把一个文件堆大了几百行？&lt;/p&gt;
+&lt;p&gt;所以最近我把 Verification 单独往前做了一层。&lt;/p&gt;
+&lt;h2 id="最基础的还是项目自己的检查"&gt;最基础的还是项目自己的检查&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 没有想发明新的测试框架。&lt;/p&gt;
+&lt;p&gt;Harness 先看项目实际有什么，再推导检查。&lt;/p&gt;
+&lt;p&gt;Rust 项目大概是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;quick
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; git diff --check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo fmt --check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo check --locked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;full
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo test --locked
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo clippy --locked -- -D warnings
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cargo build --release --locked
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Node 就看 &lt;code&gt;package.json&lt;/code&gt; 里真实存在的 script，Makefile 也只跑确实定义过的 target。&lt;/p&gt;
+&lt;p&gt;这块我一直比较克制，因为“猜一个应该存在的命令然后执行”在 Agent 场景里不是好习惯。&lt;/p&gt;
+&lt;h2 id="risk-决定要不要继续往下走"&gt;Risk 决定要不要继续往下走&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 只是确定性基础检查。&lt;/p&gt;
+&lt;p&gt;再往上是 Verification Plan。&lt;/p&gt;
+&lt;p&gt;Plan 会根据这次变更的 Risk 决定要不要要求更多东西，例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;property
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mutation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fuzz
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;runtime canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;human approval
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;independent reviewer
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些不是写在 Prompt 里的“建议最好跑一下”。&lt;/p&gt;
+&lt;p&gt;如果 Plan 要求它，它就是 Gate。&lt;/p&gt;
+&lt;h2 id="executor-registry-是因为每个语言都不一样"&gt;Executor Registry 是因为每个语言都不一样&lt;/h2&gt;
+&lt;p&gt;Property、Mutation、Fuzz 在不同生态里完全不是一回事。&lt;/p&gt;
+&lt;p&gt;我不想在 Verification 里写一堆 &lt;code&gt;if rust ... else if python ...&lt;/code&gt;，所以做了统一的 Executor Registry。&lt;/p&gt;
+&lt;p&gt;现在会识别一批常见工具，比如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rust proptest / quickcheck / cargo-fuzz / cargo-mutants
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Python Hypothesis / mutmut
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;JS / TS fast-check / Stryker
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Java jqwik / PIT
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;C# FsCheck / Stryker
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;项目自己的验证程序也可以放到 &lt;code&gt;.wcode/executors.yaml&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;schema_version: 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;executors:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - id: service-canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; stage: runtime_canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; languages: [go]
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; program: ./tools/check-canary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; args: [--environment, staging]
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cwd: .
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; timeout_seconds: 60
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里有个安全问题不能省：这些东西都会执行仓库控制的代码。&lt;/p&gt;
+&lt;p&gt;以前我只有 &lt;code&gt;--allow-risky-exec&lt;/code&gt; 这个粗开关。现在仍然可以这么启动，适合我已经明确完全信任仓库的时候；但也可以让某个具体的 semantic refresh / runtime executor 先产生本地 Authorization Request，在 TUI 里批准这次 Session 里的精确操作，再重试。&lt;/p&gt;
+&lt;p&gt;我更常用后者。&lt;/p&gt;
+&lt;p&gt;只是跑一次工具，就没必要把整个进程后面的 risky execution 一起放开。&lt;/p&gt;
+&lt;h2 id="maintainability-现在也是-gate"&gt;Maintainability 现在也是 Gate&lt;/h2&gt;
+&lt;p&gt;这一块是后面补的。&lt;/p&gt;
+&lt;p&gt;我见过不少改动，测试全绿，功能也对，但代码明显开始往难维护的方向长。比如一个本来已经很大的文件又塞进去几百行，或者为了兼容一个特殊情况一路加 wrapper / branch，最后谁都不敢删。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;review_changes&lt;/code&gt; 现在会先提供一些很笨但有用的结构信号：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;文件这次跨过 1,000 行
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;新增代码高度集中在一个源码文件
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一次大改横跨多个 Product Scope
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些信号本身不能判定“代码烂”。&lt;/p&gt;
+&lt;p&gt;所以 Medium 及以上 Risk 的 Plan 还会创建一个独立的 maintainability reviewer。&lt;/p&gt;
+&lt;p&gt;它和 correctness reviewer 是两件事。&lt;/p&gt;
+&lt;p&gt;Correctness Pass 不能替它签字。&lt;/p&gt;
+&lt;p&gt;Maintainability Review 更关心的是：有没有更简单的做法、有没有散落的 special case、有没有多余的抽象层、有没有重复已有 helper、边界是不是开始泄漏。&lt;/p&gt;
+&lt;p&gt;我不想用“测试通过”给这些问题盖章。&lt;/p&gt;
+&lt;h2 id="reviewer-第一轮看不到别人怎么说"&gt;Reviewer 第一轮看不到别人怎么说&lt;/h2&gt;
+&lt;p&gt;Verification Plan 可以创建多个独立 Reviewer Job。&lt;/p&gt;
+&lt;p&gt;第一轮是 Blind Review。&lt;/p&gt;
+&lt;p&gt;Reviewer A 不会先看到 Reviewer B 的结论。&lt;/p&gt;
+&lt;p&gt;这个设计不是为了做什么复杂的多 Agent 社会实验，只是因为锚定效应太明显了。第二个 Reviewer 如果先看到第一个写着 Pass，经常会很自然地开始找理由支持它。&lt;/p&gt;
+&lt;p&gt;如果最后一个 Pass、一个 Fail，wcode 不会算票数。&lt;/p&gt;
+&lt;p&gt;会留下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Disagree
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;争议就是争议。&lt;/p&gt;
+&lt;p&gt;我宁愿停下来处理，也不想系统替我把它平均掉。&lt;/p&gt;
+&lt;h2 id="真正想留下的是-evidence"&gt;真正想留下的是 Evidence&lt;/h2&gt;
+&lt;p&gt;Verification 最后要落成 Evidence。&lt;/p&gt;
+&lt;p&gt;不是一句文本，而是带上下文的记录：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;producer
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;code revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;result
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;confidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;timestamp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;代码 revision 变了，旧 Plan 会被 stale blocker 卡住。&lt;/p&gt;
+&lt;p&gt;不同 Stage Producer 也各自保留最新结果，一个 Runner 的 Pass 不会去覆盖另一个 Runner 的 Fail。&lt;/p&gt;
+&lt;p&gt;现在 Stage 聚合是偏保守的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Fail &amp;gt; Disagree &amp;gt; Inconclusive &amp;gt; Pass
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;验证系统如果非要选一个方向，我宁愿它烦一点，也别太乐观。&lt;/p&gt;
+&lt;h2 id="这些运行状态没有塞进-git"&gt;这些运行状态没有塞进 Git&lt;/h2&gt;
+&lt;p&gt;Evidence、Verification Plan、Reviewer Job 这类状态会按 Workspace 持久化，但放在 wcode 自己的用户级 State 目录，不写进仓库。&lt;/p&gt;
+&lt;p&gt;原因也简单。&lt;/p&gt;
+&lt;p&gt;Git 里我想保留代码和 Design State。每跑一次测试都改仓库，只会制造一堆没必要的 Commit / Artifact 噪音。&lt;/p&gt;
+&lt;p&gt;模型断开或者 wcode 重启以后，这些状态还能重新加载。&lt;/p&gt;
+&lt;p&gt;这也是我后来开始做 Reconciliation 的前提：如果验证结果本身都只活在聊天里，那“换一个模型继续做”其实没有稳定交接面。&lt;/p&gt;
+&lt;p&gt;Evidence 能留下来以后，长任务才有可能真正跨 Session 继续。也就是从这里，我开始认真做 &lt;a href="https://francis.run/blog/wcode-reconciliation/"&gt;Reconciliation&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>

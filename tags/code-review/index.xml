@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Code Review | Francis Du</title><link>https://francis.run/tags/code-review/</link><atom:link href="https://francis.run/tags/code-review/index.xml" rel="self" type="application/rss+xml"/><description>Code Review</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 03:13:00 +0800</lastBuildDate><item><title>wcode：Git Diff 之外，我还想知道什么</title><link>https://francis.run/blog/wcode-traceability/</link><pubDate>Wed, 26 Aug 2026 03:13:00 +0800</pubDate><guid>https://francis.run/blog/wcode-traceability/</guid><description>&lt;p&gt;我做 Code Review 时很少只看 Diff。&lt;/p&gt;
+&lt;p&gt;Diff 只是入口。&lt;/p&gt;
+&lt;p&gt;看到一个函数被改，我脑子里会自动继续问：谁在调用它？这个模块原来为什么这么写？有没有对应测试？它是不是安全边界？这次只是重构，还是已经改变了设计？&lt;/p&gt;
+&lt;p&gt;这些问题以前都靠人自己补。&lt;/p&gt;
+&lt;p&gt;Agent 也一样，只不过它能补多少，很看这一次上下文有没有给够。&lt;/p&gt;
+&lt;p&gt;所以做完 Design State 和 Software Graph 以后，我开始把其中一部分变成 wcode 可以直接算的东西。&lt;/p&gt;
+&lt;h2 id="traceability-先回答最笨的问题"&gt;Traceability 先回答最笨的问题&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;traceability_status&lt;/code&gt; 主要看几条链有没有断：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement → Component
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component → Implementation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance Criterion → Verification
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我一开始考虑过做一个总 Coverage。&lt;/p&gt;
+&lt;p&gt;比如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;87%
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;后来觉得没什么用。&lt;/p&gt;
+&lt;p&gt;如果丢的是一个低优先级页面的 Acceptance，和丢的是 Workspace Root Isolation 的测试，显然不是同一件事。把它们平均成一个百分比，信息反而少了。&lt;/p&gt;
+&lt;p&gt;所以现在直接分开报。&lt;/p&gt;
+&lt;p&gt;我更想看到这种东西：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement 还在
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component 还在
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;但原来映射的 Symbol 已经搬走了
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance 还指着一个已经改名的 test
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种错误没有多高级，但特别常见。&lt;/p&gt;
+&lt;h2 id="product-scope-解决别把整个仓库都拖进来"&gt;Product Scope 解决“别把整个仓库都拖进来”&lt;/h2&gt;
+&lt;p&gt;wcode 后来又加了 Product Scope，因为只靠 Requirement 还不够。&lt;/p&gt;
+&lt;p&gt;项目一大，Context 很容易横跨一堆不相关目录。&lt;/p&gt;
+&lt;p&gt;现在我通常先跑 &lt;code&gt;scope_status&lt;/code&gt;，看看源码是怎么落在各个 Scope 里的，还有没有没归类的文件。真正做任务时，&lt;code&gt;software_context(scopes=...)&lt;/code&gt; 会把源码导航收窄到指定范围。&lt;/p&gt;
+&lt;p&gt;例如我只在 &lt;code&gt;workspace&lt;/code&gt; / &lt;code&gt;risk&lt;/code&gt; 一类 Scope 里查，就不会顺手把 UI、Connector、Release 相关东西一起塞进来。&lt;/p&gt;
+&lt;p&gt;这个功能对模型没有那么“惊艳”，但对长期项目很实用。Context 少一点，误判也少一点。&lt;/p&gt;
+&lt;h2 id="drift-不是报错更像提醒"&gt;Drift 不是报错，更像提醒&lt;/h2&gt;
+&lt;p&gt;Traceability 看的是“关系还通不通”，Drift 看的是“变化之后，两边是不是开始不一致”。&lt;/p&gt;
+&lt;p&gt;现在大致有两类。&lt;/p&gt;
+&lt;p&gt;一种是 Implementation Drift。&lt;/p&gt;
+&lt;p&gt;Design 变了，代码没跟；或者原来声明的实现、验证链现在断了。&lt;/p&gt;
+&lt;p&gt;另一种是 Design Drift。&lt;/p&gt;
+&lt;p&gt;某个已经有 Design 身份的实现被改了，但这次 Design State 完全没动。&lt;/p&gt;
+&lt;p&gt;第二种不能理解成“改代码必须改 YAML”。&lt;/p&gt;
+&lt;p&gt;很多重构当然不需要改设计。&lt;/p&gt;
+&lt;p&gt;所以它更像一句提醒：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这个地方在 Design State 里是有名字的，现在代码变了，确认一下原来的描述还成立。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我不想把这种 heuristic 叫 formal verification。它没那么聪明。&lt;/p&gt;
+&lt;h2 id="impact-是我真正天天想看的东西"&gt;Impact 是我真正天天想看的东西&lt;/h2&gt;
+&lt;p&gt;Git 能给 Changed Paths，但 Review 时我通常还想看：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;碰到了哪些 Component
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;关联哪些 Requirement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;哪些 Acceptance 需要重新验证
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;调用方有哪些
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;有没有 Public API 信号
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;有没有 Security Boundary
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;impact_analysis&lt;/code&gt; 会从 Working Tree 开始，再沿 Composite Software Graph 往调用方扩。&lt;/p&gt;
+&lt;p&gt;现在主要看 &lt;code&gt;Calls&lt;/code&gt; / &lt;code&gt;RuntimeCalls&lt;/code&gt; 这类关系。&lt;/p&gt;
+&lt;p&gt;有 fresh LSP / Runtime Provider 就用更高精度的关系；没有就退到 Tree-sitter Syntax Edge。结果里会保留 Provider 和 Precision，不把不同来源混成一句“确定会影响”。&lt;/p&gt;
+&lt;p&gt;这也是为什么前面 Software Graph 那篇我一直强调 provenance。&lt;/p&gt;
+&lt;p&gt;没有 provenance，Impact 最后只剩一个很自信的列表，但没人知道它为什么这么判断。&lt;/p&gt;
+&lt;h2 id="transitive-analysis-一定得有刹车"&gt;Transitive Analysis 一定得有刹车&lt;/h2&gt;
+&lt;p&gt;调用图特别容易爆。&lt;/p&gt;
+&lt;p&gt;一个底层 helper 可能被几百个地方用。如果“所有调用方的调用方再递归展开”没有上限，最后返回的 Context 比直接把仓库读一遍还离谱。&lt;/p&gt;
+&lt;p&gt;所以 wcode 这类 Query 都是 bounded 的。&lt;/p&gt;
+&lt;p&gt;到上限就明确返回：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;truncated = true
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我宁愿看到一个“这里没展开完”，也不要看到一份看起来完整、其实只是因为上下文被截断而少东西的结果。&lt;/p&gt;
+&lt;h2 id="review-里现在还会看代码是不是开始长歪"&gt;Review 里现在还会看代码是不是开始长歪&lt;/h2&gt;
+&lt;p&gt;最近 &lt;code&gt;review_changes&lt;/code&gt; 又加了一些结构信号。&lt;/p&gt;
+&lt;p&gt;例如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一个源码文件从 1,000 行以下跨到 1,000 行以上
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;大量净新增集中在一个文件
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一次大改横跨多个 Product Scope
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些不会直接判“代码质量差”。&lt;/p&gt;
+&lt;p&gt;它们只是进入 Risk，让后面的 Verification 决定是不是要增加 Maintainability Review。&lt;/p&gt;
+&lt;p&gt;这个区别我觉得挺重要。&lt;/p&gt;
+&lt;p&gt;工具可以很容易数行数，但“抽象是不是多余”“是不是出现了重复的 canonical helper”“是不是为了兼容又堆了一层 wrapper”，这些还是要 Review。&lt;/p&gt;
+&lt;p&gt;所以确定性信号负责发现值得看一眼的地方，Reviewer 再判断是不是问题。&lt;/p&gt;
+&lt;p&gt;现在 Project Observatory 也会把 Requirement、实现、Verification、Git Change 和依赖关系放在一起。我平时打开它，基本就是为了回答这篇文章标题那个问题：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Diff 之外，这次到底动了什么。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;Impact 算出来只是知道该看哪里，最后还是要落到“怎么证明这次改动真的可以”。Verification 和 Evidence 我放在 &lt;a href="https://francis.run/blog/wcode-verification/"&gt;测试通过以后，我还想留下什么&lt;/a&gt; 里。&lt;/p&gt;</description></item></channel></rss>
