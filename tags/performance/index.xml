@@ -4,7 +4,7 @@
 &lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
 &lt;p&gt;这些东西单次看都不大，Agent 连续改几十个文件时就很明显。&lt;/p&gt;
 &lt;p&gt;所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="第一处每个小编辑都-fsync-太贵了"&gt;第一处：每个小编辑都 &lt;code&gt;fsync&lt;/code&gt; 太贵了&lt;/h2&gt;
 &lt;p&gt;wcode 的文件写入一直比较保守。&lt;/p&gt;
 &lt;p&gt;已有文件不是原地 &lt;code&gt;truncate&lt;/code&gt;，而是：&lt;/p&gt;
@@ -95,6 +95,20 @@
 &lt;p&gt;我希望默认更激进，但不是把所有机器都当成 32 核工作站。&lt;/p&gt;
 &lt;p&gt;8 核现在默认 96，10 核 120，16 核及以上最多到 192。&lt;/p&gt;
 &lt;p&gt;这个档位更适合 Agent 一次并行导航和修改多个文件。&lt;/p&gt;
+&lt;h2 id="第七处连统计响应有多大也不该复制整份-json"&gt;第七处：连“统计响应有多大”也不该复制整份 JSON&lt;/h2&gt;
+&lt;p&gt;TUI 会展示请求、响应和 Token Economy，所以 Tool Runtime 要知道每次调用大概传了多少字节。&lt;/p&gt;
+&lt;p&gt;以前这个指标是这样算的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Value
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;serde_json::to_vec
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;拿 Vec.len()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Vec 丢掉
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说，真正响应以后，为了统计长度又临时分配并序列化了一份 JSON。&lt;/p&gt;
+&lt;p&gt;小结果没什么感觉，但 &lt;code&gt;parallel_tools&lt;/code&gt;、Graph、Project Context 这类 &lt;code&gt;structuredContent&lt;/code&gt; 大时，这就是纯粹的额外内存和 CPU。&lt;/p&gt;
+&lt;p&gt;现在改成一个只实现 &lt;code&gt;Write&lt;/code&gt; 的 Byte Counter，让 &lt;code&gt;serde_json::to_writer&lt;/code&gt; 流过去，只累加字节数，不保存第二份 Buffer。&lt;/p&gt;
+&lt;p&gt;协议内容完全不变，Monitor 指标也不变，但每个 Tool Call 少一次只为计数存在的临时分配。&lt;/p&gt;
 &lt;h2 id="更重要的是让模型少发-tool-call"&gt;更重要的是：让模型少发 Tool Call&lt;/h2&gt;
 &lt;p&gt;Runtime 再快，如果 Agent 还是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read A
@@ -139,7 +153,7 @@
 &lt;p&gt;这一轮之后，我觉得还有几块值得继续盯：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;code&gt;project_context&lt;/code&gt; 的两个仓库扫描虽然并行了，但未来最好共享一次 File Inventory，而不是各走一遍目录。&lt;/li&gt;
-&lt;li&gt;MCP Tool Result 为兼容 &lt;code&gt;content + structuredContent&lt;/code&gt; 会有重复序列化/内存占用，大结果还有优化空间。&lt;/li&gt;
+&lt;li&gt;MCP Tool Result 为兼容 &lt;code&gt;content + structuredContent&lt;/code&gt; 本身仍会保留两种表示；这和已经去掉的“仅为统计字节数再序列化一次”不是一回事，大结果仍有进一步优化空间。&lt;/li&gt;
 &lt;li&gt;Software Graph 第一次建立时，Language/Tree-sitter Parser 初始化和目录候选选择还可以继续做更细的缓存。&lt;/li&gt;
 &lt;li&gt;Monitor 的指标必须保持便宜，不能为了展示吞吐量反过来拖 Tool Call。&lt;/li&gt;
 &lt;li&gt;多 Workspace 同时工作时，需要继续观察 Rayon、Tokio &lt;code&gt;spawn_blocking&lt;/code&gt; 和全局 Semaphore 三层调度会不会互相争资源。&lt;/li&gt;

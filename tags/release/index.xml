@@ -7,7 +7,7 @@
 &lt;p&gt;&lt;strong&gt;Software Intelligence Runtime for AI-native development.&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;模型仍然负责写代码，wcode 开始负责另一件更难长期维护的事：软件到底应该是什么、现在是什么、哪里变了、风险在哪里、什么证据说明这次修改真的完成了。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="v02-当时解决了什么"&gt;v0.2 当时解决了什么&lt;/h2&gt;
 &lt;p&gt;我重新看了一遍 &lt;code&gt;v0.2&lt;/code&gt; Tag 里的 README。&lt;/p&gt;
 &lt;p&gt;当时的主线非常明确：&lt;/p&gt;
@@ -249,4 +249,4 @@
 &lt;p&gt;v0.2 解决的是“把 AI 接进来”。&lt;/p&gt;
 &lt;p&gt;v0.3 更像是在回答：“接进来以后，怎么让这个项目长期不失控。”&lt;/p&gt;
 &lt;p&gt;我现在觉得这才是 wcode 真正有意思的方向。&lt;/p&gt;
-&lt;p&gt;相关实现细节可以继续看 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;wcode 最近做成什么样了&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-design-state/"&gt;Design State&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-verification/"&gt;Verification&lt;/a&gt; 和 &lt;a href="https://francis.run/blog/wcode-security/"&gt;Security&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>
+&lt;p&gt;相关实现细节可以继续看 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;wcode 最近做成什么样了&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-design-state/"&gt;Design State&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-verification/"&gt;Verification&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心&lt;/a&gt; 和 &lt;a href="https://francis.run/blog/wcode-security/"&gt;Security&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>

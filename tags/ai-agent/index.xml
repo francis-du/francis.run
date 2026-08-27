@@ -4,7 +4,7 @@
 &lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
 &lt;p&gt;这些东西单次看都不大，Agent 连续改几十个文件时就很明显。&lt;/p&gt;
 &lt;p&gt;所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="第一处每个小编辑都-fsync-太贵了"&gt;第一处：每个小编辑都 &lt;code&gt;fsync&lt;/code&gt; 太贵了&lt;/h2&gt;
 &lt;p&gt;wcode 的文件写入一直比较保守。&lt;/p&gt;
 &lt;p&gt;已有文件不是原地 &lt;code&gt;truncate&lt;/code&gt;，而是：&lt;/p&gt;
@@ -95,6 +95,20 @@
 &lt;p&gt;我希望默认更激进，但不是把所有机器都当成 32 核工作站。&lt;/p&gt;
 &lt;p&gt;8 核现在默认 96，10 核 120，16 核及以上最多到 192。&lt;/p&gt;
 &lt;p&gt;这个档位更适合 Agent 一次并行导航和修改多个文件。&lt;/p&gt;
+&lt;h2 id="第七处连统计响应有多大也不该复制整份-json"&gt;第七处：连“统计响应有多大”也不该复制整份 JSON&lt;/h2&gt;
+&lt;p&gt;TUI 会展示请求、响应和 Token Economy，所以 Tool Runtime 要知道每次调用大概传了多少字节。&lt;/p&gt;
+&lt;p&gt;以前这个指标是这样算的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Value
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;serde_json::to_vec
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;拿 Vec.len()
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Vec 丢掉
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说，真正响应以后，为了统计长度又临时分配并序列化了一份 JSON。&lt;/p&gt;
+&lt;p&gt;小结果没什么感觉，但 &lt;code&gt;parallel_tools&lt;/code&gt;、Graph、Project Context 这类 &lt;code&gt;structuredContent&lt;/code&gt; 大时，这就是纯粹的额外内存和 CPU。&lt;/p&gt;
+&lt;p&gt;现在改成一个只实现 &lt;code&gt;Write&lt;/code&gt; 的 Byte Counter，让 &lt;code&gt;serde_json::to_writer&lt;/code&gt; 流过去，只累加字节数，不保存第二份 Buffer。&lt;/p&gt;
+&lt;p&gt;协议内容完全不变，Monitor 指标也不变，但每个 Tool Call 少一次只为计数存在的临时分配。&lt;/p&gt;
 &lt;h2 id="更重要的是让模型少发-tool-call"&gt;更重要的是：让模型少发 Tool Call&lt;/h2&gt;
 &lt;p&gt;Runtime 再快，如果 Agent 还是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read A
@@ -139,7 +153,7 @@
 &lt;p&gt;这一轮之后，我觉得还有几块值得继续盯：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;code&gt;project_context&lt;/code&gt; 的两个仓库扫描虽然并行了，但未来最好共享一次 File Inventory，而不是各走一遍目录。&lt;/li&gt;
-&lt;li&gt;MCP Tool Result 为兼容 &lt;code&gt;content + structuredContent&lt;/code&gt; 会有重复序列化/内存占用，大结果还有优化空间。&lt;/li&gt;
+&lt;li&gt;MCP Tool Result 为兼容 &lt;code&gt;content + structuredContent&lt;/code&gt; 本身仍会保留两种表示；这和已经去掉的“仅为统计字节数再序列化一次”不是一回事，大结果仍有进一步优化空间。&lt;/li&gt;
 &lt;li&gt;Software Graph 第一次建立时，Language/Tree-sitter Parser 初始化和目录候选选择还可以继续做更细的缓存。&lt;/li&gt;
 &lt;li&gt;Monitor 的指标必须保持便宜，不能为了展示吞吐量反过来拖 Tool Call。&lt;/li&gt;
 &lt;li&gt;多 Workspace 同时工作时，需要继续观察 Rayon、Tokio &lt;code&gt;spawn_blocking&lt;/code&gt; 和全局 Semaphore 三层调度会不会互相争资源。&lt;/li&gt;
@@ -147,7 +161,212 @@
 &lt;p&gt;我不准备为了追一个漂亮 Benchmark 把这些全部一次性复杂化。&lt;/p&gt;
 &lt;p&gt;更实际的标准还是：&lt;strong&gt;拿它去真实项目写代码，哪一步明显在等，就把那一步拆出来。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;这也是我现在优化 wcode 的方式。&lt;/p&gt;
-&lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：MCP 负责能力，Skill 只负责工作习惯</title><link>https://francis.run/blog/wcode-mcp-agent/</link><pubDate>Wed, 26 Aug 2026 03:16:00 +0800</pubDate><guid>https://francis.run/blog/wcode-mcp-agent/</guid><description>&lt;p&gt;第一版 wcode 基本是围着 MCP 写的。&lt;/p&gt;
+&lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
+&lt;p&gt;但实际用久了以后，我也越来越不喜欢另一个极端：只要一个工具不在默认列表里，就永久拒绝；真要用的时候，只能重启进程加一个很宽的 Trust Flag。&lt;/p&gt;
+&lt;p&gt;这两个选择都太粗：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;完全不许
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 或
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;整个进程都信任
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最近我把 wcode 的授权做成了真正的 Pending Authorization Queue。&lt;/p&gt;
+&lt;p&gt;核心原则很简单：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;模型可以提出权限请求，但决定权必须留在用户手里。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img_3.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
+&lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;/h2&gt;
+&lt;p&gt;TUI 其实早就有 &lt;code&gt;Y/N&lt;/code&gt; 的 Key Handler。&lt;/p&gt;
+&lt;p&gt;问题是 UI 只在 Footer 里塞了一个 Pending 数字。&lt;/p&gt;
+&lt;p&gt;用户看不到：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;到底是谁在申请？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;申请哪个 Workspace？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;要跑什么？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这是普通命令还是删除？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Y 到底会批准哪一条？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以从人的角度看，&lt;code&gt;Y/N&lt;/code&gt; 就像两个没有上下文的快捷键。&lt;/p&gt;
+&lt;p&gt;现在 Pending Request 会直接显示成一个列表。&lt;/p&gt;
+&lt;p&gt;大概是这种信息：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;AUTHORIZATION REQUIRED 3 PENDING
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;› AUTH-00000021 [COMMAND] web · authorize command: hugo
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; AUTH-00000020 [RISKY EXEC] api · allow repository-aware command: cargo metadata
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; AUTH-00000019 [DELETE] api · delete file: src/obsolete.rs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;↑/↓ select request Y approve selected N deny selected
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;Y&lt;/code&gt; 不再是“批准最新一条”。&lt;/p&gt;
+&lt;p&gt;它只批准当前选中的 Request。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;N&lt;/code&gt; 也一样。&lt;/p&gt;
+&lt;p&gt;当多个 Agent / Tool 同时工作时，这个区别很重要。&lt;/p&gt;
+&lt;h2 id="命令授权不再被默认-catalog-封死"&gt;命令授权不再被默认 Catalog 封死&lt;/h2&gt;
+&lt;p&gt;最开始 wcode 有一份固定 Command Catalog：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rustc
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rg
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;npm
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;pnpm
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;yarn
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;bun
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;node
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;python3
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;pytest
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;go
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;make
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它很适合作为&lt;strong&gt;默认预授权集合&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;但把它当成“用户永远只能授权这些命令”的上限，就会变得很别扭。&lt;/p&gt;
+&lt;p&gt;真实项目会用：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hugo
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;flutter
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deno
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mvn
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;gradle
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;swift
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mix
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;甚至公司内部还有自己的 Build Tool。&lt;/p&gt;
+&lt;p&gt;所以现在语义变成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;默认安全集合 → 直接进入后续 Command Policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;其他合法 bare executable
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;CommandAccess Pending Request
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;用户批准
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;只加入当前 Workspace 的运行时 allowlist
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;模型重试
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这不是让模型自己扩权。&lt;/p&gt;
+&lt;p&gt;第一次请求仍然失败。&lt;/p&gt;
+&lt;p&gt;真正改变权限的是本地用户的批准动作。&lt;/p&gt;
+&lt;h2 id="为什么我还是不让它授权-bash"&gt;为什么我还是不让它授权 &lt;code&gt;bash&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;“用户可以授权模型请求的命令”不等于“所有字符串都应该变成可授权请求”。&lt;/p&gt;
+&lt;p&gt;wcode 仍然有一层不能被 UI 点掉的硬边界。&lt;/p&gt;
+&lt;p&gt;Program 必须是合法的裸可执行程序名：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hugo ✓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;flutter ✓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;gradle ✓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;./tool ✗
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;../tool ✗
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/usr/bin/x ✗
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;foo/bar ✗
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Shell Interpreter 也永久拒绝：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;bash
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;zsh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fish
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;pwsh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;powershell
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cmd
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;原因还是同一个。&lt;/p&gt;
+&lt;p&gt;wcode 的 Command Contract 是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;program + args[]
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而不是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;shell -c arbitrary_string
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果允许模型拿到 Shell，前面的 Argument Inspection、Protected Path Check 和 No-shell 边界都会变得很容易绕。&lt;/p&gt;
+&lt;p&gt;我宁愿让用户授权更多具体 Program，也不想把整个模型重新变成远程 Terminal。&lt;/p&gt;
+&lt;h2 id="commandaccess-和-riskyexecution-是两层"&gt;&lt;code&gt;CommandAccess&lt;/code&gt; 和 &lt;code&gt;RiskyExecution&lt;/code&gt; 是两层&lt;/h2&gt;
+&lt;p&gt;这个地方容易混。&lt;/p&gt;
+&lt;p&gt;假设模型第一次想跑：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hugo --minify
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果 &lt;code&gt;hugo&lt;/code&gt; 还没被当前 Workspace 授权，先得到的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;CommandAccess
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它回答：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这个 Program 能不能出现在这个 Workspace？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;但对已经有专门 Policy 的命令，例如 Cargo / Go / Package Manager，某些参数可能会执行 Repository-controlled Code。&lt;/p&gt;
+&lt;p&gt;这时即使 Program 已经允许，仍可能得到：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;RiskyExecution
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它回答的是另一件事：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这组具体 repository-aware Operation 是否值得信任？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以权限不是一个 Boolean。&lt;/p&gt;
+&lt;p&gt;更接近：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Program Access
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Argument / Path Policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Risky Operation Trust
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Execute
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="现在有四类-authorization"&gt;现在有四类 Authorization&lt;/h2&gt;
+&lt;p&gt;当前我把它们分成四种。&lt;/p&gt;
+&lt;h3 id="1-commandaccess"&gt;1. CommandAccess&lt;/h3&gt;
+&lt;p&gt;模型请求当前 Workspace 尚未授权的 Program。&lt;/p&gt;
+&lt;p&gt;批准以后，这个 Program 加进当前 Workspace 的运行时 allowlist。&lt;/p&gt;
+&lt;h3 id="2-riskyexecution"&gt;2. RiskyExecution&lt;/h3&gt;
+&lt;p&gt;Program 本身允许，但这组参数可能加载或执行仓库控制的代码、配置或插件。&lt;/p&gt;
+&lt;p&gt;批准的是精确 Operation Fingerprint 的 Session Grant。&lt;/p&gt;
+&lt;h3 id="3-runtimeexecutor"&gt;3. RuntimeExecutor&lt;/h3&gt;
+&lt;p&gt;Property / Mutation / Fuzz / Runtime Canary 等 Verification Executor 可能来自仓库配置。&lt;/p&gt;
+&lt;p&gt;它们是另一条显式 Trust Boundary。&lt;/p&gt;
+&lt;h3 id="4-destructivedelete"&gt;4. DestructiveDelete&lt;/h3&gt;
+&lt;p&gt;这是最严格的。&lt;/p&gt;
+&lt;p&gt;只能删除一个普通文件或空目录，文件要求当前 SHA，批准是 exact one-shot，用一次就失效。&lt;/p&gt;
+&lt;p&gt;我不想让一个“同意删除”自动变成当前 Session 后续所有 Delete 都合法。&lt;/p&gt;
+&lt;h2 id="webui-也必须能处理同一批-request"&gt;WebUI 也必须能处理同一批 Request&lt;/h2&gt;
+&lt;p&gt;只在 TUI 做授权有个现实问题：我可能正盯着浏览器里的 Project Observatory，而不是 Terminal。&lt;/p&gt;
+&lt;p&gt;所以现在 WebUI 的 &lt;code&gt;Manage access&lt;/code&gt; 里有三块：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Authorized projects
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Authorized commands
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Pending authorizations
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Project 可以在运行时添加。&lt;/p&gt;
+&lt;p&gt;Command 可以手动授权或撤销。&lt;/p&gt;
+&lt;p&gt;Pending Request 则逐条显示 Approve / Deny。&lt;/p&gt;
+&lt;p&gt;WebUI 并不是另开了一套权限状态。&lt;/p&gt;
+&lt;p&gt;它和 TUI 操作的是同一个 Authorization Manager。&lt;/p&gt;
+&lt;p&gt;也就是说：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Model Request
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;one shared Pending Queue
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↙ ↘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;TUI WebUI
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Y / N Approve / Deny
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↘ ↙
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; same runtime authorization state
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;WebUI 的这些 API 仍然需要原有的 Local UI Token 和 Origin Validation。&lt;/p&gt;
+&lt;p&gt;不能因为它是“管理页面”，就变成一个没有保护的本地管理接口。&lt;/p&gt;
+&lt;h2 id="多-workspace-时授权必须跟着项目走"&gt;多 Workspace 时，授权必须跟着项目走&lt;/h2&gt;
+&lt;p&gt;我还顺手修了一个容易忽略的问题。&lt;/p&gt;
+&lt;p&gt;如果同一个进程同时暴露：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;backend
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;frontend
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;website
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;CommandAccess&lt;/code&gt; 必须知道自己属于哪个 Registry Workspace ID。&lt;/p&gt;
+&lt;p&gt;不能只根据目录 basename 猜，也不能批准一次以后给三个项目一起放开。&lt;/p&gt;
+&lt;p&gt;所以现在授权 Request 会带精确 Workspace ID。&lt;/p&gt;
+&lt;p&gt;批准 &lt;code&gt;website&lt;/code&gt; 的 &lt;code&gt;hugo&lt;/code&gt;，不会顺手让 &lt;code&gt;backend&lt;/code&gt; 也能跑 &lt;code&gt;hugo&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这是我想要的权限粒度。&lt;/p&gt;
+&lt;h2 id="授权以后仍然不是-os-sandbox"&gt;授权以后仍然不是 OS Sandbox&lt;/h2&gt;
+&lt;p&gt;最后还是要强调这一点。&lt;/p&gt;
+&lt;p&gt;这些授权机制解决的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁可以请求什么
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁决定放行
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;放行到什么粒度
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它不是操作系统级 Sandbox。&lt;/p&gt;
+&lt;p&gt;一个用户批准的 Program 本身仍可能做很多事情。&lt;/p&gt;
+&lt;p&gt;wcode 能继续保证的是它自己的边界：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不经过 Shell；&lt;/li&gt;
+&lt;li&gt;Workspace-relative CWD；&lt;/li&gt;
+&lt;li&gt;Program Name 不允许路径；&lt;/li&gt;
+&lt;li&gt;Argument 不允许 Workspace Escape；&lt;/li&gt;
+&lt;li&gt;Protected Path 继续拒绝；&lt;/li&gt;
+&lt;li&gt;敏感环境变量继续清理；&lt;/li&gt;
+&lt;li&gt;Git Helper / Mutation 等专门 Policy 继续生效；&lt;/li&gt;
+&lt;li&gt;Timeout 和输出上限继续存在。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以授权按钮的含义不是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这个命令绝对安全。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;而是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;我知道模型为什么需要它，我愿意把这一层权限交给当前 Workspace。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这个语义对我来说更诚实。&lt;/p&gt;
+&lt;p&gt;v0.3 的完整变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;，底层安全边界继续看 &lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：MCP 负责能力，Skill 只负责工作习惯</title><link>https://francis.run/blog/wcode-mcp-agent/</link><pubDate>Wed, 26 Aug 2026 03:16:00 +0800</pubDate><guid>https://francis.run/blog/wcode-mcp-agent/</guid><description>&lt;p&gt;第一版 wcode 基本是围着 MCP 写的。&lt;/p&gt;
 &lt;p&gt;那时候最核心的问题是：Web 端模型怎么安全访问本地代码。&lt;/p&gt;
 &lt;p&gt;现在 Software Intelligence、Verification、Reconciliation 都长出来以后，MCP 在项目里的位置反而更简单了。&lt;/p&gt;
 &lt;p&gt;它就是能力接口。&lt;/p&gt;
@@ -563,7 +782,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Evidence
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这张图看起来比第一版复杂不少，但实际使用时反而更简单了：模型还是写代码，wcode 主要负责把它写代码前后那些容易丢掉的状态接起来。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="我先把为什么放进仓库"&gt;我先把“为什么”放进仓库&lt;/h2&gt;
 &lt;p&gt;最先加的是 Design State。&lt;/p&gt;
 &lt;p&gt;现在项目可以有一份 &lt;code&gt;.wcode&lt;/code&gt;：&lt;/p&gt;
@@ -684,6 +903,7 @@
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-reconciliation/"&gt;我为什么开始把 edit file 往后放&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-mcp-agent/"&gt;MCP 负责能力，Skill 只负责工作习惯&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心：模型可以提权限，但不能替我批准&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-performance/"&gt;我把 wcode 写代码这条链又压快了一轮&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
