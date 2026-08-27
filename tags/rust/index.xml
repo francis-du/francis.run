@@ -1608,6 +1608,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;unstaged numstat staged numstat
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;unstaged diff-check staged diff-check
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Harness 把结果合并成文件列表、增删行数和风险分类。改了源码却没改测试、动了认证或 Token 文件、改了 Manifest、删了测试、碰了 Migration/Workflow，都会产生对应 Finding。变更超过 25 个文件或约 1,000 行会提示拆分；风险再高一些时，会直接推荐 Full Verification。这里最多分析 500 个文件、保留 64 条 Finding，避免一个巨大 Working Tree 把上下文打爆。&lt;/p&gt;
+&lt;p&gt;这些分析结果在 WebUI 里可以直接看到：当前变更、每个文件命中的 Requirement、代码统计和风险等级：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-workspace-intelligence.png" alt="wcode 工作区智能视图"&gt;&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 接受 &lt;code&gt;quick&lt;/code&gt; 或 &lt;code&gt;full&lt;/code&gt;。它先把推导出的检查排序，再按 Phase 执行：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Phase 0 format / static check / diff check
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓ barrier
@@ -1633,7 +1635,8 @@
 &lt;p&gt;我不喜欢一些 Agent 产品为了显得很忙，凭空画出一堆并行任务。wcode 的原则很简单：没有发生的事，不显示。&lt;/p&gt;
 &lt;p&gt;WebUI 侧遵循同一个原则。Project Observatory 把期望架构、实际依赖、漂移、证据与实现覆盖率放在同一个视图里：&lt;/p&gt;
 &lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture.png" alt="wcode 架构总览"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory.png" alt="wcode 项目观测台"&gt;&lt;/p&gt;
+&lt;p&gt;完整页面从架构总览、需求详情、当前变更、代码统计到图快照历史，一图到底：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full.png" alt="wcode Project Observatory 整页"&gt;&lt;/p&gt;
 &lt;h2 id="怎么用"&gt;怎么用&lt;/h2&gt;
 &lt;p&gt;macOS 和 Linux：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -fsSL https://raw.githubusercontent.com/francis-du/wcode/main/install.sh | sh
