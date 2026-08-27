@@ -1,4 +1,280 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>MCP | Francis Du</title><link>https://francis.run/tags/mcp/</link><atom:link href="https://francis.run/tags/mcp/index.xml" rel="self" type="application/rss+xml"/><description>MCP</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 23:35:00 +0800</lastBuildDate><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>MCP | Francis Du</title><link>https://francis.run/tags/mcp/</link><atom:link href="https://francis.run/tags/mcp/index.xml" rel="self" type="application/rss+xml"/><description>MCP</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 27 Aug 2026 23:55:00 +0800</lastBuildDate><item><title>wcode v0.4：开始为 Agent 的上下文成本负责</title><link>https://francis.run/blog/wcode-v0-4/</link><pubDate>Thu, 27 Aug 2026 23:55:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-4/</guid><description>&lt;p&gt;v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。&lt;/p&gt;
+&lt;p&gt;从“能力列表”看，其实已经很多了。&lt;/p&gt;
+&lt;p&gt;但我拿它真的去写几个项目以后，最明显的问题反而变得很朴素：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Agent 明明已经能做这件事了，为什么还要花这么多 Context 和 Tool Call 才开始改代码？&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以 v0.4 没有再把重点放在“再加一个 Intelligence Tool”。&lt;/p&gt;
+&lt;p&gt;这一版主要做的是另一件事：&lt;strong&gt;把 Agent 真正写代码的主路径重新压一遍。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
+&lt;h2 id="v03-和-v04-的差别不是能力多少"&gt;v0.3 和 v0.4 的差别，不是能力多少&lt;/h2&gt;
+&lt;p&gt;v0.3 我最关心的是“软件状态能不能留下来”。&lt;/p&gt;
+&lt;p&gt;所以那一版的主线是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Drift / Impact / Risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification / Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Reconciliation
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些东西 v0.4 都还在。&lt;/p&gt;
+&lt;p&gt;但如果一个 Agent 每次只是改两行代码，也要先完整走一遍 Design、Graph、Traceability、Risk，再查 Symbol、再读文件，那这套系统会越来越像“为了完整而完整”。&lt;/p&gt;
+&lt;p&gt;我不想让 Intelligence 本身变成新的 Context Tax。&lt;/p&gt;
+&lt;p&gt;所以 v0.4 的默认 Coding Path 变成了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;agent_context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;必要时补 symbol_context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;apply_edits / apply_file_edits
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;review_changes
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verify_project
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;更深的 Design、Graph、Risk、Reconciliation 还在，但变成按任务需要进入，而不是每次启动都强制付费。&lt;/p&gt;
+&lt;h2 id="agent_context-成了真正的-coding-entry-point"&gt;&lt;code&gt;agent_context&lt;/code&gt; 成了真正的 Coding Entry Point&lt;/h2&gt;
+&lt;p&gt;这一版我加了一个 Agent Context Compiler。&lt;/p&gt;
+&lt;p&gt;它不是简单把几个 Tool Result 拼起来，而是尝试一次返回“现在就可以开始修改”的最小上下文。&lt;/p&gt;
+&lt;p&gt;一个典型结果里会有：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;任务相关 Design / Constraint
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Direct Target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Exact SHA
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Scoped Repo Map
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Related Symbol / Test
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Working-tree Advisory
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Readiness
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Next Actions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;必要时的 Hot Source
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我最在意的是最后几个东西。&lt;/p&gt;
+&lt;p&gt;以前 Agent 经常出现这种链：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;project_context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ find_symbol
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ read_file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 再 search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 再 read_file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ edit
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每一步都合理，但累计起来 Tool Round-trip 很多，而且每次响应都会重新占一部分 Context。&lt;/p&gt;
+&lt;p&gt;现在如果任务足够明确，&lt;code&gt;agent_context&lt;/code&gt; 可以直接把最强目标连同 SHA 和一小段 Hot Source 带回来。&lt;/p&gt;
+&lt;p&gt;常见的小修改就能变成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;agent_context → edit
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这对我来说比“又多支持一个 Tool”有意义得多。&lt;/p&gt;
+&lt;h2 id="context-budget-不应该永远是一个固定数字"&gt;Context Budget 不应该永远是一个固定数字&lt;/h2&gt;
+&lt;p&gt;以前 &lt;code&gt;software_context&lt;/code&gt; 更像一个固定预算的 Query。&lt;/p&gt;
+&lt;p&gt;但真实 Coding Task 差别很大。&lt;/p&gt;
+&lt;p&gt;改一个错误文案和改一个跨 Runtime / MCP / Workspace 的安全问题，不应该拿同样大的上下文。&lt;/p&gt;
+&lt;p&gt;所以 v0.4 里，&lt;code&gt;agent_context&lt;/code&gt; 在不显式传 Budget 时会做 Adaptive Budget。&lt;/p&gt;
+&lt;p&gt;大致思路是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;明确单点任务
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 小 Context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;目标不确定 / 跨模块
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 给更多 Context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;始终有 Hard Bound
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个优化看起来不如 Graph 或 Verification “大”，但 Agent 每一次调用都会碰到它。&lt;/p&gt;
+&lt;p&gt;我现在越来越觉得，做 Agent Runtime 不能只优化模型能不能完成任务，还要开始对&lt;strong&gt;每次完成任务花了多少上下文&lt;/strong&gt;负责。&lt;/p&gt;
+&lt;h2 id="repo-map-也不能每次扫完整仓库"&gt;Repo Map 也不能每次扫完整仓库&lt;/h2&gt;
+&lt;p&gt;Agent Context 里最容易膨胀的是 Repo Map。&lt;/p&gt;
+&lt;p&gt;如果一句任务已经明确属于 &lt;code&gt;workspace&lt;/code&gt; Scope，而且目标文件也很直接，再把 Runtime、UI、Graph、Verification 全仓库结构都送进去没有意义。&lt;/p&gt;
+&lt;p&gt;所以现在 Repo Map 有几层变化：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Scope-aware；&lt;/li&gt;
+&lt;li&gt;Cold Build 时尽量只构造相关区域；&lt;/li&gt;
+&lt;li&gt;Structure 按 Revision Cache；&lt;/li&gt;
+&lt;li&gt;每个 Query 只重算 Ranking；&lt;/li&gt;
+&lt;li&gt;多 Query Symbol Search 对一个 Source Root 只扫描一次；&lt;/li&gt;
+&lt;li&gt;Fresh Semantic / Runtime Evidence 可以提高相关 Caller / Dependency 排名；&lt;/li&gt;
+&lt;li&gt;Semantic Revision 过期以后自动退回 Syntax，不继续拿旧事实指导 Agent。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我还把这些东西做了 Telemetry。&lt;/p&gt;
+&lt;p&gt;TUI 现在可以看到 Agent Context Calls、平均 Model-visible Token、Repo-map Cache Hit，以及大概省掉了多少 Context。&lt;/p&gt;
+&lt;p&gt;不是为了做一个漂亮数字，而是我想以后优化时至少知道自己到底有没有真的减少模型负担。&lt;/p&gt;
+&lt;h2 id="project-observatory-终于先讲架构而不是先讲需求列表"&gt;Project Observatory 终于先讲架构，而不是先讲需求列表&lt;/h2&gt;
+&lt;p&gt;v0.3 的 Project Observatory 已经从“Graph 球图”改成了 Requirement-first。&lt;/p&gt;
+&lt;p&gt;到 v0.4 我又改了一次。&lt;/p&gt;
+&lt;p&gt;现在进去先看到的是&lt;strong&gt;整体 Component Architecture&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;原因也很简单：&lt;/p&gt;
+&lt;p&gt;当我要理解一个陌生项目时，我通常第一句不是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这个 Requirement 现在状态怎么样？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;而是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这个项目到底分成哪几块，它们怎么依赖？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以现在 Observatory 会先把 Design 里声明的 Dependency 和代码里真实观测到的 Relationship 叠在一起。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design Architecture
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; +
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Observed Implementation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Overlay
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;并且继续保留 Provider / Precision。&lt;/p&gt;
+&lt;p&gt;这点我没有妥协：Tree-sitter 没看到某个关系，不等于关系不存在；只有真实 Semantic / Runtime / Deterministic Evidence 才能把某些 Observed Drift 升级成更强的判断。&lt;/p&gt;
+&lt;p&gt;UI 里也不再给一个模糊的“Health Score”，而是拆成可以解释的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Observed Drift；&lt;/li&gt;
+&lt;li&gt;Evidence Coverage；&lt;/li&gt;
+&lt;li&gt;Implementation Coverage。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我更愿意看到几个不完美但能解释的指标，也不想看到一个 87 分却不知道为什么是 87。&lt;/p&gt;
+&lt;h2 id="我还是不想给-agent-一个-shell但开发命令不能太残废"&gt;我还是不想给 Agent 一个 Shell，但开发命令不能太残废&lt;/h2&gt;
+&lt;p&gt;wcode 一直坚持 No-shell Boundary。&lt;/p&gt;
+&lt;p&gt;但 v0.3 之后我自己使用时也碰到一个现实问题：真正开发不可能永远只有 &lt;code&gt;cargo test&lt;/code&gt; 和 &lt;code&gt;git status&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;所以 v0.4 扩了很多 Command Policy，不过方向不是“放开命令”，而是&lt;strong&gt;给具体工具写具体策略&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Git 现在可以在精确授权后执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git add &amp;lt;explicit paths&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git commit -m &amp;lt;message&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git push &amp;lt;remote&amp;gt; &amp;lt;ref&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但 Force Push、Delete Ref、Mirror、Reset/Restore 这类形态仍然直接挡掉。&lt;/p&gt;
+&lt;p&gt;Push 如果被批准，也只允许通过固定的非交互 SSH 方式使用当前 SSH Agent，不会顺手把 Credential Helper 或 HTTPS Token 暴露给模型。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;gh&lt;/code&gt; 也不是整个二进制一次性放开。&lt;/p&gt;
+&lt;p&gt;PR、Issue、Workflow、Release、Merge、Run 都有自己的 bounded shape；&lt;code&gt;gh auth&lt;/code&gt;、&lt;code&gt;gh api&lt;/code&gt;、Secret、Variable、Extension 这些边界仍然封死。&lt;/p&gt;
+&lt;p&gt;另外补了不少真实开发里常见的 CLI：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fd / jq
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cmake / ninja
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;dotnet / mvn / gradle
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;swift / zig
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;pre-commit / act
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo-nextest
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Git LFS
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;uv / ruff / biome / deno
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;docker / kubectl / terraform
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我希望最终状态是：&lt;strong&gt;Agent 能正常开发，但“能正常开发”不等于“给它一个 Terminal”。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="tunnel-也不应该因为一个-provider-挂了就不能用"&gt;Tunnel 也不应该因为一个 Provider 挂了就不能用&lt;/h2&gt;
+&lt;p&gt;wcode 最早的 Remote MCP 默认依赖 Cloudflare Quick Tunnel。&lt;/p&gt;
+&lt;p&gt;它很好用，但单 Provider 依赖太脆。&lt;/p&gt;
+&lt;p&gt;v0.4 现在的 Auto Path 是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Cloudflare
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓ fail / missing
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;localhost.run
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓ fail
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Pinggy
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;后两个直接走 OpenSSH Reverse Forwarding，不需要为了启动 wcode 再自动安装一个 Tunnel Client。&lt;/p&gt;
+&lt;p&gt;而且拿到 Public URL 还不算成功。&lt;/p&gt;
+&lt;p&gt;Candidate URL 必须真的访问到&lt;strong&gt;当前这个 wcode Runtime 的 instance-matched &lt;code&gt;/healthz&lt;/code&gt;&lt;/strong&gt;，否则不会被当作可用 Tunnel。&lt;/p&gt;
+&lt;p&gt;这解决的是一个很现实的问题：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Remote MCP 的网络入口应该是可恢复的基础设施，而不是“某个第三方命令今天能不能跑”。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="这次顺手把几个越来越大的文件拆掉了"&gt;这次顺手把几个越来越大的文件拆掉了&lt;/h2&gt;
+&lt;p&gt;做性能和 Agent Context 的过程中，有几个文件又开始长得不太舒服：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;main.rs&lt;/code&gt;；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;harness.rs&lt;/code&gt;；&lt;/li&gt;
+&lt;li&gt;Monitor；&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;command_policy.rs&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以 v0.4 也做了一轮责任拆分。&lt;/p&gt;
+&lt;p&gt;现在 Tunnel、Harness Profile、Agent Context、Repo Map、Monitor State 都已经单独落文件。&lt;/p&gt;
+&lt;p&gt;发版前最后又把 Command Policy 拆成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;command_policy/
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── git.rs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── github.rs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── infrastructure.rs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└── dev_tools.rs
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我没有为了“模块化”去造新的抽象层，主要目的是别让安全策略继续堆在一个 1500 行文件里。&lt;/p&gt;
+&lt;p&gt;这类代码最怕两件事：模型每次要读一大坨上下文，以及多人/多 Agent 修改时冲突越来越集中。&lt;/p&gt;
+&lt;h2 id="mcp-自己也补了一次异常隔离"&gt;MCP 自己也补了一次异常隔离&lt;/h2&gt;
+&lt;p&gt;发版前我碰到过一次很典型的问题：多个 Tool 突然一起报 &lt;code&gt;ExceptionGroup: unhandled errors in a TaskGroup&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;受影响的不只是某一个业务 Tool，&lt;code&gt;workspace_info&lt;/code&gt;、&lt;code&gt;read_file&lt;/code&gt;、&lt;code&gt;run_command&lt;/code&gt;、&lt;code&gt;review_changes&lt;/code&gt; 都会一起失效。&lt;/p&gt;
+&lt;p&gt;这个现象说明问题已经不是 Tool 业务逻辑，而是请求隔离边界。&lt;/p&gt;
+&lt;p&gt;v0.4 最后补了一层统一的 Request Task Isolation：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;HTTP 单请求独立 Task；&lt;/li&gt;
+&lt;li&gt;stdio 单请求独立 Task；&lt;/li&gt;
+&lt;li&gt;Child Panic / Cancellation / JoinError 转成正常 JSON-RPC Error；&lt;/li&gt;
+&lt;li&gt;Durable MCP Task Worker 的 Child Failure 也落成 Task Failure；&lt;/li&gt;
+&lt;li&gt;一个 Child 失败以后，后续独立 Tool 仍然可以继续工作。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Release Profile 也不再使用 &lt;code&gt;panic=abort&lt;/code&gt;，否则“捕获一个 Child Panic 并保持 Session 可用”在 Release Binary 里根本做不到。&lt;/p&gt;
+&lt;p&gt;这个修复对正常路径没有什么新 UI，但我觉得它很重要：&lt;strong&gt;Tool Failure 应该是一次调用失败，不应该升级成整个 Agent Session 坏掉。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="v04-我会怎么概括"&gt;v0.4 我会怎么概括&lt;/h2&gt;
+&lt;p&gt;如果 v0.3 是“把软件状态接起来”，v0.4 更像是“让这套状态真正适合每天写代码”。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;v0.3&lt;/th&gt;
+&lt;th&gt;v0.4&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Coding Entry&lt;/td&gt;
+&lt;td&gt;多 Tool 组合&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;agent_context&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Context&lt;/td&gt;
+&lt;td&gt;固定/通用&lt;/td&gt;
+&lt;td&gt;Adaptive + Scope-aware&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Repo Map&lt;/td&gt;
+&lt;td&gt;任务时构建&lt;/td&gt;
+&lt;td&gt;Revision Cache + Query Ranking&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Source Read&lt;/td&gt;
+&lt;td&gt;多一步读取&lt;/td&gt;
+&lt;td&gt;Direct Match 可带 Hot Source&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Observatory&lt;/td&gt;
+&lt;td&gt;Requirement-first&lt;/td&gt;
+&lt;td&gt;Architecture-first → Requirement Drill-down&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Command Policy&lt;/td&gt;
+&lt;td&gt;基础安全命令 + Selective Approval&lt;/td&gt;
+&lt;td&gt;Git/GitHub/Dev CLI 的精确 bounded policy&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Tunnel&lt;/td&gt;
+&lt;td&gt;Cloudflare 为主&lt;/td&gt;
+&lt;td&gt;Cloudflare → localhost.run → Pinggy&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Runtime Failure&lt;/td&gt;
+&lt;td&gt;各路径自行处理&lt;/td&gt;
+&lt;td&gt;MCP Request / Child Task Isolation&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Maintainability&lt;/td&gt;
+&lt;td&gt;拆主 Runtime Cluster&lt;/td&gt;
+&lt;td&gt;继续拆 Agent Context / Tunnel / Monitor / Command Policy&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Verification&lt;/td&gt;
+&lt;td&gt;Full Gate&lt;/td&gt;
+&lt;td&gt;Full Gate + 文档 EN/ZH parity regression&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;发版前最后一次本地 Full Gate 是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git diff --check ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo check --locked ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo fmt --check ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo test --locked ✅ 210 passed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo clippy --locked -- -D warnings ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo build --release --locked ✅
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Design / Traceability 也还是完整的：Requirement → Component、Design → Implementation、Acceptance → Verification 都是 100%。&lt;/p&gt;
+&lt;p&gt;当然，本地绿色只是发版准备；真正的 Release 还是要以 Tagged Revision 和 CI / Release Artifact 为准。&lt;/p&gt;
+&lt;h2 id="最后"&gt;最后&lt;/h2&gt;
+&lt;p&gt;v0.3 的时候我觉得 wcode 真正有意思的地方，是它开始不只关心“代码能不能被 Agent 改”，而是开始关心“软件为什么变成现在这样”。&lt;/p&gt;
+&lt;p&gt;v0.4 又让我多了一层判断：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;如果这些 Intelligence 每次都让 Agent 付出很高的上下文和工具往返成本，它最终也不会成为默认工作流。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以这一版看起来没有 v0.3 那么像一次产品方向转弯。&lt;/p&gt;
+&lt;p&gt;但对我自己每天用它写代码的体验来说，变化反而更直接。&lt;/p&gt;
+&lt;p&gt;现在我希望大部分任务都从一句 Goal 开始，拿到一个足够小但能动手的 Context，然后尽快 Edit、Review、Verify。&lt;/p&gt;
+&lt;p&gt;复杂任务再把 Graph、Risk、Reconciliation 拉进来。&lt;/p&gt;
+&lt;p&gt;不是让 Agent 每次都理解整个软件世界，而是让它&lt;strong&gt;在需要的时候，拿到刚好足够可靠的那部分。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;代码：&lt;a href="https://github.com/francis-du/wcode"&gt;https://github.com/francis-du/wcode&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;文档：&lt;a href="https://wcode.francis.run/"&gt;https://wcode.francis.run/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
 &lt;p&gt;但实际用久了以后，我也越来越不喜欢另一个极端：只要一个工具不在默认列表里，就永久拒绝；真要用的时候，只能重启进程加一个很宽的 Trust Flag。&lt;/p&gt;
 &lt;p&gt;这两个选择都太粗：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;完全不许
@@ -454,7 +730,8 @@
 &lt;p&gt;v0.2 解决的是“把 AI 接进来”。&lt;/p&gt;
 &lt;p&gt;v0.3 更像是在回答：“接进来以后，怎么让这个项目长期不失控。”&lt;/p&gt;
 &lt;p&gt;我现在觉得这才是 wcode 真正有意思的方向。&lt;/p&gt;
-&lt;p&gt;相关实现细节可以继续看 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;wcode 最近做成什么样了&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-design-state/"&gt;Design State&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-verification/"&gt;Verification&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心&lt;/a&gt; 和 &lt;a href="https://francis.run/blog/wcode-security/"&gt;Security&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：我还是不想给 Agent 一个 Shell</title><link>https://francis.run/blog/wcode-security/</link><pubDate>Wed, 26 Aug 2026 03:17:00 +0800</pubDate><guid>https://francis.run/blog/wcode-security/</guid><description>&lt;p&gt;wcode 第一版里，我花时间最多的其实不是 MCP。&lt;/p&gt;
+&lt;p&gt;相关实现细节可以继续看 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;wcode 最近做成什么样了&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-design-state/"&gt;Design State&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-verification/"&gt;Verification&lt;/a&gt;、&lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心&lt;/a&gt; 和 &lt;a href="https://francis.run/blog/wcode-security/"&gt;Security&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;后续的写代码热路径、Agent Context、Architecture-first Observatory 和精确命令策略，继续写在 &lt;a href="https://francis.run/blog/wcode-v0-4/"&gt;wcode v0.4：开始为 Agent 的上下文成本负责&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：我还是不想给 Agent 一个 Shell</title><link>https://francis.run/blog/wcode-security/</link><pubDate>Wed, 26 Aug 2026 03:17:00 +0800</pubDate><guid>https://francis.run/blog/wcode-security/</guid><description>&lt;p&gt;wcode 第一版里，我花时间最多的其实不是 MCP。&lt;/p&gt;
 &lt;p&gt;是 Workspace。&lt;/p&gt;
 &lt;p&gt;因为把模型接到本地仓库以后，最危险的从来不是它看错一个函数，而是 Tool Runtime 的边界没守住。&lt;/p&gt;
 &lt;p&gt;上层现在已经有 Design State、Graph、Reconciliation、Verification，复杂了很多。但越往上加东西，我越不想动底下这几条线。&lt;/p&gt;
@@ -780,6 +1057,7 @@
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心：模型可以提权限，但不能替我批准&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://francis.run/blog/wcode-v0-4/"&gt;wcode v0.4：开始为 Agent 的上下文成本负责&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="https://francis.run/blog/wcode-performance/"&gt;我把 wcode 写代码这条链又压快了一轮&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;代码在 &lt;a href="https://github.com/francis-du/wcode"&gt;https://github.com/francis-du/wcode&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>我写了 wcode：把 Web AI 接到本地代码库</title><link>https://francis.run/blog/wcode/</link><pubDate>Sun, 23 Aug 2026 18:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="打开 wcode 官网"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode 官网" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
