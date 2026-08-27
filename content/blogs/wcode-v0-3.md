@@ -318,3 +318,5 @@ v0.3 更像是在回答：“接进来以后，怎么让这个项目长期不失
 我现在觉得这才是 wcode 真正有意思的方向。
 
 相关实现细节可以继续看 [wcode 最近做成什么样了](/blog/wcode-2026/)、[Design State](/blog/wcode-design-state/)、[Verification](/blog/wcode-verification/)、[授权中心](/blog/wcode-authorization/) 和 [Security](/blog/wcode-security/)。
+
+后续的写代码热路径、Agent Context、Architecture-first Observatory 和精确命令策略，继续写在 [wcode v0.4：开始为 Agent 的上下文成本负责](/blog/wcode-v0-4/)。

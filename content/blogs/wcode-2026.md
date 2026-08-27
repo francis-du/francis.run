@@ -289,6 +289,7 @@ TUI 里 `I` 看 Intelligence，`W` 打开 Project Observatory。
 - [我还是不想给 Agent 一个 Shell](/blog/wcode-security/)
 - [授权中心：模型可以提权限，但不能替我批准](/blog/wcode-authorization/)
 - [wcode v0.3：从本地代码桥到 Software Intelligence Runtime](/blog/wcode-v0-3/)
+- [wcode v0.4：开始为 Agent 的上下文成本负责](/blog/wcode-v0-4/)
 - [我把 wcode 写代码这条链又压快了一轮](/blog/wcode-performance/)
 
 代码在 <https://github.com/francis-du/wcode>。
