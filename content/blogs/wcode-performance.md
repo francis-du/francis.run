@@ -3,7 +3,7 @@ title: "我把 wcode 写代码这条链又压快了一轮"
 date: 2026-08-26T23:40:00+08:00
 draft: false
 url: /blog/wcode-performance/
-image: /img/wcode/wcode-tui.png
+image: https://wcode.francis.run/assets/img.png
 description: "真实项目里试用以后，我发现瓶颈不只在模型：写文件 fsync、项目扫描串行、搜索先收集全目录、工具往返和批量写法都会直接影响 Agent 写代码的体感。"
 tags:
   - wcode
@@ -11,7 +11,7 @@ tags:
   - Performance
   - AI Agent
 images:
-  - /img/wcode/wcode-tui.png
+  - https://wcode.francis.run/assets/img.png
 ---
 
 最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：**还是不够快。**
@@ -26,7 +26,7 @@ images:
 
 所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。
 
-![wcode 终端实时面板](/img/wcode/wcode-tui.png)
+![wcode 最新终端实时面板](https://wcode.francis.run/assets/img.png)
 
 ## 第一处：每个小编辑都 `fsync` 太贵了
 
@@ -199,6 +199,30 @@ wcode -j 256
 
 这个档位更适合 Agent 一次并行导航和修改多个文件。
 
+## 第七处：连“统计响应有多大”也不该复制整份 JSON
+
+TUI 会展示请求、响应和 Token Economy，所以 Tool Runtime 要知道每次调用大概传了多少字节。
+
+以前这个指标是这样算的：
+
+```text
+Value
+  ↓
+serde_json::to_vec
+  ↓
+拿 Vec.len()
+  ↓
+Vec 丢掉
+```
+
+也就是说，真正响应以后，为了统计长度又临时分配并序列化了一份 JSON。
+
+小结果没什么感觉，但 `parallel_tools`、Graph、Project Context 这类 `structuredContent` 大时，这就是纯粹的额外内存和 CPU。
+
+现在改成一个只实现 `Write` 的 Byte Counter，让 `serde_json::to_writer` 流过去，只累加字节数，不保存第二份 Buffer。
+
+协议内容完全不变，Monitor 指标也不变，但每个 Tool Call 少一次只为计数存在的临时分配。
+
 ## 更重要的是：让模型少发 Tool Call
 
 Runtime 再快，如果 Agent 还是：
@@ -264,7 +288,7 @@ Tool Runtime 能不能批量/并行调度
 这一轮之后，我觉得还有几块值得继续盯：
 
 1. `project_context` 的两个仓库扫描虽然并行了，但未来最好共享一次 File Inventory，而不是各走一遍目录。
-2. MCP Tool Result 为兼容 `content + structuredContent` 会有重复序列化/内存占用，大结果还有优化空间。
+2. MCP Tool Result 为兼容 `content + structuredContent` 本身仍会保留两种表示；这和已经去掉的“仅为统计字节数再序列化一次”不是一回事，大结果仍有进一步优化空间。
 3. Software Graph 第一次建立时，Language/Tree-sitter Parser 初始化和目录候选选择还可以继续做更细的缓存。
 4. Monitor 的指标必须保持便宜，不能为了展示吞吐量反过来拖 Tool Call。
 5. 多 Workspace 同时工作时，需要继续观察 Rayon、Tokio `spawn_blocking` 和全局 Semaphore 三层调度会不会互相争资源。

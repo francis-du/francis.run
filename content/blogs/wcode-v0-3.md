@@ -3,7 +3,7 @@ title: "wcode v0.3：从本地代码桥到 Software Intelligence Runtime"
 date: 2026-08-26T23:30:00+08:00
 draft: false
 url: /blog/wcode-v0-3/
-image: /img/wcode/wcode-tui.png
+image: https://wcode.francis.run/assets/img.png
 description: "v0.2 还是一个轻量的 Remote MCP 代码桥，v0.3 开始把 Design State、Software Graph、Risk、Verification、Evidence 和 Reconciliation 接成一套真正的软件控制面。"
 tags:
   - wcode
@@ -11,7 +11,7 @@ tags:
   - MCP
   - Release
 images:
-  - /img/wcode/wcode-tui.png
+  - https://wcode.francis.run/assets/img.png
 ---
 
 wcode 的 v0.3 是一次比较明显的方向变化。
@@ -28,7 +28,7 @@ v0.2 发布时，我给它的定位还很简单：**一个轻量的 Code Agent p
 
 模型仍然负责写代码，wcode 开始负责另一件更难长期维护的事：软件到底应该是什么、现在是什么、哪里变了、风险在哪里、什么证据说明这次修改真的完成了。
 
-![wcode 终端实时面板](/img/wcode/wcode-tui.png)
+![wcode 最新终端实时面板](https://wcode.francis.run/assets/img.png)
 
 ## v0.2 当时解决了什么
 
@@ -317,4 +317,4 @@ v0.3 更像是在回答：“接进来以后，怎么让这个项目长期不失
 
 我现在觉得这才是 wcode 真正有意思的方向。
 
-相关实现细节可以继续看 [wcode 最近做成什么样了](/blog/wcode-2026/)、[Design State](/blog/wcode-design-state/)、[Verification](/blog/wcode-verification/) 和 [Security](/blog/wcode-security/)。
+相关实现细节可以继续看 [wcode 最近做成什么样了](/blog/wcode-2026/)、[Design State](/blog/wcode-design-state/)、[Verification](/blog/wcode-verification/)、[授权中心](/blog/wcode-authorization/) 和 [Security](/blog/wcode-security/)。

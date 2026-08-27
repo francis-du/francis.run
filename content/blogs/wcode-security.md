@@ -3,13 +3,15 @@ title: "wcode：我还是不想给 Agent 一个 Shell"
 date: 2026-08-26T03:17:00+08:00
 draft: false
 url: /blog/wcode-security/
+image: https://wcode.francis.run/assets/img_3.png
 description: "功能越来越多以后，我反而更确定几条底层边界不能省：Root、Symlink、SHA、原子写入、动态授权，以及不经过 Shell 的命令执行。"
 tags:
   - Security
   - Rust
   - MCP
   - wcode
-images: []
+images:
+  - https://wcode.francis.run/assets/img_3.png
 ---
 
 wcode 第一版里，我花时间最多的其实不是 MCP。
@@ -19,6 +21,8 @@ wcode 第一版里，我花时间最多的其实不是 MCP。
 因为把模型接到本地仓库以后，最危险的从来不是它看错一个函数，而是 Tool Runtime 的边界没守住。
 
 上层现在已经有 Design State、Graph、Reconciliation、Verification，复杂了很多。但越往上加东西，我越不想动底下这几条线。
+
+![wcode 授权与访问控制界面](https://wcode.francis.run/assets/img_3.png)
 
 ## Root 不是字符串前缀
 
@@ -185,4 +189,4 @@ Scheduler 会先建立 Path Resource Model。
 
 Agent 可以很聪明，也可以犯很离谱的错。底层权限最好对这两种情况都一样冷淡。
 
-这一组文章从 [最新版总览](/blog/wcode-2026/) 开始。第一版关于 OAuth、Tunnel、MCP 请求链路和早期 Workspace 实现的记录还在 [这里](/blog/wcode/)。
+这一组文章从 [最新版总览](/blog/wcode-2026/) 开始。授权队列、`CommandAccess` 和 TUI/WebUI 的交互细节单独写在 [授权中心：模型可以提权限，但不能替我批准](/blog/wcode-authorization/)。第一版关于 OAuth、Tunnel、MCP 请求链路和早期 Workspace 实现的记录还在 [这里](/blog/wcode/)。
