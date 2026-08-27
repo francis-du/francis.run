@@ -3,7 +3,7 @@ title: "wcode 最近做成什么样了"
 date: 2026-08-26T03:10:00+08:00
 draft: false
 url: /blog/wcode-2026/
-image: https://wcode.francis.run/assets/img.png
+image: /img/wcode/wcode-observatory-full.png
 description: "第一版 wcode 只是想把 Web AI 接到本地代码。后来我开始关心另一件事：代码被人和模型反复修改以后，项目还能不能说清楚自己为什么是现在这样。"
 tags:
   - Rust
@@ -11,7 +11,7 @@ tags:
   - AI Agent
   - wcode
 images:
-  - https://wcode.francis.run/assets/img.png
+  - /img/wcode/wcode-observatory-full.png
 ---
 
 我前几天写过一篇 [wcode 的第一版介绍](/blog/wcode/)。
@@ -64,7 +64,7 @@ Product Scope ───── Source Code
 
 这张图看起来比第一版复杂不少，但实际使用时反而更简单了：模型还是写代码，wcode 主要负责把它写代码前后那些容易丢掉的状态接起来。
 
-![wcode 最新终端实时面板](https://wcode.francis.run/assets/img.png)
+![wcode 最新终端实时面板](/img/wcode/wcode-tui.png)
 
 ## 我先把“为什么”放进仓库
 

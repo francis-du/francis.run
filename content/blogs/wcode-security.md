@@ -3,7 +3,7 @@ title: "wcode：我还是不想给 Agent 一个 Shell"
 date: 2026-08-26T03:17:00+08:00
 draft: false
 url: /blog/wcode-security/
-image: https://wcode.francis.run/assets/img_3.png
+image: /img/wcode/wcode-access-management.png
 description: "功能越来越多以后，我反而更确定几条底层边界不能省：Root、Symlink、SHA、原子写入、动态授权，以及不经过 Shell 的命令执行。"
 tags:
   - Security
@@ -11,7 +11,7 @@ tags:
   - MCP
   - wcode
 images:
-  - https://wcode.francis.run/assets/img_3.png
+  - /img/wcode/wcode-access-management.png
 ---
 
 wcode 第一版里，我花时间最多的其实不是 MCP。
@@ -22,7 +22,7 @@ wcode 第一版里，我花时间最多的其实不是 MCP。
 
 上层现在已经有 Design State、Graph、Reconciliation、Verification，复杂了很多。但越往上加东西，我越不想动底下这几条线。
 
-![wcode 授权与访问控制界面](https://wcode.francis.run/assets/img_3.png)
+![wcode 授权与访问控制界面](/img/wcode/wcode-access-management.png)
 
 ## Root 不是字符串前缀
 

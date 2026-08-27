@@ -3,7 +3,7 @@ title: "wcode v0.4：开始为 Agent 的上下文成本负责"
 date: 2026-08-27T23:55:00+08:00
 draft: false
 url: /blog/wcode-v0-4/
-image: https://wcode.francis.run/assets/img.png
+image: /img/wcode/wcode-workspace-intelligence.png
 description: "v0.3 把 wcode 变成了 Software Intelligence Runtime，v0.4 没继续堆大功能，而是重新压了一遍 Agent 真正写代码的热路径：更少 Context、更少 Tool Round-trip、更清楚的架构和更精确的执行边界。"
 tags:
   - wcode
@@ -12,7 +12,7 @@ tags:
   - AI Agent
   - Release
 images:
-  - https://wcode.francis.run/assets/img.png
+  - /img/wcode/wcode-workspace-intelligence.png
 ---
 
 v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。
@@ -27,7 +27,7 @@ v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability
 
 这一版主要做的是另一件事：**把 Agent 真正写代码的主路径重新压一遍。**
 
-![wcode 最新终端实时面板](https://wcode.francis.run/assets/img.png)
+![wcode 最新终端实时面板](/img/wcode/wcode-tui.png)
 
 ## v0.3 和 v0.4 的差别，不是能力多少
 

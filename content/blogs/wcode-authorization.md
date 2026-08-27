@@ -3,7 +3,7 @@ title: "wcode 的授权中心：模型可以提权限，但不能替我批准"
 date: 2026-08-26T23:35:00+08:00
 draft: false
 url: /blog/wcode-authorization/
-image: https://wcode.francis.run/assets/img_3.png
+image: /img/wcode/wcode-access-management.png
 description: "模型遇到未授权命令、高风险执行、Runtime Executor 或删除操作时，不再只有永久拒绝和全局放开两个选项；wcode 把它们变成可选择的 Pending Authorization。"
 tags:
   - wcode
@@ -11,7 +11,7 @@ tags:
   - MCP
   - AI Agent
 images:
-  - https://wcode.francis.run/assets/img_3.png
+  - /img/wcode/wcode-access-management.png
 ---
 
 我一直不想给 Agent 一个 Shell。
@@ -32,7 +32,7 @@ images:
 
 > **模型可以提出权限请求，但决定权必须留在用户手里。**
 
-![wcode 授权与访问控制界面](https://wcode.francis.run/assets/img_3.png)
+![wcode 授权与访问控制界面](/img/wcode/wcode-access-management.png)
 
 ## 为什么 `Y/N` 以前看起来没用
 

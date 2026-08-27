@@ -3,7 +3,7 @@ title: "我把 wcode 写代码这条链又压快了一轮"
 date: 2026-08-26T23:40:00+08:00
 draft: false
 url: /blog/wcode-performance/
-image: https://wcode.francis.run/assets/img.png
+image: /img/wcode/wcode-tui.png
 description: "真实项目里试用以后，我发现瓶颈不只在模型：写文件 fsync、项目扫描串行、搜索先收集全目录、工具往返和批量写法都会直接影响 Agent 写代码的体感。"
 tags:
   - wcode
@@ -11,7 +11,7 @@ tags:
   - Performance
   - AI Agent
 images:
-  - https://wcode.francis.run/assets/img.png
+  - /img/wcode/wcode-tui.png
 ---
 
 最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：**还是不够快。**
@@ -26,7 +26,7 @@ images:
 
 所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。
 
-![wcode 最新终端实时面板](https://wcode.francis.run/assets/img.png)
+![wcode 最新终端实时面板](/img/wcode/wcode-tui.png)
 
 ## 第一处：每个小编辑都 `fsync` 太贵了
 
