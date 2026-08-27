@@ -1536,6 +1536,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;授权页还要输入终端显示的六位验证码。只拿到临时公网 URL 的人，不能直接替你授权。Authorization Code 是单次、短时的，Refresh Token 会轮换，Redirect URI 只接受 HTTPS 或受约束的 Loopback 地址。&lt;/p&gt;
 &lt;p&gt;MCP 新版更推荐 Client ID Metadata Document，但我没有默认抓取客户端随便给出的 Metadata URL。自动化是多了一点，同时也新开了一个出站网络、SSRF 和 DNS Rebinding 的口子。在没有完整处理这个信任边界之前，我更愿意保留 DCR 兼容路径。&lt;/p&gt;
 &lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-setup-hub.png" alt="wcode Setup Hub"&gt;&lt;/p&gt;
+&lt;p&gt;授权面板把项目、命令白名单和精确仓库操作的授权放在本地显式管理，模型不能批准自己的请求：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制"&gt;&lt;/p&gt;
 &lt;h2 id="文件沙箱最麻烦的不是-"&gt;文件沙箱最麻烦的不是 &lt;code&gt;../&lt;/code&gt;&lt;/h2&gt;
 &lt;p&gt;最早写 Workspace 层时，我很快发现：检查一下路径里有没有 &lt;code&gt;..&lt;/code&gt;，离“只能访问这个目录”还差得很远。&lt;/p&gt;
 &lt;p&gt;每个工作区在启动时都会先 &lt;code&gt;canonicalize&lt;/code&gt;。文件系统根目录、Home 目录这类范围过大的 Root 默认拒绝；多个工作区如果是父子关系，也默认拒绝。在 Unix 上，wcode 还会记住 Root 的 Device/Inode。&lt;/p&gt;
@@ -1616,6 +1618,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Phase 3 release build
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;同一个 Phase 内彼此独立的检查可以并发，不同 Phase 之间有 Barrier。这样既不把所有命令串行到底，也不会让 Test、Clippy 和 Release Build 同时争 Cargo Cache。每个检查仍然单独获取全局 Semaphore Permit，单独进入 Monitor，并返回 Exit Code、耗时与截断后的 stdout/stderr 尾部。&lt;/p&gt;
 &lt;p&gt;最关键的是，&lt;code&gt;verify_project&lt;/code&gt; 不能借“自动验证”绕过命令策略。推导出的 Program 和 Args 还要经过内部 Exact-shape Validator，只临时放行这一条已经识别的命令，再委托给同一个 Workspace Command Policy。Harness 提供的是一条更容易走对的路，不是第二个后门。&lt;/p&gt;
+&lt;p&gt;需求详情页把 Desired State → Actual State → Change → Proof → Convergence 排成一条链，验证证据挂在 Proof 一环：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-verification-detail.png" alt="wcode 需求验证证据"&gt;&lt;/p&gt;
 &lt;h2 id="tunnel-挂了以后怎么办"&gt;Tunnel 挂了以后怎么办&lt;/h2&gt;
 &lt;p&gt;每个 wcode 进程都有一个随机 &lt;code&gt;instance_id&lt;/code&gt;。&lt;code&gt;cloudflared&lt;/code&gt; 输出公网 URL 后，wcode 不会立刻显示 Ready，而是从公网请求 &lt;code&gt;/healthz&lt;/code&gt;。只有响应里的 &lt;code&gt;ok&lt;/code&gt; 为真，并且 &lt;code&gt;instance_id&lt;/code&gt; 与当前进程一致，才会打开 Setup Hub。&lt;/p&gt;
 &lt;p&gt;这个检查主要防两个问题：Tunnel 的 DNS/TLS 还没准备好；或者同一台机器上的另一个 wcode 实例恰好能响应，造成假就绪。&lt;/p&gt;
@@ -1627,6 +1631,9 @@
 &lt;p&gt;这些数据来自同一个 &lt;code&gt;TaskTicket&lt;/code&gt; 生命周期：收到请求时入队，拿到 Permit 时运行，返回时完成或失败。如果异步任务异常 Drop，Ticket 也会结束记录，不会在面板上永久留下一个 Running。&lt;/p&gt;
 &lt;p&gt;交互式终端使用 Alternate Screen 和 Raw Mode，并通过 RAII Guard 恢复鼠标捕获、光标和主屏幕。忙时大约 150 ms 刷新一次，闲时降到 500 ms。stdout 不是 TTY 或传入 &lt;code&gt;--no-monitor&lt;/code&gt; 时，就退化成普通日志。&lt;/p&gt;
 &lt;p&gt;我不喜欢一些 Agent 产品为了显得很忙，凭空画出一堆并行任务。wcode 的原则很简单：没有发生的事，不显示。&lt;/p&gt;
+&lt;p&gt;WebUI 侧遵循同一个原则。Project Observatory 把期望架构、实际依赖、漂移、证据与实现覆盖率放在同一个视图里：&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture.png" alt="wcode 架构总览"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory.png" alt="wcode 项目观测台"&gt;&lt;/p&gt;
 &lt;h2 id="怎么用"&gt;怎么用&lt;/h2&gt;
 &lt;p&gt;macOS 和 Linux：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -fsSL https://raw.githubusercontent.com/francis-du/wcode/main/install.sh | sh
