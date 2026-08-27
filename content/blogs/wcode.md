@@ -128,6 +128,10 @@ MCP 新版更推荐 Client ID Metadata Document，但我没有默认抓取客户
 
 ![wcode Setup Hub](/img/wcode/wcode-setup-hub.png)
 
+授权面板把项目、命令白名单和精确仓库操作的授权放在本地显式管理，模型不能批准自己的请求：
+
+![wcode 授权与访问控制](/img/wcode/wcode-access-management.png)
+
 ## 文件沙箱最麻烦的不是 `../`
 
 最早写 Workspace 层时，我很快发现：检查一下路径里有没有 `..`，离“只能访问这个目录”还差得很远。
@@ -267,6 +271,10 @@ Phase 3  release build
 
 最关键的是，`verify_project` 不能借“自动验证”绕过命令策略。推导出的 Program 和 Args 还要经过内部 Exact-shape Validator，只临时放行这一条已经识别的命令，再委托给同一个 Workspace Command Policy。Harness 提供的是一条更容易走对的路，不是第二个后门。
 
+需求详情页把 Desired State → Actual State → Change → Proof → Convergence 排成一条链，验证证据挂在 Proof 一环：
+
+![wcode 需求验证证据](/img/wcode/wcode-verification-detail.png)
+
 ## Tunnel 挂了以后怎么办
 
 每个 wcode 进程都有一个随机 `instance_id`。`cloudflared` 输出公网 URL 后，wcode 不会立刻显示 Ready，而是从公网请求 `/healthz`。只有响应里的 `ok` 为真，并且 `instance_id` 与当前进程一致，才会打开 Setup Hub。
@@ -288,6 +296,12 @@ Ratatui 面板里有本地服务、公网 Tunnel、OAuth、MCP 最近活动、�
 交互式终端使用 Alternate Screen 和 Raw Mode，并通过 RAII Guard 恢复鼠标捕获、光标和主屏幕。忙时大约 150 ms 刷新一次，闲时降到 500 ms。stdout 不是 TTY 或传入 `--no-monitor` 时，就退化成普通日志。
 
 我不喜欢一些 Agent 产品为了显得很忙，凭空画出一堆并行任务。wcode 的原则很简单：没有发生的事，不显示。
+
+WebUI 侧遵循同一个原则。Project Observatory 把期望架构、实际依赖、漂移、证据与实现覆盖率放在同一个视图里：
+
+![wcode 架构总览](/img/wcode/wcode-architecture.png)
+
+![wcode 项目观测台](/img/wcode/wcode-observatory.png)
 
 ## 怎么用
 
