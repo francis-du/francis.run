@@ -6,7 +6,7 @@
 &lt;/blockquote&gt;
 &lt;p&gt;所以 v0.4 没有再把重点放在“再加一个 Intelligence Tool”。&lt;/p&gt;
 &lt;p&gt;这一版主要做的是另一件事：&lt;strong&gt;把 Agent 真正写代码的主路径重新压一遍。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="v03-和-v04-的差别不是能力多少"&gt;v0.3 和 v0.4 的差别，不是能力多少&lt;/h2&gt;
 &lt;p&gt;v0.3 我最关心的是“软件状态能不能留下来”。&lt;/p&gt;
 &lt;p&gt;所以那一版的主线是：&lt;/p&gt;
@@ -280,7 +280,7 @@
 &lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
 &lt;p&gt;这些东西单次看都不大，Agent 连续改几十个文件时就很明显。&lt;/p&gt;
 &lt;p&gt;所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="第一处每个小编辑都-fsync-太贵了"&gt;第一处：每个小编辑都 &lt;code&gt;fsync&lt;/code&gt; 太贵了&lt;/h2&gt;
 &lt;p&gt;wcode 的文件写入一直比较保守。&lt;/p&gt;
 &lt;p&gt;已有文件不是原地 &lt;code&gt;truncate&lt;/code&gt;，而是：&lt;/p&gt;
@@ -448,7 +448,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;模型可以提出权限请求，但决定权必须留在用户手里。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img_3.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
 &lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;/h2&gt;
 &lt;p&gt;TUI 其实早就有 &lt;code&gt;Y/N&lt;/code&gt; 的 Key Handler。&lt;/p&gt;
 &lt;p&gt;问题是 UI 只在 Footer 里塞了一个 Pending 数字。&lt;/p&gt;
@@ -651,7 +651,7 @@
 &lt;p&gt;&lt;strong&gt;Software Intelligence Runtime for AI-native development.&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;模型仍然负责写代码，wcode 开始负责另一件更难长期维护的事：软件到底应该是什么、现在是什么、哪里变了、风险在哪里、什么证据说明这次修改真的完成了。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="v02-当时解决了什么"&gt;v0.2 当时解决了什么&lt;/h2&gt;
 &lt;p&gt;我重新看了一遍 &lt;code&gt;v0.2&lt;/code&gt; Tag 里的 README。&lt;/p&gt;
 &lt;p&gt;当时的主线非常明确：&lt;/p&gt;
@@ -898,7 +898,7 @@
 &lt;p&gt;是 Workspace。&lt;/p&gt;
 &lt;p&gt;因为把模型接到本地仓库以后，最危险的从来不是它看错一个函数，而是 Tool Runtime 的边界没守住。&lt;/p&gt;
 &lt;p&gt;上层现在已经有 Design State、Graph、Reconciliation、Verification，复杂了很多。但越往上加东西，我越不想动底下这几条线。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img_3.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
 &lt;h2 id="root-不是字符串前缀"&gt;Root 不是字符串前缀&lt;/h2&gt;
 &lt;p&gt;最偷懒的 Workspace 隔离大概是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;path.starts_with(workspace_root)
@@ -1543,7 +1543,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Evidence
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这张图看起来比第一版复杂不少，但实际使用时反而更简单了：模型还是写代码，wcode 主要负责把它写代码前后那些容易丢掉的状态接起来。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="我先把为什么放进仓库"&gt;我先把“为什么”放进仓库&lt;/h2&gt;
 &lt;p&gt;最先加的是 Design State。&lt;/p&gt;
 &lt;p&gt;现在项目可以有一份 &lt;code&gt;.wcode&lt;/code&gt;：&lt;/p&gt;

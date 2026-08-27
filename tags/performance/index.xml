@@ -4,7 +4,7 @@
 &lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
 &lt;p&gt;这些东西单次看都不大，Agent 连续改几十个文件时就很明显。&lt;/p&gt;
 &lt;p&gt;所以这一轮我没有继续加新的 Intelligence 能力，先把写代码的热路径压了一遍。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 最新终端实时面板"&gt;&lt;/p&gt;
 &lt;h2 id="第一处每个小编辑都-fsync-太贵了"&gt;第一处：每个小编辑都 &lt;code&gt;fsync&lt;/code&gt; 太贵了&lt;/h2&gt;
 &lt;p&gt;wcode 的文件写入一直比较保守。&lt;/p&gt;
 &lt;p&gt;已有文件不是原地 &lt;code&gt;truncate&lt;/code&gt;，而是：&lt;/p&gt;

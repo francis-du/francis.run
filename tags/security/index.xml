@@ -9,7 +9,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;模型可以提出权限请求，但决定权必须留在用户手里。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img_3.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
 &lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;/h2&gt;
 &lt;p&gt;TUI 其实早就有 &lt;code&gt;Y/N&lt;/code&gt; 的 Key Handler。&lt;/p&gt;
 &lt;p&gt;问题是 UI 只在 Footer 里塞了一个 Pending 数字。&lt;/p&gt;
@@ -207,7 +207,7 @@
 &lt;p&gt;是 Workspace。&lt;/p&gt;
 &lt;p&gt;因为把模型接到本地仓库以后，最危险的从来不是它看错一个函数，而是 Tool Runtime 的边界没守住。&lt;/p&gt;
 &lt;p&gt;上层现在已经有 Design State、Graph、Reconciliation、Verification，复杂了很多。但越往上加东西，我越不想动底下这几条线。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://wcode.francis.run/assets/img_3.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
 &lt;h2 id="root-不是字符串前缀"&gt;Root 不是字符串前缀&lt;/h2&gt;
 &lt;p&gt;最偷懒的 Workspace 隔离大概是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;path.starts_with(workspace_root)
