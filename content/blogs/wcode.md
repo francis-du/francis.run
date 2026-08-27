@@ -255,6 +255,10 @@ unstaged diff-check  staged diff-check
 
 Harness 把结果合并成文件列表、增删行数和风险分类。改了源码却没改测试、动了认证或 Token 文件、改了 Manifest、删了测试、碰了 Migration/Workflow，都会产生对应 Finding。变更超过 25 个文件或约 1,000 行会提示拆分；风险再高一些时，会直接推荐 Full Verification。这里最多分析 500 个文件、保留 64 条 Finding，避免一个巨大 Working Tree 把上下文打爆。
 
+这些分析结果在 WebUI 里可以直接看到：当前变更、每个文件命中的 Requirement、代码统计和风险等级：
+
+![wcode 工作区智能视图](/img/wcode/wcode-workspace-intelligence.png)
+
 `verify_project` 接受 `quick` 或 `full`。它先把推导出的检查排序，再按 Phase 执行：
 
 ```text
@@ -301,7 +305,9 @@ WebUI 侧遵循同一个原则。Project Observatory 把期望架构、实际依
 
 ![wcode 架构总览](/img/wcode/wcode-architecture.png)
 
-![wcode 项目观测台](/img/wcode/wcode-observatory.png)
+完整页面从架构总览、需求详情、当前变更、代码统计到图快照历史，一图到底：
+
+![wcode Project Observatory 整页](/img/wcode/wcode-observatory-full.png)
 
 ## 怎么用
 
