@@ -1,4 +1,464 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Release | Francis Du</title><link>https://francis.run/tags/release/</link><atom:link href="https://francis.run/tags/release/index.xml" rel="self" type="application/rss+xml"/><description>Release</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 27 Aug 2026 23:55:00 +0800</lastBuildDate><item><title>wcode v0.4：开始为 Agent 的上下文成本负责</title><link>https://francis.run/blog/wcode-v0-4/</link><pubDate>Thu, 27 Aug 2026 23:55:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-4/</guid><description>&lt;p&gt;v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Release | Francis Du</title><link>https://francis.run/tags/release/</link><atom:link href="https://francis.run/tags/release/index.xml" rel="self" type="application/rss+xml"/><description>Release</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sun, 30 Aug 2026 17:30:00 +0800</lastBuildDate><item><title>wcode v0.5：我把 LSP 从一个工具，变成了 Agent 的常驻语义层</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
+&lt;p&gt;那一版主要解决 Context 成本：&lt;code&gt;agent_context&lt;/code&gt; 变成 Coding Entry，Repo Map 有了 Cache 和 Scope，简单任务不需要每次把整个项目重新理解一遍。&lt;/p&gt;
+&lt;p&gt;但真的继续拿它写代码，很快又遇到另一个问题。&lt;/p&gt;
+&lt;p&gt;不是“找不到函数”。&lt;/p&gt;
+&lt;p&gt;Tree-sitter 和 Search 对定位其实已经很好用了。&lt;/p&gt;
+&lt;p&gt;真正麻烦的是这种问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁在调用这个函数？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 Trait 到底有哪些实现？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;改这个 Symbol 会影响哪些跨文件 Reference？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个调用关系是同名文本，还是类型系统真正解析出来的？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种时候，grep 能找到很多东西，但不一定完整；Tree-sitter 能告诉我语法结构，但它也不应该假装自己知道类型系统。&lt;/p&gt;
+&lt;p&gt;所以 v0.5 我做的不是“再加几个 LSP API”。&lt;/p&gt;
+&lt;p&gt;我最后把它做成了一层 &lt;strong&gt;Warm Semantic Runtime&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture.png" alt="wcode Architecture"&gt;&lt;/p&gt;
+&lt;h2 id="我为什么没有把所有查询都切到-lsp"&gt;我为什么没有把所有查询都切到 LSP&lt;/h2&gt;
+&lt;p&gt;最直接的做法其实很诱人：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;既然 Language Server 更懂代码，那以后 Definition、Search、Reference、Call 全走 LSP 不就好了？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我试着沿这个方向想了一轮，最后放弃了。&lt;/p&gt;
+&lt;p&gt;原因是 Agent Coding 里有两类完全不同的问题。&lt;/p&gt;
+&lt;p&gt;第一类只是定位：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个函数在哪？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 Struct 定义在哪？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;哪个文件包含这个字符串？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这类问题 Tree-sitter / Search 很便宜，而且稳定，不需要启动项目语义环境。&lt;/p&gt;
+&lt;p&gt;第二类才是真正需要 Semantic Completeness 的关系问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;references
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;implementations
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;incoming callers
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;outgoing callees
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rename impact
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果为了第一类问题也默认走 Language Server，就会把一个本来很便宜的定位动作变成进程启动、Initialize、Document Sync、Semantic Query。&lt;/p&gt;
+&lt;p&gt;而 Agent 还有一个额外成本：Tool Result 最后会进入 Context。&lt;/p&gt;
+&lt;p&gt;所以我现在更愿意把两层能力分开：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌──────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ agent_context │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └──────────┬───────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 普通定位 │ 跨文件关系
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌────────────────┴───────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓ ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;find_symbol / search_code semantic_navigation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tree-sitter / text search │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Warm LSP Session
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └──────────────┬────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; edit / review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; verify_project
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不是“LSP 比 grep 高级，所以替掉 grep”。&lt;/p&gt;
+&lt;p&gt;而是让每一层只解决它真正擅长的问题。&lt;/p&gt;
+&lt;h2 id="以前的-lsp-其实还是一次性工具"&gt;以前的 LSP 其实还是一次性工具&lt;/h2&gt;
+&lt;p&gt;wcode 之前已经能跑 Language Server。&lt;/p&gt;
+&lt;p&gt;但生命周期很像一个 Batch Job：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;start provider
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;initialize
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;didOpen
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Document Symbol
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Call Hierarchy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Implementation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;shutdown
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它适合定期补 Software Graph。&lt;/p&gt;
+&lt;p&gt;但如果 Agent 紧接着又问一次 Reference，就要重新付一遍启动成本。&lt;/p&gt;
+&lt;p&gt;更关键的是，这种模型下“Semantic Provider”在架构上仍然只是一个索引器，不是真正的 Runtime。&lt;/p&gt;
+&lt;p&gt;v0.5 把这个生命周期改了。&lt;/p&gt;
+&lt;p&gt;现在 Harness 里有一个有界 Session Pool：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Provider + Binary Identity
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Warm Session Slot
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph refresh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── semantic_navigation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── didChange
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── didClose
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;同一个 Workspace 下，后台 Graph Indexing 和前台 Navigation 会复用同一个 Provider Process。&lt;/p&gt;
+&lt;p&gt;如果 &lt;code&gt;rust-analyzer&lt;/code&gt; 已经 Warm，第二次查 Caller 不需要再启动一遍。&lt;/p&gt;
+&lt;h2 id="warm-不等于永远不关"&gt;Warm 不等于永远不关&lt;/h2&gt;
+&lt;p&gt;我不想为了省启动成本，最后在后台养一堆永远不会退出的 Language Server。&lt;/p&gt;
+&lt;p&gt;所以这个 Pool 从一开始就是 Bounded 的。&lt;/p&gt;
+&lt;p&gt;它有几条约束：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Session 数量有上限；&lt;/li&gt;
+&lt;li&gt;Idle Slot 会淘汰；&lt;/li&gt;
+&lt;li&gt;同一个 Slot 的 JSON-RPC Stream 串行处理；&lt;/li&gt;
+&lt;li&gt;Provider Process 死掉以后重建；&lt;/li&gt;
+&lt;li&gt;Provider Binary Identity 变了以后重建；&lt;/li&gt;
+&lt;li&gt;Workspace Key 不共享到别的项目；&lt;/li&gt;
+&lt;li&gt;离开当前有界索引集合的 Document 会 &lt;code&gt;didClose&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;发版前我专门沿这条生命周期又审了一遍，结果真的抓到一个边界 Bug：最初的 Idle Eviction 其实是 Lazy 的，只有下一次有人访问 Session Pool 时才会 Prune；更糟一点，容量满时如果直接从 Map 里移除“最旧 Slot”，这个 Slot 可能还被一个 Active Request 持有，于是 Map 看起来仍然只有 16 个，实际进程却可能短暂跑到第 17 个。&lt;/p&gt;
+&lt;p&gt;最后我把规则改成了更保守的版本：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Idle + unleased
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 可以 prune
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;capacity full + 有 unleased slot
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 只驱逐 unleased slot
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;capacity full + 全部 leased
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → fail closed / retry
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider binary changed + old slot still leased
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 等当前 request 结束
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 再替换
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Background Semantic Coordinator 也会周期性主动 Prune，所以即使是没有 TUI 交互的 &lt;code&gt;mcp-stdio&lt;/code&gt;，Idle Bound 也不是一句文档里的承诺。&lt;/p&gt;
+&lt;p&gt;源码变化也不是简单把 Process 杀掉重启。&lt;/p&gt;
+&lt;p&gt;现在不是强行给所有 Server 发同一种 Notification，而是先看它在 &lt;code&gt;initialize&lt;/code&gt; 里声明的 &lt;code&gt;textDocumentSync&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Full
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Open 发完整内容
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Change 发整文档
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Incremental
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Open 发完整内容
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Change 用旧文档范围做合法 replacement
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Range 按协商的 UTF-8 / UTF-16 / UTF-32 算
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;None / openClose=false
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 不硬发 Server 没声明支持的 Notification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Server 继续从磁盘读取
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只有 Server 要求 Open/Close Sync 时才发 &lt;code&gt;didOpen&lt;/code&gt; / &lt;code&gt;didClose&lt;/code&gt;。这才比较像我理解的“常驻语义层”：它既知道当前 Document Revision，也尊重每个 Language Server 自己的同步协议，而不是假定 Rust 能工作的 Change Shape 对 22 种语言都成立。&lt;/p&gt;
+&lt;h2 id="semantic_navigation-不让-agent-自己算-utf-16"&gt;&lt;code&gt;semantic_navigation&lt;/code&gt; 不让 Agent 自己算 UTF-16&lt;/h2&gt;
+&lt;p&gt;做 Agent Tool 时，我越来越不喜欢把底层协议细节原样扔给模型。&lt;/p&gt;
+&lt;p&gt;原始 LSP 通常希望调用方给：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;file URI
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;line
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;character
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;position encoding
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后不同 Server 还可能用 UTF-8 / UTF-16 Position Encoding。&lt;/p&gt;
+&lt;p&gt;让模型自己根据源码去算 UTF-16 Offset，我觉得完全是在浪费模型能力，而且很容易在非 ASCII 代码里漂掉。&lt;/p&gt;
+&lt;p&gt;所以 v0.5 的 &lt;code&gt;semantic_navigation&lt;/code&gt; 主入口是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;path + symbol
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;wcode 自己先用 Tree-sitter 找 Symbol 的精确位置，再根据 Language Server Initialize 时协商到的 Encoding 转换 Position。&lt;/p&gt;
+&lt;p&gt;Agent 只需要表达意图：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;definition
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hover
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;references
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;incoming_calls
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;outgoing_calls
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;implementations
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;impact
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;真正已经持有精确 Position 的调用方，也可以继续传 &lt;code&gt;line + character&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这件事看起来很小，但我觉得它代表一个方向：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;LSP Primitive 不应该直接等于 Agent Primitive。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Agent Tool 应该封装成模型真正想问的问题，而不是要求模型先学会协议的坐标系。&lt;/p&gt;
+&lt;p&gt;这里发版审计又抓到另一个我不愿意留到 0.5.1 的问题：最早实现里，如果 Server 声明支持 &lt;code&gt;references&lt;/code&gt;，但这次 Request 实际 Timeout / Error，结果路径可能最后只留下一个空数组。对 Agent 来说，“请求失败”和“确实没有 Reference”完全不是一件事。&lt;/p&gt;
+&lt;p&gt;所以现在 Result 会明确分成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;unsupported
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Server 没这个能力
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;failures
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Server 有能力，但这次 LSP Request 失败
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;relationships = []
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Request 成功，真的没有匹配关系
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我尤其不想让失败被当成 Negative Semantic Evidence。语义系统最危险的不是“不知道”，而是失败以后还表现得像自己很确定。&lt;/p&gt;
+&lt;h2 id="22-种语言不能只有-rust-真正跑得通"&gt;22 种语言，不能只有 Rust 真正跑得通&lt;/h2&gt;
+&lt;p&gt;发版前我又给这版加了一条更苛刻的要求：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;既然 wcode 对外说 Syntax Index 支持 22 种语言，那 LSP 层也不能只把 rust-analyzer 做扎实，其他语言只在 Registry 里挂个名字。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这次审计以后，我把“支持”拆成了三个完全不同的概念：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Compatibility
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → wcode 有没有正确的 Provider Adapter / Command / Language ID
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Installation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 用户机器上有没有真的装这个 Language Server
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Live Semantic
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 这个已安装 Server 有没有真实 initialize 并回答当前 Revision
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只有第一层是 wcode 在 Build/Test 阶段能 100% 保证的。&lt;/p&gt;
+&lt;p&gt;第二层取决于用户机器。&lt;/p&gt;
+&lt;p&gt;第三层必须等 Runtime 真正和 Server 完成 LSP Handshake 以后才能成立。&lt;/p&gt;
+&lt;p&gt;所以 v0.5 现在要求 22 种 Indexed Language &lt;strong&gt;每一种恰好只有一个 Canonical LSP Launch Profile&lt;/strong&gt;，并用测试把映射和 Provider-specific Argument 锁死。除此之外，我还加了一层跨平台 stdio Mock LSP：每一个 Canonical Profile 都会真的 Spawn 一个子进程，完成 &lt;code&gt;initialize&lt;/code&gt;、Capability Negotiation、Open/Change/Close 和 Hover JSON-RPC 往返，而不是只检查数组里的字符串：&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Language&lt;/th&gt;
+&lt;th&gt;Canonical LSP&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Bash&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;bash-language-server start&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;C / C++&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;clangd&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;C#&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;csharp-ls&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CSS&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;vscode-css-language-server --stdio&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Dart&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;dart language-server --protocol=lsp&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Elixir&lt;/td&gt;
+&lt;td&gt;ElixirLS &lt;code&gt;language_server.sh&lt;/code&gt; / Wrapper&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Go&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;gopls serve&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;HTML&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;vscode-html-language-server --stdio&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Java&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;jdtls -data &amp;lt;unique state&amp;gt;&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;JavaScript / TypeScript / TSX&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;typescript-language-server --stdio&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Lua&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;lua-language-server&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;OCaml / Interface&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;ocamllsp&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;PHP&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;phpactor language-server&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Python&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;pyright-langserver --stdio&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;R&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;R --no-echo -e languageserver::run()&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Ruby&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;ruby-lsp&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Rust&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;rust-analyzer&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Swift&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;sourcekit-lsp&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;而且这次不是把旧 Registry 原样拿来写测试。&lt;/p&gt;
+&lt;p&gt;我对着各家的当前启动方式重新过了一遍，确实发现了几个容易变成“纸面支持”的地方：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Go 明确改成 &lt;code&gt;gopls serve&lt;/code&gt;；&lt;/li&gt;
+&lt;li&gt;JDT LS 会拿一个 Workspace + Runtime 唯一的用户级 &lt;code&gt;-data&lt;/code&gt; 目录，避免两个项目或两个 wcode Process 共用 JDT State；&lt;/li&gt;
+&lt;li&gt;Dart 使用 &lt;code&gt;dart language-server --protocol=lsp&lt;/code&gt;，并带上 wcode 的 Client ID / Version；&lt;/li&gt;
+&lt;li&gt;Elixir 同时识别官方 &lt;code&gt;language_server.sh&lt;/code&gt;、Windows Wrapper 和常见发行版 &lt;code&gt;elixir-ls&lt;/code&gt;；&lt;/li&gt;
+&lt;li&gt;LuaLS 对 Symlink 启动比较特殊，所以不能照抄 rustup Proxy 的处理方式，发现 Symlink 时会执行 Canonical Target；&lt;/li&gt;
+&lt;li&gt;OmniSharp 的 &lt;code&gt;-lsp&lt;/code&gt; 不再被拿来凑 C# Fallback 数量，C# Canonical 路径只认 &lt;code&gt;csharp-ls&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;真正有意义的 Alternate 只留了三个：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;PHP phpactor → intelephense
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Python pyright → pylsp
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Ruby ruby-lsp → solargraph
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;更重要的是，Fallback 不是只存在配置表里。&lt;/p&gt;
+&lt;p&gt;现在 &lt;code&gt;semantic_navigation&lt;/code&gt; 和手工 &lt;code&gt;semantic_provider_refresh&lt;/code&gt; 都会在：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;canonical executable exists
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;initialize fails
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;try installed alternate
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但 Alternate 不会继承 Canonical Provider 的授权。&lt;/p&gt;
+&lt;p&gt;如果它属于非 Automatic Provider，就必须拿自己的 Workspace + Provider + Binary Identity Trust；Refresh 成功切换以后，结果里还会显式记录 &lt;code&gt;fallbacks&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;所以这里我想表达的不是“wcode 自带 22 个 Language Server”。&lt;/p&gt;
+&lt;p&gt;它当然没有。&lt;/p&gt;
+&lt;p&gt;而是：&lt;strong&gt;22/22 的 Adapter Contract、stdio Framing 和 Provider-specific Launch Profile 是 wcode 自己要负责的；External Server 是否安装要诚实报告；Semantic Precision 只有那份真实 Binary Live Initialize + 当前 Revision Response 以后才成立。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这比在 README 里写一个长长的“Supported Languages”列表可靠得多。&lt;/p&gt;
+&lt;h2 id="默认开启以后安全边界反而要更严格"&gt;默认开启以后，安全边界反而要更严格&lt;/h2&gt;
+&lt;p&gt;这次另一个比较大的决定，是 Hardened Semantic 默认开启。&lt;/p&gt;
+&lt;p&gt;也就是说普通启动：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace &lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;$PWD&lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果项目里有 Rust，而且系统里有可用的 &lt;code&gt;rust-analyzer&lt;/code&gt;，wcode 会自动维护这条 Semantic Lane。&lt;/p&gt;
+&lt;p&gt;但我没有把“所有 LSP 默认信任”一起打开。&lt;/p&gt;
+&lt;p&gt;v0.5 当前只有 &lt;code&gt;rust-analyzer&lt;/code&gt; 进入 Automatic Profile。&lt;/p&gt;
+&lt;p&gt;因为 Language Server 和普通 Parser 不一样：它会读项目配置，有些 Server 甚至可能间接执行 Repository-controlled Code。&lt;/p&gt;
+&lt;p&gt;所以默认 Profile 做了几层限制：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Executable 必须解析到 Workspace 外；&lt;/li&gt;
+&lt;li&gt;Workspace 里的假 &lt;code&gt;rust-analyzer&lt;/code&gt; 不会被执行；&lt;/li&gt;
+&lt;li&gt;Credential 和 Execution-injection Environment Variable 会清理；&lt;/li&gt;
+&lt;li&gt;Build Script 关闭；&lt;/li&gt;
+&lt;li&gt;Proc Macro 关闭；&lt;/li&gt;
+&lt;li&gt;Cargo Auto Reload 关闭；&lt;/li&gt;
+&lt;li&gt;Check-on-save 关闭；&lt;/li&gt;
+&lt;li&gt;Result 最后仍重新经过 Workspace Boundary Filter。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这不是 OS Sandbox。&lt;/p&gt;
+&lt;p&gt;我不想用“安全模式”这种词让人误以为 Language Server 完全没有执行面。&lt;/p&gt;
+&lt;p&gt;它只是一个我愿意默认打开的、被明显收窄过的 Profile。&lt;/p&gt;
+&lt;p&gt;如果是 &lt;code&gt;clangd&lt;/code&gt;、Pyright、gopls 或其他当前还没有 Hardened Profile 的 Provider，仍然需要显式 &lt;code&gt;RiskyExecution&lt;/code&gt; Trust。&lt;/p&gt;
+&lt;p&gt;而且 Warm Session 出现以后，授权语义也跟着变了。&lt;/p&gt;
+&lt;p&gt;以前一次性 Provider 可以按某次 Refresh Operation 授权。&lt;/p&gt;
+&lt;p&gt;现在 Process 会被复用，真正准确的 Trust 应该是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; + Provider
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; + current Provider Binary Identity
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个 Binary Identity 也不能漏。发版审计时我发现，第一版 Provider-session Fingerprint 只绑定了 Provider ID；如果 PATH 上同名 Provider Binary 被替换，Session Key 会重建，但旧授权理论上仍可能继续适用。现在 Authorization 和 Warm Session 使用同一套 Provider Binary Identity：Executable 被替换以后，旧 Grant 不会继承过去。&lt;/p&gt;
+&lt;p&gt;因此同一份已批准 Provider 可以被 Refresh 和 Navigation 复用，不会每问一次 Reference 又弹一次权限；但它也不会顺手授权替换后的 Binary。&lt;/p&gt;
+&lt;p&gt;如果完全不希望 wcode 启动第一方 Language Server：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --workspace &lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt;$PWD&lt;span style="color:#a31515"&gt;&amp;#34;&lt;/span&gt; --no-semantic
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Tree-sitter / Search 仍然都在。&lt;/p&gt;
+&lt;h2 id="后台自动维护也不能绕过全局资源边界"&gt;后台自动维护也不能绕过全局资源边界&lt;/h2&gt;
+&lt;p&gt;另一个我不想接受的状态是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;前台 Tool 都有 Global Semaphore，后台 Semantic Worker 却偷偷无限跑。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;那 TUI 上看到的并发数就会是假的。&lt;/p&gt;
+&lt;p&gt;所以 Background Semantic Maintainer 也必须先拿 Harness Permit，再真正进入 Running。&lt;/p&gt;
+&lt;p&gt;生命周期还是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;queued
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;acquire global permit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;running
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;completed / failed
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Broad Workspace 下面如果还有具体 Project Subspace，也只让最具体的 Leaf Workspace 启动自动 Semantic Worker。&lt;/p&gt;
+&lt;p&gt;不然我把 &lt;code&gt;~/Code&lt;/code&gt; 暴露给 wcode 时，父目录和十几个子项目会同时索引同一批源码。&lt;/p&gt;
+&lt;p&gt;这种优化不会出现在“支持哪些 LSP”的 Feature List 里，但我觉得比多支持一个 Server 更重要。&lt;/p&gt;
+&lt;h2 id="tui-现在能看出-warm-到底有没有生效"&gt;TUI 现在能看出 Warm 到底有没有生效&lt;/h2&gt;
+&lt;p&gt;以前 TUI 的 LSP 状态主要是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;available / runnable
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fresh / stale
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;v0.5 现在还会显示：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;warm sessions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;synced documents
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider starts
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic queries
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我特意加这些，不是为了让 Dashboard 再多几个数字。&lt;/p&gt;
+&lt;p&gt;而是 Warm Runtime 最容易出现一种假优化：代码里写了 Cache，但实际上每次 Query 还是重启 Process。&lt;/p&gt;
+&lt;p&gt;如果 Session Start 一直涨、Query 也一直涨，那我就知道复用没有真的工作。&lt;/p&gt;
+&lt;p&gt;可观测性是性能优化的一部分，不是最后补的 UI。&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode TUI"&gt;&lt;/p&gt;
+&lt;h2 id="v04-和-v05-的差别"&gt;v0.4 和 v0.5 的差别&lt;/h2&gt;
+&lt;p&gt;如果 v0.4 是“让 Intelligence 不要变成 Context Tax”，v0.5 更像是“让语义能力真正进入日常 Coding Hot Path”。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;v0.4&lt;/th&gt;
+&lt;th&gt;v0.5&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Semantic Provider&lt;/td&gt;
+&lt;td&gt;有界 Batch Refresh&lt;/td&gt;
+&lt;td&gt;Bounded Warm Runtime&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;LSP Process&lt;/td&gt;
+&lt;td&gt;Refresh 后退出&lt;/td&gt;
+&lt;td&gt;Workspace Session 复用&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Document Sync&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;didOpen&lt;/code&gt; 为主&lt;/td&gt;
+&lt;td&gt;Server-declared Full / Incremental / None&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Agent Navigation&lt;/td&gt;
+&lt;td&gt;Syntax + Graph Context&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;semantic_navigation&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Default Routing&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;agent_context&lt;/code&gt; + Tree-sitter&lt;/td&gt;
+&lt;td&gt;Localization 走 Syntax，Relationship 才走 LSP&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Automatic Trust&lt;/td&gt;
+&lt;td&gt;LSP 需要显式 Trust&lt;/td&gt;
+&lt;td&gt;Hardened &lt;code&gt;rust-analyzer&lt;/code&gt; 默认开启&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Non-auto LSP&lt;/td&gt;
+&lt;td&gt;Exact Refresh Trust&lt;/td&gt;
+&lt;td&gt;Workspace + Provider Session &lt;code&gt;RiskyExecution&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;TUI&lt;/td&gt;
+&lt;td&gt;available / fresh&lt;/td&gt;
+&lt;td&gt;available → launch-ready → live + warm/fresh&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;我觉得这已经不是 0.4.x 的 Patch。&lt;/p&gt;
+&lt;p&gt;所以版本直接到了 &lt;strong&gt;v0.5.0&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id="这次发版我也把-release-boundary-再收紧了一次"&gt;这次发版我也把 Release Boundary 再收紧了一次&lt;/h2&gt;
+&lt;p&gt;Milestone Release 最怕的不是功能没写完，而是“仓库里的版本看起来有六个答案”。&lt;/p&gt;
+&lt;p&gt;wcode 现在除了 Cargo Version，还有 Agent Plugin / Marketplace Manifest。&lt;/p&gt;
+&lt;p&gt;v0.5 发版前我把它们统一成同一个版本，并且不只依赖 CI Shell Script 检查。&lt;/p&gt;
+&lt;p&gt;Unit Test 也会验证：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Cargo package version
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; == plugin.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; == Claude plugin
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; == Codex plugin
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; == ZCode plugin
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; == root marketplace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; == plugin marketplace
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Release Workflow 还会再独立检查一次，然后跑：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design / Traceability / Product Scope gate
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Format
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Check
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Clippy --all-targets
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Linux test
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;macOS test
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Windows test
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Linux / macOS / Windows release build
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;binary --version
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA256SUMS
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这次 Tag 前最后一轮本地 Full Gate 是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;git diff --check ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo check --locked ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo fmt --check ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo test --locked ✅ 270 passed / 0 failed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo clippy --locked -- -D warnings ✅
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo build --release --locked ✅
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里的 270 个核心测试已经包含 22 个 Canonical Profile 的真实 stdio Mock-LSP Initialize Contract、Full/Incremental/None Document Sync、Warm Session Capacity/Idle、Provider Binary Trust、Fallback 和 Navigation Failure Semantics。&lt;/p&gt;
+&lt;p&gt;我仍然不想把“本机 cargo test 绿了”直接等同于“Release 已经成立”。&lt;/p&gt;
+&lt;p&gt;真正发布的是 Tagged Revision 和对应 Artifact；Linux/macOS/Windows 的最终跨平台结论继续交给 Tag CI。&lt;/p&gt;
+&lt;h2 id="最后"&gt;最后&lt;/h2&gt;
+&lt;p&gt;wcode 最开始只是我为了让 Web AI 安全碰本地代码写的一层 MCP Bridge。&lt;/p&gt;
+&lt;p&gt;后来它慢慢有了 Design State、Software Graph、Verification、Evidence、Reconciliation。&lt;/p&gt;
+&lt;p&gt;v0.4 我开始对 Agent 的 Context 成本负责。&lt;/p&gt;
+&lt;p&gt;到 v0.5，我又多了一层判断：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;代码智能不应该只有“便宜但不完整”和“准确但每次很重”两个极端。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Tree-sitter / Search 可以一直做便宜、稳定的定位底座。&lt;/p&gt;
+&lt;p&gt;Language Server 则应该在真正需要关系完整性的地方，以受限、可复用、可观测的 Runtime 形式出现。&lt;/p&gt;
+&lt;p&gt;不是把所有东西都升级成 LSP。&lt;/p&gt;
+&lt;p&gt;而是让 Agent 知道：什么时候 Syntax 已经够了，什么时候值得支付 Semantic Cost。&lt;/p&gt;
+&lt;p&gt;这应该会是后面 wcode Semantic Runtime 继续扩展其他语言时最重要的一条原则。&lt;/p&gt;
+&lt;p&gt;代码：&lt;a href="https://github.com/francis-du/wcode"&gt;https://github.com/francis-du/wcode&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;文档：&lt;a href="https://wcode.francis.run/"&gt;https://wcode.francis.run/&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;v0.5.0 Release Notes：&lt;a href="https://wcode.francis.run/docs/releases/v0.5.0/"&gt;https://wcode.francis.run/docs/releases/v0.5.0/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode v0.4：开始为 Agent 的上下文成本负责</title><link>https://francis.run/blog/wcode-v0-4/</link><pubDate>Thu, 27 Aug 2026 23:55:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-4/</guid><description>&lt;p&gt;v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。&lt;/p&gt;
 &lt;p&gt;从“能力列表”看，其实已经很多了。&lt;/p&gt;
 &lt;p&gt;但我拿它真的去写几个项目以后，最明显的问题反而变得很朴素：&lt;/p&gt;
 &lt;blockquote&gt;
