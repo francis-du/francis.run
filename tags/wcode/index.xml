@@ -1,4 +1,253 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wcode | Francis Du</title><link>https://francis.run/tags/wcode/</link><atom:link href="https://francis.run/tags/wcode/index.xml" rel="self" type="application/rss+xml"/><description>Wcode</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Sun, 30 Aug 2026 17:30:00 +0800</lastBuildDate><item><title>wcode v0.5：我把 LSP 从一个工具，变成了 Agent 的常驻语义层</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wcode | Francis Du</title><link>https://francis.run/tags/wcode/</link><atom:link href="https://francis.run/tags/wcode/index.xml" rel="self" type="application/rss+xml"/><description>Wcode</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Thu, 03 Sep 2026 21:30:00 +0800</lastBuildDate><item><title>Codex、Claude Code、ZCode、Kimi Code 横评：为什么 wcode 更容易让 Agent 写出好代码</title><link>https://francis.run/blog/ai-coding-agents-2026/</link><pubDate>Thu, 03 Sep 2026 21:30:00 +0800</pubDate><guid>https://francis.run/blog/ai-coding-agents-2026/</guid><description>&lt;p&gt;&lt;img src="https://francis.run/img/wcode/ai-coding-agents-2026.png" alt="Codex、Claude Code、ZCode、Kimi Code 与 wcode"&gt;&lt;/p&gt;
+&lt;p&gt;最近一年，Coding Agent 已经从“补全下一行代码”走到了“接一个任务，自己看仓库、改文件、跑命令、修测试”。但当我同时用过几个 Agent 以后，最强烈的感受不是代码写得越来越快，而是：&lt;strong&gt;我开始厌倦每换一次 Agent，就重新解释一遍项目；也厌倦它改完十几个文件，最后只留一句 tests passed。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;真正昂贵的从来不是第一次生成。是漏掉一个调用方、误解一条历史约束、拿旧测试结果证明新代码、三个月后没人说得清这段实现为什么存在。&lt;/p&gt;
+&lt;p&gt;如果你也在 Codex、Claude Code、ZCode、Kimi Code 之间切换，wcode 最值得试的理由不是“再多装一个 AI 工具”，而是：&lt;strong&gt;终于有一层东西替你的仓库记住事实、约束 Agent，并要求每次完成都留下证据。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我目前会同时使用 Codex、Claude Code、ZCode 和 Kimi Code。先说结论：&lt;strong&gt;模型决定代码质量的上限，工程上下文和验证闭环决定它能不能稳定接近这个上限。&lt;/strong&gt; Codex、Claude Code、ZCode、Kimi Code 都能执行任务；wcode 的优势，是让它们少猜、少漏、少写“看起来对”的代码，并且必须拿出与当前 revision 对得上的验证证据。&lt;/p&gt;
+&lt;p&gt;这也是我写 &lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt; 的原因。它不是靠换一个聊天界面声称“代码更好”，而是直接干预好代码产生的几个关键条件：给模型更准确的任务上下文，修改前计算影响和风险，修改后执行与风险匹配的验证，让独立 reviewer 找遗漏，并把证据绑定到代码版本。&lt;/p&gt;
+&lt;p&gt;换句话说，&lt;strong&gt;wcode 不保证一个弱模型突然变强，但能让一个好模型更少犯工程错误。&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;本文比较的是 2026 年 9 月 3 日能从官方文档确认的产品形态，加上我的工程取向，不是一次受控 benchmark。套餐、模型和功能迭代很快，价格与额度请以各家实时页面为准。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="为什么-wcode-更容易写出好代码"&gt;为什么 wcode 更容易写出好代码&lt;/h2&gt;
+&lt;p&gt;代码“能运行”和代码“值得合并”不是一回事。一个普通 Agent Loop 通常是：搜索几个文件、生成修改、跑一条测试、总结完成。问题也恰好藏在这四步里：搜索可能漏掉真实依赖，修改可能违背原设计，测试可能只覆盖 happy path，总结可能把没有验证的内容说成已完成。&lt;/p&gt;
+&lt;p&gt;wcode 把这个循环改成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement / Constraint / Acceptance
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; task-ready context
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Software Graph + Git change
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Impact + Risk analysis
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; guarded edit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; risk-adaptive Verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Evidence + independent review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Reconciliation / merge decision
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这套设计会在六个地方直接影响代码质量：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;定位更准。&lt;/strong&gt; Agent 拿到的不只是关键词命中的文件，而是任务级上下文：这个需求由哪些组件实现、受什么约束、验收标准在哪、实际代码关系长什么样，外加一份就绪度清单——哪些文件可以改、验证还缺什么、下一步按什么顺序做什么。少猜，也少漏。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;修改更稳。&lt;/strong&gt; 每次修改都以文件的当前状态为前提，原子提交；路径、链接和 Workspace 边界每次重新检查。并发会话想拿旧上下文覆盖新代码，会被直接拒绝。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;验证更深。&lt;/strong&gt; 验证深度由改动影响和风险决定，不是所有任务都机械地跑同一条测试。高风险修改可以要求 Property、Mutation、Fuzz、Runtime Canary 或 Human Approval；验证计划绑定当前代码和设计版本，证据必须声明自己覆盖了什么——一种语言的通过，不能替另一种语言清门禁。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;审查更独立。&lt;/strong&gt; Correctness、Security、Architecture、Maintainability 等 reviewer 独立盲审，互相看不到对方的提交；一个 reviewer 的 Pass 不会抹掉另一个 producer 的 Fail。审查按契约执行：规格说不清就承认不确定，判失败必须拿出反例，“我更喜欢另一种写法”不算数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;完成可证明。&lt;/strong&gt; Evidence 保存谁产生的、针对哪个 revision、依据什么 policy、结果和置信度。源码一变，旧证据就不能继续冒充当前版本已经通过。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;上下文更省。&lt;/strong&gt; 工具面本身也是上下文成本。wcode 给模型看的工具契约和任务上下文包都按“够用就好”裁剪，把模型的注意力留给代码，而不是参数和噪声。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;下面不是概念图，而是 wcode 当前真实的 Project Observatory。顶部把 Desired State、Actual State、Change、Proof、Convergence 放在同一条链上；中间同时展示声明的组件依赖和从当前源码提取的实际依赖；左侧每个 Requirement 都能继续钻到实现、验收与证据。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://francis.run/img/wcode/wcode-observatory-full.png"&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full.png" alt="wcode Project Observatory：Design 与 Actual Graph"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;这张图解释了为什么 Graph 会改善代码，而不只是让页面更酷：Agent 修改前能看到某个 Requirement 由哪些组件实现、组件之间声明了什么依赖、当前代码又观察到了什么关系。设计边和实际边对不上时，差异会留在界面里，不会因为 Agent 给出了一段流畅总结就消失。&lt;/p&gt;
+&lt;p&gt;其他框架也能靠优秀提示词做到其中一两项，但 wcode 把它们做成仓库协议和强制边界，而不是寄希望于模型每次都记得。&lt;strong&gt;这才是它更容易产出高质量代码的根本原因：把工程纪律从提示词建议变成了可执行机制。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="哪些是-wcode-有四款产品官方文档没有展示等价闭环的能力"&gt;哪些是 wcode 有、四款产品官方文档没有展示等价闭环的能力&lt;/h2&gt;
+&lt;p&gt;这里必须把话说准确：我只能比较截至本文日期各家公开官方文档已经展示的能力，不能证明它们内部没有类似系统。下面的“没有”指的是：&lt;strong&gt;我没有在 Codex、Claude Code、ZCode、Kimi Code 的公开产品文档中找到与 wcode 等价、面向任意客户端开放、并贯穿整个闭环的内建能力。&lt;/strong&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;wcode 已实现的能力&lt;/th&gt;
+&lt;th&gt;它具体做什么&lt;/th&gt;
+&lt;th&gt;四款 Agent 文档中最接近的能力&lt;/th&gt;
+&lt;th&gt;关键差异&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;结构化 Design State&lt;/td&gt;
+&lt;td&gt;用稳定 ID 保存 Requirement、Constraint、Component、Acceptance、Decision 及其关系&lt;/td&gt;
+&lt;td&gt;&lt;code&gt;AGENTS.md&lt;/code&gt;、&lt;code&gt;CLAUDE.md&lt;/code&gt;、Skills、Rules、项目记忆&lt;/td&gt;
+&lt;td&gt;文本指令告诉 Agent“应该怎么做”；Design State 能被机器校验、查询、追踪覆盖率并关联实现与验收&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;多来源 Software Graph&lt;/td&gt;
+&lt;td&gt;合并 Tree-sitter、LSP 等来源，保存 provider、precision、源码哈希、历史 revision 和结构 diff&lt;/td&gt;
+&lt;td&gt;代码库搜索、符号导航、长上下文、项目索引&lt;/td&gt;
+&lt;td&gt;Agent 能找到代码；wcode 还记录关系从哪里来、精度多高、是否因源码变化而 stale&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Task-ready 上下文与持久工作清单&lt;/td&gt;
+&lt;td&gt;仓库替 Agent 算好改动就绪度、下一步动作和并行机会；跨会话的工作清单持久保存，未完成项不能被悄悄删掉&lt;/td&gt;
+&lt;td&gt;Plan、Todo、Goal Mode、任务恢复&lt;/td&gt;
+&lt;td&gt;别人的计划是模型写给自己的备忘，会话结束就蒸发；wcode 的就绪度是仓库算出来的事实，换了模型也能从断点接着做&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;风险自适应 Verification Plan&lt;/td&gt;
+&lt;td&gt;根据真实 diff、影响范围、设计风险和结构信号决定验证深度&lt;/td&gt;
+&lt;td&gt;Agent 自动跑测试、CI、Hooks、Review 命令&lt;/td&gt;
+&lt;td&gt;普通 Agent 决定“要不要跑测试”；wcode 把风险映射到固定阶段、目标和 readiness gate，证据必须声明覆盖对象，一个对象的通过清不掉另一个对象的门禁&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;盲审且不互相覆盖的 Reviewer Evidence&lt;/td&gt;
+&lt;td&gt;Correctness、Security、Architecture、Maintainability 等 reviewer 独立领取任务，一个 Pass 不会覆盖另一个 Fail；规格不清只能给不确定，判失败必须附反例&lt;/td&gt;
+&lt;td&gt;Subagents、Agent Teams、多 Agent 并行&lt;/td&gt;
+&lt;td&gt;并行 Agent 侧重分工；wcode 还约束独立首轮、保存 producer 与 verdict，并显式呈现 disagreement&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Revision-exact Evidence&lt;/td&gt;
+&lt;td&gt;确定性检查和 reviewer 结论绑定 workspace、Git revision、producer、artifact 与 confidence&lt;/td&gt;
+&lt;td&gt;会话日志、测试输出、任务摘要、PR diff&lt;/td&gt;
+&lt;td&gt;日志证明“当时运行过”；wcode 判断证据是否仍匹配当前源码，不匹配就失效或标记 stale&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Design / Actual Reconciliation&lt;/td&gt;
+&lt;td&gt;对比 Desired State、代码图与 Git Actual State，把漂移变成持久计划&lt;/td&gt;
+&lt;td&gt;Plan、Todo、Goal Mode、任务恢复&lt;/td&gt;
+&lt;td&gt;Agent 计划服务于完成当前任务；Reconciliation 服务于长期收敛设计与实现&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;为模型收敛的工具契约&lt;/td&gt;
+&lt;td&gt;模型可见的工具面裁掉默认值与调优噪声，工具标注只读/破坏性语义，并提供批量读写原语&lt;/td&gt;
+&lt;td&gt;各家固定不变的 tool schema&lt;/td&gt;
+&lt;td&gt;Agent 的工具接口也是上下文税；wcode 把“模型需要看见什么”当成一等工程问题&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;客户端无关的仓库安全边界&lt;/td&gt;
+&lt;td&gt;同一套 Workspace containment、SHA 前置条件、no-shell、受保护路径、精确操作授权供不同 MCP 客户端复用&lt;/td&gt;
+&lt;td&gt;各产品自己的 sandbox、permission mode、命令确认&lt;/td&gt;
+&lt;td&gt;Agent 权限通常属于当前客户端；wcode 的约束属于仓库工具层，换客户端后仍然成立&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;这张表才是我认为 wcode 最硬的差异。它不是“功能菜单比别人多”，而是把这些能力串成一条因果链：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;结构化需求
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 更准确的上下文
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 更完整的影响分析
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 与风险匹配的验证
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → revision-exact Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 可执行的 Reconciliation
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;少掉任何一段，Agent 都可能写出一份表面漂亮、实际漏改或无法证明的代码。wcode 的优势在于这条链是一个系统，而不是六个彼此无关的按钮。&lt;/p&gt;
+&lt;h2 id="你真正得到的是一支会被工程系统约束的-agent-团队"&gt;你真正得到的是一支会被工程系统约束的 Agent 团队&lt;/h2&gt;
+&lt;p&gt;想象一个很普通的需求：“给认证流程增加一种登录方式”。&lt;/p&gt;
+&lt;p&gt;普通 Agent 会搜索 &lt;code&gt;login&lt;/code&gt;，修改几个命中文件，补测试，然后告诉你完成了。运气好，一次通过；运气不好，它漏掉 OAuth callback、配置文档、旧客户端兼容和一条安全约束。问题不是模型不会写代码，而是它不知道哪些遗漏必须被阻止。&lt;/p&gt;
+&lt;p&gt;接入 wcode 后，Agent 可以先得到这个 Requirement 对应的 Component、Constraint、Acceptance、实际代码关系和当前 Git 状态，还有一份就绪度清单：哪些文件可以改、验证还缺什么、下一步做什么。修改完成后，Impact Analysis 会暴露被波及的模块，Risk 决定验证深度，Verification Plan 固定需要覆盖的目标，Reviewer 独立检查正确性、安全与结构，Evidence 最后绑定当前 revision。&lt;/p&gt;
+&lt;p&gt;还有两件普通 Agent 给不了的事。任务中途被打断——会话超时、切换模型、换客户端——持久工作清单会把未完成项连同前提一起交给下一个执行者，断点续做，没做完的事不能被悄悄删掉。而如果证据表明这只是个小改动，wcode 会把新抽象、新配置、新公共接口的额度压到零，防止“顺手重构”把加一种登录方式扩成半个认证系统。&lt;/p&gt;
+&lt;p&gt;Requirement 详情会把 Graph 收敛成可执行视图：Desired State → Actual State → Change → Proof → Convergence。下面这张真实界面里，验证约束、实现组件、语法级实际关系和验收引用同时出现；&lt;code&gt;syntax / advisory&lt;/code&gt; 也被明确标注，没有把 Tree-sitter 关系吹成完整语义证明。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://francis.run/img/wcode/wcode-verification-detail.png"&gt;&lt;img src="https://francis.run/img/wcode/wcode-verification-detail.png" alt="wcode Requirement Graph 与 Verification Evidence"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;这就是“更容易写出好代码”的实际含义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不是让模型多写，而是让它少漏。&lt;/li&gt;
+&lt;li&gt;不是让模型说自己检查过，而是让检查留下可核验证据。&lt;/li&gt;
+&lt;li&gt;不是每次对话重新建立项目认知，而是让仓库自己携带认知。&lt;/li&gt;
+&lt;li&gt;不是要求团队永远使用同一个 Agent，而是让任何 Agent 进入项目后都接受同一套工程规则。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当 Codex 擅长的本地与云端协作、Claude Code 擅长的终端自动化、ZCode 的长任务工作台、Kimi Code 的中文与开放体验，接上同一个 wcode 仓库层，它们不再是四座彼此隔离的岛。&lt;strong&gt;你可以继续选最喜欢的模型，同时把代码质量的底线留在自己手里。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;同样需要承认边界：wcode 不能替代好模型，不能证明所有 bug 都被发现，也不能自动判断所有产品需求是否合理；Software Graph 的语法事实不冒充语义事实，缺少 Provider 或测试时会明确报告 coverage gap。&lt;strong&gt;真实的卖点不是“用了就没有 bug”，而是让错误更早暴露、让未验证内容无法轻易伪装成完成。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="这仍然是两个问题不是五个-agent-排名"&gt;这仍然是两个问题，不是五个 Agent 排名&lt;/h2&gt;
+&lt;p&gt;大多数横评把模型能力、客户端体验和工程治理揉成一个总分，我觉得这会误导选择。&lt;/p&gt;
+&lt;p&gt;第一条轴是 &lt;strong&gt;Agent 执行面&lt;/strong&gt;：谁理解需求、调用工具、修改文件、运行测试并把任务做完。Codex、Claude Code、ZCode 和 Kimi Code 都在这条轴上竞争，各自选择了不同的终端、IDE、桌面与云端组合。&lt;/p&gt;
+&lt;p&gt;第二条轴是 &lt;strong&gt;Repository Control Plane&lt;/strong&gt;：需求为什么存在、哪些组件实现它、当前 diff 影响什么、什么风险需要哪一级验证、测试证据属于哪个 revision、设计与代码是否漂移。这是 wcode 的位置。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 负责思考与执行
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Codex · Claude Code · ZCode · Kimi Code
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; tools / MCP / stdio
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; wcode：仓库状态、边界、风险与证据
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Git repository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以 wcode 的目标不是让用户“从四个里面改选我们”，而是给任意一个 Agent 配上一套能提高交付质量的工程底盘。跨 Agent 可迁移很重要，但它服务的最终结果仍然是：代码更完整、回归更少、完成声明更可信。&lt;/p&gt;
+&lt;h2 id="先别问谁最强先问你把它放在哪里"&gt;先别问谁最强，先问你把它放在哪里&lt;/h2&gt;
+&lt;p&gt;四款产品看起来都在“写代码”，实际出发点并不一样。&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;工具&lt;/th&gt;
+&lt;th&gt;更像什么&lt;/th&gt;
+&lt;th&gt;最突出的优点&lt;/th&gt;
+&lt;th&gt;主要代价&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;Codex&lt;/td&gt;
+&lt;td&gt;横跨 CLI、IDE、桌面和云端的工程 Agent&lt;/td&gt;
+&lt;td&gt;本地执行、隔离权限、代码审查、子 Agent、云端并行和结果回收形成完整闭环&lt;/td&gt;
+&lt;td&gt;产品面很宽，功能与账户层级变化快；复杂团队接入仍要认真配置环境与权限&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Claude Code&lt;/td&gt;
+&lt;td&gt;高度可编程的终端工程搭档&lt;/td&gt;
+&lt;td&gt;CLI 工作流成熟，&lt;code&gt;CLAUDE.md&lt;/code&gt;、Skills、Hooks、MCP、Agent Teams 与 CI 组合能力强&lt;/td&gt;
+&lt;td&gt;能力很多，配置面也大；高自治模式下仍需要清楚的权限规则和人工审查&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;ZCode&lt;/td&gt;
+&lt;td&gt;Agent-first 的桌面开发环境&lt;/td&gt;
+&lt;td&gt;工作区、文件引用、Git 分支、浏览器验证、Goal Mode 和长任务状态都集中在图形界面&lt;/td&gt;
+&lt;td&gt;更依赖 ZCode 自己的产品界面与 GLM 适配；对纯终端和已有 IDE 重度用户，迁移成本更明显&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;Kimi Code&lt;/td&gt;
+&lt;td&gt;轻量、开放、中文友好的终端 Agent&lt;/td&gt;
+&lt;td&gt;单文件安装、精致 TUI、Skills、Hooks、子 Agent、MCP，以及多模型配置都很直接&lt;/td&gt;
+&lt;td&gt;新版本演进快，团队治理与大型组织工作流仍需要自己建立规范和证据链&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;wcode&lt;/td&gt;
+&lt;td&gt;Agent 之下的 Repository Control Plane&lt;/td&gt;
+&lt;td&gt;跨客户端共享 Design State、Software Graph、授权边界、Risk、Verification、Evidence 与 Reconciliation&lt;/td&gt;
+&lt;td&gt;不生成答案，也不替代模型；需要团队愿意把关键工程状态结构化留在仓库里&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;这张表故意没有“代码能力 9.7 分”一栏。模型版本、推理档位、提示词、仓库类型、网络与测试环境都能让这种数字迅速失真。对日常开发更有用的问题是：&lt;strong&gt;它能不能在你的项目里稳定完成闭环。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="codex现在最像一套完整的工程执行面"&gt;Codex：现在最像一套完整的工程执行面&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://learn.chatgpt.com/zh-Hans/docs/codex/cli"&gt;Codex CLI 官方文档&lt;/a&gt;展示的已经不是一个单纯聊天终端：它能检查和编辑仓库、运行本地工具、做只读代码审查、调用 MCP、使用 Skills 与插件、拆分子 Agent，并通过权限与沙盒限定可写目录和命令。需要离开本机时，&lt;a href="https://learn.chatgpt.com/zh-Hans/docs/cloud"&gt;Codex 云端&lt;/a&gt;还能为多个任务创建隔离环境，并行执行后再把 diff 或 PR 带回来。&lt;/p&gt;
+&lt;p&gt;我认为 Codex 最强的地方，是“同一个工作对象可以在多个执行面之间移动”。短修复留在终端，界面问题带图片处理，大范围调查交给子 Agent，耗时任务放到云端。它不只是在回答得好，而是在逐渐把代码审查、执行、协作和异步委派放进同一套体验。&lt;/p&gt;
+&lt;p&gt;它的缺点也来自这种广度。CLI、桌面、IDE、云环境、插件、权限、账户能力同时演进，今天的最佳用法未必是半年前的最佳用法。团队如果只凭默认值一路点过去，很容易拥有很多能力，却没有形成稳定的项目规则。Codex 能跑完整闭环，不等于每个仓库天然就有清楚的验收标准。&lt;/p&gt;
+&lt;h2 id="claude-code终端生态仍然是它最深的护城河"&gt;Claude Code：终端生态仍然是它最深的护城河&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://code.claude.com/docs/en/overview"&gt;Claude Code 官方概览&lt;/a&gt;把它定义为可在终端、IDE、桌面和 Web 使用的 Agent 编码工具。它对成熟开发者工作流的理解很具体：读整个代码库、跨文件修改、运行命令、处理 Git、接入 MCP，并通过 &lt;code&gt;CLAUDE.md&lt;/code&gt;、Skills 和 Hooks 固化项目习惯。CLI 又天然适合 pipe、脚本和 CI，这使它很容易嵌进已有工程链路。&lt;/p&gt;
+&lt;p&gt;Claude Code 的优势不是某一个开关，而是这些机制组合起来之后的可编程性。你可以让 Hook 在编辑后格式化，让 Skill 固化发布流程，让 MCP 接设计稿和工单，再把独立任务分给 Agent Teams。对于愿意维护工程约定的团队，它很容易从“个人助手”长成“团队工具”。&lt;/p&gt;
+&lt;p&gt;代价是配置复杂度和运行成本都可能随自治程度上涨。权限规则、Hooks、MCP、记忆、子 Agent 都需要治理；配置得越自由，越不能把“模型说完成了”当成完成。Claude Code 很强，但强工具不会自动替团队定义什么叫正确。&lt;/p&gt;
+&lt;h2 id="zcode把-agent-当开发环境中心而不是-ide-侧栏"&gt;ZCode：把 Agent 当开发环境中心，而不是 IDE 侧栏&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://zcode.z.ai/cn/docs/agents"&gt;ZCode Agent 官方文档&lt;/a&gt;强调的是工作区入口：文件与目录引用、历史对话、命令、Skills、模型、执行模式和 Git 分支都围绕任务组织。它还把浏览器控制放进产品里，前端改完可以直接打开页面、点击、截图和验证；Goal Mode 则面向长任务提供目标管理、完成校验和状态恢复。&lt;/p&gt;
+&lt;p&gt;这套思路对不喜欢终端堆配置的人很友好。尤其是中文用户和 GLM Coding Plan 用户，模型、界面、浏览器与长任务被打包在一起，第一天就能得到相对完整的 Agent 工作台。&lt;/p&gt;
+&lt;p&gt;但它也是四者中“环境感”最强的一款。如果你已经深度依赖自己的终端、编辑器和脚本体系，就要衡量是否愿意把任务管理和上下文组织迁进另一个桌面产品。它针对 GLM 系列的深度适配是优势，也意味着最佳体验与自家模型路线绑定得更紧。&lt;/p&gt;
+&lt;h2 id="kimi-code轻快开放而且不是只有长上下文"&gt;Kimi Code：轻、快、开放，而且不是只有长上下文&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://www.kimi.ai/help/kimi-code/cli-getting-started"&gt;Kimi Code CLI 入门&lt;/a&gt;覆盖 macOS、Linux 与 Windows，既能交互运行，也能用单条指令执行；读操作默认直接进行，修改文件或执行命令则请求确认。它支持生成 &lt;code&gt;AGENTS.md&lt;/code&gt;，还能配置 Kimi 之外的 Anthropic、OpenAI、Google 等模型来源。&lt;/p&gt;
+&lt;p&gt;更值得注意的是它的工程扩展面。&lt;a href="https://moonshotai.github.io/kimi-code/en/"&gt;Kimi Code 文档&lt;/a&gt;列出了 Skills、Hooks、子 Agent 和 MCP，并提供单文件安装与 TUI。也就是说，它不只是“中文模型加一个命令行壳”，而是在认真做可扩展 Agent。&lt;/p&gt;
+&lt;p&gt;它的优势很实际：中文交互自然，安装轻，终端体验舒服，会员与 API 两条路径清楚，多模型配置给了用户选择权。短板则是生态仍在高速生长。个人使用可以很快，到了多人协作、审计、跨客户端一致性和长期证据保存，仍要靠团队自己补齐工程制度。&lt;/p&gt;
+&lt;h2 id="wcode-的设计为什么和它们不同"&gt;wcode 的设计为什么和它们不同&lt;/h2&gt;
+&lt;p&gt;上面四款工具都在努力成为更好的 Agent。wcode 选择做另一层：&lt;strong&gt;不押注某个模型，不接管 Agent Loop，只把仓库真正需要长期保存的工程状态变成公共底座。&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Codex / Claude Code / ZCode / Kimi Code / Web AI
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; MCP / stdio
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;┌──────────────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ wcode │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Design State · Software Graph · Risk │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Verification · Evidence · Reconciliation │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Workspace boundary · Authorization │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└───────────────────────┬──────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Git repository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这不是宣传话术里的细微区别，而是架构起点不同。&lt;/p&gt;
+&lt;h3 id="1-它们以-conversation-为中心wcode-以-repository-revision-为中心"&gt;1. 它们以 Conversation 为中心，wcode 以 Repository Revision 为中心&lt;/h3&gt;
+&lt;p&gt;Agent 通常从一次会话获得目标，整理上下文，然后执行。会话可以恢复、压缩或迁移，但它仍然属于某个产品。wcode 把状态锚定在仓库和 Git revision：设计、影响分析、验证计划与证据都围绕当前代码版本组织。聊天结束不会让这些事实失去归属。&lt;/p&gt;
+&lt;h3 id="2-它们管理-agent-权限wcode-管理仓库操作不变量"&gt;2. 它们管理 Agent 权限，wcode 管理仓库操作不变量&lt;/h3&gt;
+&lt;p&gt;Codex 有沙盒与审批，Claude Code 有 Permission Mode，ZCode 有执行模式，Kimi Code 会在修改和命令前确认。这些机制主要决定“当前 Agent 能不能做”。&lt;/p&gt;
+&lt;p&gt;wcode 进一步决定“这个操作即使被允许，也必须满足什么条件”：路径必须留在 Workspace，禁止 shell 解释器，受保护路径不能绕过，文件修改要带 SHA-256 前置条件，破坏性仓库操作要绑定精确指纹，命令输出和执行时间有边界。测试要跑、shell 不给：验证有自己的专用通道，可以跑批准过的检查、测试和构建，而不需要放开任意命令执行。Agent 可以换，不变量不能换。&lt;/p&gt;
+&lt;h3 id="3-它们给模型上下文wcode-给上下文来源和精度"&gt;3. 它们给模型上下文，wcode 给上下文来源和精度&lt;/h3&gt;
+&lt;p&gt;把更多文件塞进长上下文并不等于理解项目。wcode 会区分 Tree-sitter 的语法关系和 LSP 等 Provider 给出的语义事实，记录来源、精度、源码哈希与新鲜度。旧 revision 的语义结果会变成 stale，而不是继续伪装成当前事实。语义查询的结果也分得清“不支持、这次失败了、确实没有”——失败永远不会被伪装成“没有引用”的语义证据。&lt;/p&gt;
+&lt;h3 id="4-它们报告任务完成wcode-保存完成依据"&gt;4. 它们报告任务完成，wcode 保存完成依据&lt;/h3&gt;
+&lt;p&gt;“tests passed”在聊天里很容易说，难的是几天以后证明：运行了哪条命令、针对哪个 revision、哪个阶段通过、有没有独立 reviewer、是否仍有互相冲突的证据。wcode 的 Verification 与 Evidence 就是为了把完成声明变成可检查的产物。而且门禁是 fail closed 的：一个 producer 的 Pass 盖不住另一个的 Fail；多个模型意见一致，也只是模型证据，不是确定性证明。&lt;/p&gt;
+&lt;h3 id="5-它们优化下一次行动wcode-处理长期漂移"&gt;5. 它们优化下一次行动，wcode 处理长期漂移&lt;/h3&gt;
+&lt;p&gt;Agent 擅长回答“下一步改什么”。wcode 的 Reconciliation 关心另一件事：Desired State、Software Graph 与 Git Actual State 之间哪里已经不一致，哪些差距需要回写设计，哪些需要补实现或验证。这个循环面向项目寿命，而不是单次对话寿命。&lt;/p&gt;
+&lt;h3 id="6-它们假设一次会话干到底wcode-假设任务会被接力"&gt;6. 它们假设一次会话干到底，wcode 假设任务会被接力&lt;/h3&gt;
+&lt;p&gt;Agent 的任务状态基本活在会话里：会话断了，进度、待办和理由一起断。wcode 把它们变成仓库状态：工作清单、执行计划、审查任务都持久保存、可认领、可交接。一个模型做实现，另一个做安全审查，第三个补测试，面对的是同一个计划、同一个 revision、同一组证据，不需要共享任何聊天记录。而真正需要人和确定性检查的关口，模型根本认领不了。&lt;/p&gt;
+&lt;p&gt;这些差异最终落到几个我真正关心的优点。&lt;/p&gt;
+&lt;p&gt;第一，&lt;strong&gt;Agent 可以换，项目记忆不用重建。&lt;/strong&gt; 需求、约束、组件、验收标准和架构决策进入 &lt;code&gt;.wcode&lt;/code&gt;，而不是只留在某次聊天里。今天用 Claude Code，明天切 Codex，后天让 Kimi Code 查问题，仓库层仍然说同一种语言，连没做完的任务清单都原样待在仓库里。&lt;/p&gt;
+&lt;p&gt;第二，&lt;strong&gt;上下文不是“塞更多文件”，而是按任务取证。&lt;/strong&gt; wcode 的 Software Graph、Product Scope 和代码索引用于回答“这个需求落在哪些实现上、这次改动会影响谁”。它追求的是相关关系和来源，不是把整个仓库压进上下文窗口。&lt;/p&gt;
+&lt;p&gt;第三，&lt;strong&gt;权限不只是一句确认。&lt;/strong&gt; Workspace containment、命令授权、OAuth/PKCE、Origin 检查、修改前置条件和受控 MCP Transport 共同限制 Agent 能碰什么。授权还可以直接在会话里完成：模型提请求，你在客户端里批准，精确到这一个操作；模型永远没有自批入口。不同客户端接入时，共享的始终是同一条本地安全边界。&lt;/p&gt;
+&lt;p&gt;第四，&lt;strong&gt;测试通过要和当前 revision 绑定。&lt;/strong&gt; wcode 保存 Verification Plan 与 Evidence，区分什么检查真的运行过、针对哪个版本、结果是什么。这样“我已经验证了”不再只是一句会随着会话消失的话。&lt;/p&gt;
+&lt;p&gt;第五，&lt;strong&gt;设计和代码漂移可以被看见。&lt;/strong&gt; Git 告诉我哪里变了，wcode 的 Reconciliation 更关心代码现状与 Design State 是否仍然一致。它不替人做架构决定，但会把没对上的地方变成可以处理的工作项。&lt;/p&gt;
+&lt;p&gt;这也是 wcode 相对四款 Agent 最值得宣传的地方：我们不需要证明自己比所有模型更聪明，也不需要阻止用户更换模型。&lt;strong&gt;模型越多、Agent 越强、切换越频繁，wcode 的价值反而越大，因为它保存的是不应随客户端一起更换的仓库事实。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="我的实际选择"&gt;我的实际选择&lt;/h2&gt;
+&lt;p&gt;如果是个人项目，我会这样选：需要本地、桌面、IDE 与云端任务来回切换，先用 Codex；终端自动化、Hooks、MCP 和团队约定已经很重，Claude Code 仍然非常稳；想要一体化中文 Agent 工作台和浏览器验证，试 ZCode；想要轻量 TUI、中文体验、多模型和开放扩展，Kimi Code 很值得装。&lt;/p&gt;
+&lt;p&gt;如果是一个会持续半年以上、会被多人和多个 Agent 反复修改的仓库，我不会只选其中一个。我会选一两个主力 Agent，再把 &lt;a href="https://wcode.francis.run/"&gt;wcode&lt;/a&gt; 放在下面。&lt;/p&gt;
+&lt;p&gt;因为长期工程最后比的不是谁第一次写得最快，而是谁能在第五十次修改之后，仍然回答清楚：&lt;strong&gt;为什么这样改、影响了什么、谁验证过、证据在哪里。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果你已经有一个顺手的 Coding Agent，不需要迁移，也不用改变模型。找一个真实仓库运行 &lt;code&gt;wcode setup&lt;/code&gt;，继续使用原来的 Codex、Claude Code 或其他 MCP Host，然后让它先回答三个问题：这个需求由什么实现、当前 diff 影响什么、完成依据是否匹配当前 revision。&lt;/p&gt;
+&lt;p&gt;当这三个答案第一次不再依赖聊天记录和模型猜测，你就会明白 wcode 为什么不是又一个 Agent，也为什么它值得留在每个长期项目里。&lt;/p&gt;
+&lt;p class="project-links"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;wcode 官网与文档 ↗&lt;/a&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode v0.5：我把 LSP 从一个工具，变成了 Agent 的常驻语义层</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
 &lt;p&gt;那一版主要解决 Context 成本：&lt;code&gt;agent_context&lt;/code&gt; 变成 Coding Entry，Repo Map 有了 Cache 和 Scope，简单任务不需要每次把整个项目重新理解一遍。&lt;/p&gt;
 &lt;p&gt;但真的继续拿它写代码，很快又遇到另一个问题。&lt;/p&gt;
 &lt;p&gt;不是“找不到函数”。&lt;/p&gt;
