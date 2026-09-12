@@ -1,0 +1,155 @@
+[writing]
+other = "Writing"
+
+[recentPosts]
+other = "最近文章"
+
+[viewAll]
+other = "查看全部"
+
+[explore]
+other = "Explore"
+
+[browseByTopic]
+other = "按主题浏览文章"
+
+[articleCount]
+other = "共 %d 篇文章"
+
+[postCount]
+other = "%d 篇"
+
+[tag]
+other = "Tag"
+
+[readingTime]
+other = "%d 分钟阅读"
+
+[wordCount]
+other = "%d 字"
+
+[previousPage]
+other = "上一页"
+
+[nextPage]
+other = "下一页"
+
+[switchLanguage]
+other = "切换语言"
+
+[toggleTheme]
+other = "切换颜色主题"
+
+[toggleToLight]
+other = "切换到浅色模式"
+
+[toggleToDark]
+other = "切换到深色模式"
+
+[relatedArticles]
+other = "相关推荐"
+
+[keepReading]
+other = "继续阅读"
+
+[socialNavigation]
+other = "社交链接"
+
+[primaryNavigation]
+other = "主导航"
+
+[switchToEnglish]
+other = "切换到 English"
+
+[switchToChinese]
+other = "切换到中文"
+
+[shareArticle]
+other = "分享文章"
+
+[shareFacebook]
+other = "分享到 Facebook"
+
+[shareTwitter]
+other = "分享到 X"
+
+[shareLinkedIn]
+other = "分享到 LinkedIn"
+
+[shareEmail]
+other = "通过邮件分享"
+
+[openPhoto]
+other = "打开照片"
+
+[skipToContent]
+other = "跳到主要内容"
+
+[paginationNavigation]
+other = "文章分页"
+
+[notFoundTitle]
+other = "没有找到这个页面"
+
+[notFoundDescription]
+other = "这个地址可能已经变更，或者页面不存在。"
+
+[backToHome]
+other = "返回首页"
+
+[searchEyebrow]
+other = "文章检索"
+
+[searchTitle]
+other = "搜索文章"
+
+[searchInputLabel]
+other = "关键词"
+
+[searchPlaceholder]
+other = "例如 wcode、Rust、Agent…"
+
+[searchHint]
+other = "支持标题、标签、摘要和正文全文检索。多个关键词需同时命中；↑↓ 选择，Enter 打开，Esc 关闭。"
+
+[closeSearch]
+other = "关闭搜索"
+
+[searchReady]
+other = "输入关键词开始搜索。"
+
+[searchLoading]
+other = "正在加载搜索索引…"
+
+[searchNoResults]
+other = "没有找到匹配文章："
+
+[searchError]
+other = "搜索索引加载失败，请稍后重试。"
+
+[searchResultSingular]
+other = "篇结果"
+
+[searchResultPlural]
+other = "篇结果"
+
+[searchNoScript]
+other = "请启用 JavaScript 使用站内搜索。"
+
+[articleToc]
+other = "本文目录"
+
+[articleTocSections]
+other = "%d 个章节"
+
+[copyCode]
+other = "复制"
+
+[copiedCode]
+other = "已复制"
+
+[copyCodeFailed]
+other = "复制失败"
+
+[headingPermalink]
+other = "章节链接：%s"

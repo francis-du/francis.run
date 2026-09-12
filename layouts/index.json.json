@@ -1,0 +1,22 @@
+{{- $entries := slice -}}
+{{- $pages := where .Site.RegularPages "Section" "blogs" -}}
+{{- $pages = where $pages "Params.hidden" "ne" true -}}
+{{- range $pages.ByDate.Reverse -}}
+	{{- $tags := slice -}}
+	{{- with .Params.tags -}}
+		{{- range . -}}
+			{{- with . -}}{{- $tags = $tags | append . -}}{{- end -}}
+		{{- end -}}
+	{{- end -}}
+	{{- $description := .Description -}}
+	{{- if not $description -}}{{- $description = .Summary | plainify -}}{{- end -}}
+	{{- $entries = $entries | append (dict
+		"title" .Title
+		"url" .RelPermalink
+		"description" ($description | plainify)
+		"tags" $tags
+		"date" (.Date.Format "2006-01-02")
+		"content" .Plain
+	) -}}
+{{- end -}}
+{{- $entries | jsonify -}}

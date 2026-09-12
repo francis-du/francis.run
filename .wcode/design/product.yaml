@@ -1,0 +1,10 @@
+schema_version: 1
+id: product:francis-run
+name: francis.run
+vision: A fast bilingual personal engineering blog where writing, code, and photography stay simple to publish, easy to navigate, and hard to accidentally break.
+principles:
+- Preserve stable public URLs and language relationships.
+- Prefer first-hand technical writing over generic or promotional prose.
+- Treat the photography gallery as a dedicated experience, not a normal article.
+- Verify template and routing changes with a real Hugo build.
+- Keep wcode as the source of truth for repository-level design constraints and verification intent.

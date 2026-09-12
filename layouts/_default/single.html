@@ -1,58 +1,63 @@
 <!DOCTYPE html>
-<html prefix="og:http://ogp.me/ns#">
+<html lang="{{ .Site.Language.Locale | default "zh-CN" }}" prefix="og:http://ogp.me/ns#">
 {{ partial "header.html" . }}
-{{- $isGallery := eq .Section "gallery" -}}
+{{- $isGallery := eq .Type "gallery" -}}
+{{- $isArticle := eq .Section "blogs" -}}
 <body{{ if $isGallery }} class="gallery-page"{{ end }}>
-	{{- if not $isGallery }}
+	{{- if $isArticle }}
 	<div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
 	{{- end }}
 	<div class="container wrapper">
 		{{ partial "head.html" . }}
 
-		<div class="post{{ if $isGallery }} gallery-post{{ end }}">
+		<main id="main-content" class="post{{ if $isGallery }} gallery-post{{ end }}"{{ if $isArticle }} data-copy-code="{{ i18n "copyCode" }}" data-copied-code="{{ i18n "copiedCode" }}" data-copy-failed="{{ i18n "copyCodeFailed" }}"{{ end }}>
 			<div class="post-header">
 				{{ if ne .Date.Year 1 }}
 					<div class="meta">
 						<div class="date">
 							<span class="day">{{ dateFormat "02" .Date }}</span>
-							<span class="rest">{{ if hugo.Data.month }}{{ index hugo.Data.month (printf "%d" .Date.Month) }} {{ .Date.Year }}{{ else }}{{ dateFormat "Jan 2006" .Date }}{{ end }}</span>
+							<span class="rest">{{ if eq .Site.Language.Lang "zh-cn" }}{{ .Date.Format "2006年1月" }}{{ else }}{{ .Date | time.Format "Jan 2006" }}{{ end }}</span>
 						</div>
 					</div>
 				{{ end }}
 				<div class="matter">
 					<h1 class="title">{{ .Title }}</h1>
-					{{- if not $isGallery }}
-					<div class="article-meta"><span>{{ .ReadingTime }} min read</span><span>{{ .WordCount }} words</span></div>
+					{{- if $isArticle }}
+					<div class="article-meta"><span>{{ printf (i18n "readingTime") .ReadingTime }}</span><span>{{ printf (i18n "wordCount") .WordCount }}</span></div>
 					{{- end }}
 				</div>
 			</div>
+
+			{{- if $isArticle }}
+				{{- partial "article-toc.html" . -}}
+			{{- end }}
 
 			<div class="markdown">
 				{{ .Content }}
 			</div>
 
-			{{- if not $isGallery }}
+			{{- if $isArticle }}
 				{{- if .Site.Params.social_share -}}
 					{{- partial "social_share.html" . -}}
 				{{- end -}}
 
 				<div class="tags">
-					{{ if ne .Type "page" }}
-						{{ if gt .Params.tags 0 }}
-							<ul class="flat">
-								{{ range .Params.tags }}
-								<li><a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}">{{ . }}</a></li>
-								{{ end }}
-							</ul>
-						{{ end }}
+					{{ if gt .Params.tags 0 }}
+						<ul class="flat">
+							{{ range .Params.tags }}
+							<li><a href="{{ "/tags/" | relLangURL }}{{ . | urlize }}">{{ . }}</a></li>
+							{{ end }}
+						</ul>
 					{{ end }}
 				</div>
+
+				{{- partial "related.html" . -}}
 
 				{{- if .Site.Params.comment -}}
 					{{- partial "utteranc.html" . -}}
 				{{- end -}}
 			{{- end }}
-		</div>
+		</main>
 	</div>
 	{{- partial "footer.html" . -}}
 </body>

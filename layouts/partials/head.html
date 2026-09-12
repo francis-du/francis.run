@@ -1,41 +1,80 @@
-<div class="header">
+{{- $languageTargetURL := "" -}}
+{{- $languageTargetCode := "" -}}
+{{- $languageTargetLabel := i18n "switchLanguage" -}}
+{{- $languageCurrentCode := cond (eq .Site.Language.Lang "en") "EN" "中" -}}
+{{- if hugo.IsMultilingual -}}
+	{{- $current := . -}}
+	{{- range .Site.Home.AllTranslations -}}
+		{{- $targetLang := .Language.Lang -}}
+		{{- if ne $targetLang $current.Site.Language.Lang -}}
+			{{- $languageTargetURL = .RelPermalink -}}
+			{{- if eq $targetLang "en" }}{{ $languageTargetCode = "EN" }}{{ $languageTargetLabel = i18n "switchToEnglish" }}{{ else }}{{ $languageTargetCode = "中" }}{{ $languageTargetLabel = i18n "switchToChinese" }}{{ end -}}
+			{{- range $current.Translations -}}
+				{{- if eq .Language.Lang $targetLang }}{{ $languageTargetURL = .RelPermalink }}{{ end -}}
+			{{- end -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+<a class="skip-link" href="#main-content">{{ i18n "skipToContent" }}</a>
+<header class="header">
 	<div class="header-profile">
 		{{ if .Site.Params.Avatar }}
 			<div class="avatar">
-				<a href="{{ .Site.BaseURL }}">
-					<img src="{{ .Site.Params.Avatar }}" alt="{{ .Site.Title }}" width="66" height="66" decoding="async" />
+				<a href="{{ .Site.Home.RelPermalink }}">
+					<img src="{{ .Site.Params.Avatar }}" alt="{{ .Site.Title }}" width="66" height="66" loading="eager" decoding="async" fetchpriority="high" />
 				</a>
 			</div>
 		{{ end }}
 
 		<div class="profile-copy">
-			<h1 class="site-title"><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}<span class="title-dot">.</span></a></h1>
+			{{- if .IsHome }}
+			<h1 class="site-title"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}<span class="title-dot">.</span></a></h1>
+			{{- else }}
+			<p class="site-title"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}<span class="title-dot">.</span></a></p>
+			{{- end }}
 			{{- if isset .Site.Params "description" -}}
 			<div class="site-description"><p>{{ .Site.Params.Description | markdownify }}</p></div>
 			{{- end -}}
 		</div>
 
 		<div class="header-actions">
-			<nav class="nav social" aria-label="Social links">
+			<nav class="nav social" aria-label="{{ i18n "socialNavigation" }}">
 				<ul class="flat">
 					{{- range $index, $key := .Site.Params.Social -}}
-						<li><a href="{{ $key.url }}" title="{{ $key.name }}" aria-label="{{ $key.name }}" class="social-icon"><i data-feather="{{ $key.icon }}" class="feather"></i></a></li>
+						{{- $socialURL := $key.url -}}
+						{{- if eq $key.name "RSS" }}{{ $socialURL = "index.xml" | relLangURL }}{{ end -}}
+						<li><a href="{{ $socialURL }}" title="{{ $key.name }}" aria-label="{{ $key.name }}" class="social-icon">{{ partial "icon.html" $key.icon }}</a></li>
 					{{- end -}}
 				</ul>
 			</nav>
 			{{- if or (eq .Site.Params.mode "auto") (eq .Site.Params.mode "dark") -}}
-			<span class="scheme-toggle"><a href="#" id="scheme-toggle" aria-label="切换颜色主题"></a></span>
+			<span class="scheme-toggle"><button type="button" id="scheme-toggle" aria-label="{{ i18n "toggleTheme" }}" data-light-label="{{ i18n "toggleToLight" }}" data-dark-label="{{ i18n "toggleToDark" }}"><span class="theme-icon theme-icon-sun">{{ partial "icon.html" "sun" }}</span><span class="theme-icon theme-icon-moon">{{ partial "icon.html" "moon" }}</span></button></span>
+			{{- end -}}
+			{{- if $languageTargetURL -}}
+			<a class="language-switch" href="{{ $languageTargetURL }}" aria-label="{{ $languageTargetLabel }}" title="{{ $languageTargetLabel }}">
+				<span class="language-current">{{ $languageCurrentCode }}</span><span class="language-separator" aria-hidden="true">/</span><span class="language-target">{{ $languageTargetCode }}</span>
+			</a>
 			{{- end -}}
 		</div>
 	</div>
 
-	<nav class="nav main-nav" aria-label="Primary navigation">
+	<nav class="nav main-nav" aria-label="{{ i18n "primaryNavigation" }}">
 		<ul class="flat">
 			{{- range .Site.Menus.main -}}
+				{{- $active := $.IsMenuCurrent "main" . -}}
+				{{- with .Page -}}
+					{{- if and (not $active) (not .IsHome) (hasPrefix $.RelPermalink .RelPermalink) -}}
+						{{- $active = true -}}
+					{{- end -}}
+					{{- if and (not $active) .IsSection ($.InSection .) -}}
+						{{- $active = true -}}
+					{{- end -}}
+				{{- end -}}
 			<li>
-				<a href="{{ .URL }}"{{ if $.IsMenuCurrent "main" . }} class="active" aria-current="page"{{ else if and (ne .URL "/") (hasPrefix $.RelPermalink .URL) }} class="active" aria-current="page"{{ end }}>{{ .Name }}</a>
+				<a href="{{ .URL }}"{{ if $active }} class="active" aria-current="page"{{ end }}>{{ .Name }}</a>
 			</li>
 			{{- end -}}
 		</ul>
 	</nav>
-</div>
+</header>
+{{ partial "search-overlay.html" . }}

@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ .Site.Language.Locale | default "zh-CN" }}">
 {{ partial "header.html" . }}
 
 <body>
 	<div class="container wrapper list tags">
 		{{ partial "head.html" . }}
 
+		<main id="main-content">
 		<div class="page-heading">
-			<span class="eyebrow">Tag</span>
+			<span class="eyebrow">{{ i18n "tag" }}</span>
 			<h1 class="page-title"># {{ .Title }}</h1>
-			<p>共 {{ len .Pages }} 篇文章</p>
+			<p>{{ printf (i18n "articleCount") (len .Pages) }}</p>
 		</div>
 
 		<ul class="posts flat">
@@ -19,6 +20,7 @@
 			</li>
 			{{ end }}
 		</ul>
+		</main>
 	</div>
 
 	{{ partial "footer.html" . }}

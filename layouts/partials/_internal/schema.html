@@ -1,42 +1,84 @@
-{{ if .IsHome }}
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "url": {{ .Site.BaseURL }},
-    "name": {{ .Site.Title }},
-    {{- with .Site.Params.description -}}
-    "description": {{ . }}
+{{- $authorSameAs := slice
+    "https://github.com/francis-du"
+    "https://www.linkedin.com/in/francis-du/"
+    "https://twitter.com/francis_run"
+-}}
+{{- $authorURL := ("about/" | relLangURL) | absURL -}}
+{{- $author := dict
+    "@type" "Person"
+    "name" .Site.Params.Author.name
+    "url" $authorURL
+    "sameAs" $authorSameAs
+-}}
+{{- if .IsHome -}}
+{{- $data := dict "@context" "https://schema.org" "@type" "WebSite" "url" .Site.BaseURL "name" .Site.Title -}}
+{{- $homeDescription := .Description | default .Site.Params.description -}}
+{{- with $homeDescription -}}
+    {{- $data = merge $data (dict "description" .) -}}
+{{- end -}}
+<script type="application/ld+json">{{ $data | jsonify | safeJS }}</script>
+{{- else if .IsPage -}}
+{{- $description := .Description | default (.Summary | plainify) -}}
+{{- if eq .TranslationKey "about" -}}
+    {{- $data := dict
+        "@context" "https://schema.org"
+        "@type" "ProfilePage"
+        "name" .Title
+        "description" $description
+        "url" .Permalink
+        "mainEntity" $author
+    -}}
+    {{- if ne .Lastmod.Year 1 -}}
+        {{- $data = merge $data (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05-07:00")) -}}
     {{- end -}}
-}
-</script>
-{{ else if .IsPage }}
-{{- $images := .Params.images | default (slice) -}}
-<script type="application/ld+json">
-{
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    "headline": {{ .Title | jsonify }},
-    "name": {{ .Title | jsonify }},
-    "description": {{ with .Description }}{{ . | jsonify }}{{ else }}{{ .Summary | jsonify }}{{ end }},
-    {{- with .Keywords -}}
-    "keywords": {{ . | jsonify }},
-    {{- else -}}
+<script type="application/ld+json">{{ $data | jsonify | safeJS }}</script>
+{{- else if eq .Section "blogs" -}}
+    {{- $data := dict
+        "@context" "https://schema.org"
+        "@type" "BlogPosting"
+        "headline" .Title
+        "name" .Title
+        "description" $description
+        "wordCount" .WordCount
+        "url" .Permalink
+        "author" $author
+    -}}
+    {{- if ne .Date.Year 1 -}}
+        {{- $data = merge $data (dict "datePublished" (.Date.Format "2006-01-02T15:04:05-07:00")) -}}
+    {{- end -}}
+    {{- if ne .Lastmod.Year 1 -}}
+        {{- $data = merge $data (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05-07:00")) -}}
+    {{- end -}}
+    {{- $keywords := slice -}}
     {{- with .Params.tags -}}
-    "keywords": {{ . | jsonify }},
+        {{- range . -}}
+            {{- with . -}}
+                {{- $keywords = $keywords | append . -}}
+            {{- end -}}
+        {{- end -}}
     {{- end -}}
+    {{- if gt (len $keywords) 0 -}}
+        {{- $data = merge $data (dict "keywords" $keywords) -}}
     {{- end -}}
-    "wordcount": {{ .WordCount }},
-    "url": {{ .Permalink | jsonify }},
-    "datePublished": {{ .Date.Format "2006-01-02T15:04:05-07:00" | jsonify }},
-    "dateModified": {{ .Lastmod.Format "2006-01-02T15:04:05-07:00" | jsonify }},
-    {{- with $images -}}
-    "image": {{ . | jsonify }},
+    {{- with .Params.images -}}
+        {{- $imageURLs := slice -}}
+        {{- range . -}}
+            {{- $imageURLs = $imageURLs | append (. | absURL) -}}
+        {{- end -}}
+        {{- $data = merge $data (dict "image" $imageURLs) -}}
     {{- end -}}
-    "author": {
-        "@type": "Person",
-        "name": {{ .Site.Params.Author.name | jsonify }}
-    }
-}
-</script>
-{{ end }}
+<script type="application/ld+json">{{ $data | jsonify | safeJS }}</script>
+{{- else -}}
+    {{- $data := dict
+        "@context" "https://schema.org"
+        "@type" "WebPage"
+        "name" .Title
+        "description" $description
+        "url" .Permalink
+    -}}
+    {{- if ne .Lastmod.Year 1 -}}
+        {{- $data = merge $data (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05-07:00")) -}}
+    {{- end -}}
+<script type="application/ld+json">{{ $data | jsonify | safeJS }}</script>
+{{- end -}}
+{{- end -}}

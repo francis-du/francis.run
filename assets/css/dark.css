@@ -37,3 +37,9 @@ html.dark .button.primary { color: #17221c; }
 html.dark .tag-cloud a { background: rgba(31, 31, 36, 0.76); }
 
 html.dark .header .avatar img { box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border-strong); }
+
+/* Hugo's VS Chroma style uses light-background inline token colors.
+   Override only the token colors that actually occur in this site. */
+html.dark .highlight span[style*="color:#00f"] { color: #569cd6 !important; }
+html.dark .highlight span[style*="color:#a31515"] { color: #ce9178 !important; }
+html.dark .highlight span[style*="color:#2b91af"] { color: #4ec9b0 !important; }

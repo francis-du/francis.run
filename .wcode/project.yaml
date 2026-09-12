@@ -1,0 +1,3 @@
+schema_version: 1
+name: francis.run
+description: Personal Hugo site for Francis Du. Preserve stable public URLs, Hugo multilingual routing, photography gallery behavior, and production-build correctness. Use wcode Design State to govern site architecture, content routing, gallery compatibility, and verification.

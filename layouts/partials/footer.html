@@ -1,11 +1,10 @@
-<div class="footer wrapper">
-	<nav class="nav">
+<footer class="footer wrapper">
+	<div class="nav">
 		<div class="inline footer-signature">
-			<span>2019 — {{ now.Format "2006" }}</span>
-			<span>Built with curiosity in Shanghai.</span>
+			<span>© {{ now.Format "2006" }} Francis Du</span>
 		</div>
-	</nav>
-</div>
+	</div>
+</footer>
 
 {{ if hugo.IsProduction }}
     {{ if site.Config.Services.GoogleAnalytics.ID }}
@@ -19,6 +18,3 @@
         </script>
     {{ end }}
 {{ end }}
-
-{{- with .Site.Params.Social -}}
-{{- end -}}

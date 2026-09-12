@@ -1,0 +1,42 @@
+/*
+  Link: <https://fonts.gstatic.com>; rel=preconnect; crossorigin
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/css/*
+  Cache-Control: public, max-age=31556952, immutable
+
+/js/main.*
+  Cache-Control: public, max-age=31556952, immutable
+
+/js/comments.*
+  Cache-Control: public, max-age=31556952, immutable
+
+/js/code-copy.*
+  Cache-Control: public, max-age=31556952, immutable
+
+/js/search.*
+  Cache-Control: public, max-age=31556952, immutable
+
+/index.json
+  Cache-Control: public, max-age=300, must-revalidate
+  X-Robots-Tag: noindex
+
+/en/index.json
+  Cache-Control: public, max-age=300, must-revalidate
+  X-Robots-Tag: noindex
+
+# All WebP files are Hugo content-hashed derivatives. The build gate rejects
+# source .webp files so this broad rule cannot accidentally pin mutable assets.
+/*.webp
+  Cache-Control: public, max-age=31556952, immutable
+
+# Never let Cloudflare's generated hostnames compete with the canonical domain.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex
+

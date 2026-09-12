@@ -1,0 +1,258 @@
+.search-overlay[hidden] { display: none; }
+
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: grid;
+    place-items: start center;
+    padding: clamp(48px, 10vh, 96px) 16px 24px;
+    background: rgba(38, 36, 32, 0.26);
+    backdrop-filter: blur(10px) saturate(0.92);
+    -webkit-backdrop-filter: blur(10px) saturate(0.92);
+}
+
+html.dark .search-overlay {
+    background: rgba(8, 8, 10, 0.62);
+}
+
+.search-palette {
+    width: min(680px, 100%);
+    max-height: min(72vh, 680px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    box-shadow: 0 24px 80px rgba(24, 23, 20, 0.20), 0 4px 16px rgba(24, 23, 20, 0.08);
+    animation: search-palette-in 0.16s var(--ease) both;
+}
+
+html.dark .search-palette {
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.58), 0 4px 18px rgba(0, 0, 0, 0.38);
+}
+
+@keyframes search-palette-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.search-dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.search-dialog-header h2 {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+}
+
+.search-dialog-close {
+    min-width: 38px;
+    height: 26px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--bg-soft);
+    color: var(--text-faint);
+    font: 650 0.66rem/1 var(--font-sans);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: color 0.15s var(--ease), border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.search-dialog-close:hover,
+.search-dialog-close:focus-visible {
+    color: var(--accent);
+    border-color: var(--border-strong);
+    background: var(--accent-soft);
+}
+
+.search-dialog-close:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.search-form {
+    padding: 12px 14px 0;
+}
+
+.search-form label,
+.search-hint {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.search-form input[type="search"] {
+    width: 100%;
+    min-height: 50px;
+    box-sizing: border-box;
+    padding: 11px 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: 11px;
+    background: var(--bg-soft);
+    color: var(--text);
+    font: 500 1rem/1.45 var(--font-sans);
+    outline: none;
+    caret-color: var(--accent);
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s var(--ease);
+}
+
+.search-form input[type="search"]:focus {
+    border-color: var(--accent);
+    background: var(--bg);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.search-form input[type="search"]::placeholder {
+    color: var(--text-faint);
+    font-weight: 400;
+}
+
+.search-status {
+    min-height: 1.35em;
+    margin: 0;
+    padding: 8px 16px 7px;
+    color: var(--text-faint);
+    font-size: 0.7rem;
+    line-height: 1.4;
+}
+
+.search-results {
+    margin: 0;
+    padding: 0 10px 10px;
+    list-style: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+}
+
+.search-result {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.search-result + .search-result { margin-top: 2px; }
+
+.search-result-link {
+    display: block;
+    padding: 11px 12px 10px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: inherit;
+    background: transparent;
+    text-decoration: none;
+    transition: background 0.12s var(--ease), border-color 0.12s var(--ease), transform 0.12s var(--ease);
+}
+
+.search-result-link:hover,
+.search-result.is-active .search-result-link,
+.search-result-link:focus-visible {
+    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--accent) 24%, var(--border));
+}
+
+.search-result-link:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.search-result h2 {
+    margin: 3px 0 3px;
+    padding: 0;
+    border: 0;
+    color: var(--text);
+    font-size: 0.96rem;
+    font-weight: 650;
+    line-height: 1.38;
+    letter-spacing: -0.01em;
+}
+
+.search-result.is-active h2,
+.search-result-link:hover h2,
+.search-result-link:focus-visible h2 {
+    color: var(--accent);
+}
+
+.search-result p {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 0.8rem;
+    line-height: 1.48;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.search-result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px 9px;
+    color: var(--text-faint);
+    font-size: 0.64rem;
+    font-weight: 600;
+}
+
+.search-result-meta span { color: var(--text-faint); }
+
+html.search-open,
+html.search-open body {
+    overflow: hidden;
+}
+
+@media (max-width: 560px) {
+    .search-overlay {
+        padding: 7vh 10px 14px;
+        align-items: start;
+    }
+
+    .search-palette {
+        width: 100%;
+        max-height: 82vh;
+        border-radius: 13px;
+    }
+
+    .search-dialog-header { padding: 12px 13px 9px; }
+    .search-form { padding: 10px 11px 0; }
+    .search-form input[type="search"] { min-height: 46px; font-size: 0.96rem; }
+    .search-status { padding: 8px 13px 7px; }
+    .search-results { padding: 0 8px 8px; }
+    .search-result-link { padding: 10px 9px 9px; }
+    .search-result h2 { font-size: 0.92rem; }
+    .search-result p { font-size: 0.78rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search-palette { animation: none; }
+    .search-dialog-close,
+    .search-form input[type="search"],
+    .search-result-link { transition: none; }
+}

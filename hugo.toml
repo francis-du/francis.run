@@ -1,0 +1,247 @@
+baseURL = "https://francis.run/"
+title = "Francis Du"
+defaultContentLanguage = "zh-cn"
+defaultContentLanguageInSubdir = false
+enableMissingTranslationPlaceholders = false
+timeZone = "Asia/Shanghai"
+enableEmoji = true
+enableGitInfo = true
+enableRobotsTXT = true
+ignoreLogs = ['warning-goldmark-raw-html']
+timeout = 600000
+copyright = "© Francis Du"
+
+# Keep expensive image transforms inside Hugo's portable cache directory.
+# Cloudflare Pages persists .cache between builds when build caching is enabled.
+[caches]
+    [caches.assets]
+    dir = ':cacheDir/assets'
+    [caches.images]
+    dir = ':cacheDir/images'
+
+# Keep the gallery submodule as an asset source, but publish only the
+# minified runtime files used by the local gallery shortcode.
+[module]
+    [module.hugoVersion]
+    min = '0.165.0'
+
+    [[module.mounts]]
+    source = 'archetypes'
+    target = 'archetypes'
+    [[module.mounts]]
+    source = 'assets'
+    target = 'assets'
+    [[module.mounts]]
+    source = 'content'
+    target = 'content'
+    [[module.mounts]]
+    source = 'data'
+    target = 'data'
+    [[module.mounts]]
+    source = 'i18n'
+    target = 'i18n'
+    [[module.mounts]]
+    source = 'layouts'
+    target = 'layouts'
+    [[module.mounts]]
+    source = 'static'
+    target = 'static'
+    files = ['! 404.html', '! js/gallery.js']
+    # Expose static images to the asset pipeline as a metadata-only view so
+    # Markdown render hooks can emit intrinsic dimensions without changing URLs.
+    [[module.mounts]]
+    source = 'static/img'
+    target = 'assets/img'
+    [[module.mounts]]
+    source = 'themes/hugo-shortcode-gallery/static/shortcode-gallery'
+    target = 'static/shortcode-gallery'
+    files = [
+        'jquery-3.7.1.min.js',
+        'swipebox/css/swipebox.min.css',
+        'swipebox/js/jquery.swipebox.min.js',
+        'swipebox/img/icons.png',
+        'swipebox/img/icons.svg',
+        'swipebox/img/loader.gif',
+        'justified_gallery/jquery.justifiedGallery.min.js',
+        'justified_gallery/justifiedGallery.min.css'
+    ]
+
+[markup.highlight]
+style = "vs"
+codeFences = true
+guessSyntax = true
+
+# 允许原始 HTML
+[markup.goldmark.renderer]
+unsafe = true
+
+[markup.goldmark.parser]
+wrapStandAloneImageWithinParagraph = false
+    [markup.goldmark.parser.attribute]
+    block = true
+
+[params]
+    subtitle = "Blog"
+    description = "💻 Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖 Vibe Coder"
+    avatar = "https://avatars.githubusercontent.com/u/25944814?s=132&v=4"
+    favicon = "img/icon.png"
+    title = "Francis Blog"
+    mode = "dark"
+    social_share = true
+    comment = true
+    # Keep hugo-shortcode-gallery's Swipebox + JustifiedGallery lifecycle.
+    # Browser-native lazy loading replaces jquery.lazy; generated WebP derivatives avoid source-photo transfer.
+    galleryRowHeight = 200
+    galleryRowMargins = 5
+    galleryImageResizeOptions = "1920x1920 webp q82 Lanczos"
+    galleryThumbnailResizeOptions = "720x720 webp q78 Lanczos"
+    galleryPreviewType = "none"
+    galleryThumbnailHoverEffect = "none"
+    galleryShowExif = true
+    galleryLoadJQuery = true
+    galleryEmbedPreview = false
+    gallerySwipeboxParameters = "removeBottomBarOnMobile: false"
+
+
+[imaging.meta]
+    sources = ['exif', 'iptc']
+
+# Keep RSS full-content, but bound every feed to recent entries so taxonomy
+# feeds do not duplicate the entire publication archive indefinitely.
+[services]
+    [services.rss]
+    limit = 20
+
+[outputs]
+home = ['html', 'rss', 'json']
+    
+[pagination]
+pagerSize = 10
+disableAliases = true
+
+[params.author]
+name = "Francis Du"
+
+[languages]
+    [languages.zh-cn]
+    label = "中文"
+    locale = "zh-CN"
+    weight = 1
+    title = "Francis Du"
+    hasCJKLanguage = true
+
+        [languages.zh-cn.params]
+        subtitle = "博客"
+        description = "💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder"
+
+        [languages.zh-cn.menus]
+        [[languages.zh-cn.menus.main]]
+        name = "Home"
+        pageRef = "/"
+        weight = 1
+
+        [[languages.zh-cn.menus.main]]
+        name = "Blogs"
+        pageRef = "/blogs"
+        weight = 2
+
+        [[languages.zh-cn.menus.main]]
+        name = "Tags"
+        pageRef = "/tags"
+        weight = 3
+
+        [[languages.zh-cn.menus.main]]
+        name = "Gallery"
+        pageRef = "/gallery"
+        weight = 4
+
+        [[languages.zh-cn.menus.main]]
+        name = "Red Note"
+        pageRef = "/rednote"
+        weight = 5
+
+        [[languages.zh-cn.menus.main]]
+        name = "About"
+        pageRef = "/about"
+        weight = 6
+
+    [languages.en]
+    label = "English"
+    locale = "en-US"
+    weight = 2
+    title = "Francis Du"
+    hasCJKLanguage = false
+
+        [languages.en.params]
+        subtitle = "Blog"
+        description = "💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder"
+
+        [languages.en.menus]
+        [[languages.en.menus.main]]
+        name = "Home"
+        pageRef = "/"
+        weight = 1
+
+        [[languages.en.menus.main]]
+        name = "Articles"
+        pageRef = "/blogs"
+        weight = 2
+
+        [[languages.en.menus.main]]
+        name = "Tags"
+        pageRef = "/tags"
+        weight = 3
+
+        [[languages.en.menus.main]]
+        name = "About"
+        pageRef = "/about"
+        weight = 4
+
+[[params.social]]
+name = "Github"
+icon = "github"
+url = "https://github.com/francis-du"
+
+[[params.social]]
+name = "Telegram"
+icon = "send"
+url = "https://t.me/francisdu"
+
+[[params.social]]
+name = "Twitter"
+icon = "twitter"
+url = "https://twitter.com/intent/follow?screen_name=francis_run"
+
+[[params.social]]
+name = "LinkedIn"
+icon = "linkedin"
+url = "https://www.linkedin.com/in/francis-du/"
+
+[[params.social]]
+name = "RSS"
+icon = "rss"
+url = "/index.xml"
+
+[permalinks]
+    [permalinks.page]
+    blogs = '/blog/:contentbasename/'
+
+[related]
+includeNewer = true
+threshold = 30
+toLower = true
+    [[related.indices]]
+    name = 'tags'
+    weight = 100
+    [[related.indices]]
+    name = 'fragmentrefs'
+    type = 'fragments'
+    applyFilter = true
+    weight = 40
+    [[related.indices]]
+    name = 'date'
+    pattern = '2006'
+    weight = 15
+
+[taxonomies]
+tags = "tags"

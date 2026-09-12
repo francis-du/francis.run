@@ -1,0 +1,96 @@
+- schema_version: 1
+  id: CONSTRAINT-EDITORIAL-HUMAN-VOICE
+  title: Blog writing must sound human and first-hand
+  statement: >-
+    Blog articles must read like Francis's own engineering notes, using concrete implementation details, actual tradeoffs, failures, measurements, and first-hand observations where relevant. Avoid obvious AI-generated writing patterns: generic scene-setting, inflated marketing claims, canned conclusions, repetitive "not X but Y" or "this matters because" scaffolding, symmetrical filler lists, vague claims without evidence, and transitions added only to make prose sound polished. Chinese must read as natural Chinese rather than translated copy. English must read like a developer writing directly rather than AI or marketing prose. Do not add filler for length.
+  applies_to:
+    - component:editorial-content
+
+- schema_version: 1
+  id: CONSTRAINT-SITE-IDENTITY-LABELS
+  title: Site identity labels are user-owned copy
+  statement: >-
+    The header/profile tagline and other short identity labels in Hugo configuration are user-owned copy. About-page updates, SEO work, multilingual refactors, deployment changes, and inferred profile facts must not rewrite these labels unless Francis explicitly asks to change them. The current tagline remains "💻 Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖 Vibe Coder" in both language configurations.
+  applies_to:
+    - component:editorial-content
+    - component:multilingual-site
+
+- schema_version: 1
+  id: CONSTRAINT-WCODE-BILINGUAL-INTRO
+  title: wcode needs an evergreen introduction in both languages
+  statement: >-
+    The Chinese and English sites must each publish an evergreen article that explains what wcode is, what problem it solves, how it interacts with coding agents and local repositories, its trust and verification boundaries, and where to find the source and documentation. The two articles are language counterparts but should be written naturally for each audience rather than mechanically translated.
+  applies_to:
+    - component:editorial-content
+
+- schema_version: 1
+  id: CONSTRAINT-BILINGUAL-PROFILE-SYNC
+  title: About profile facts are maintained once for both languages
+  statement: >-
+    Personal profile facts such as current work areas, active projects, open-source contributions, and photography must be maintained in the shared data/profile.toml source and rendered into both Chinese and English About pages. The two languages may use natural language-specific phrasing, but factual additions, removals, and corrections must land together. About pages must keep the same translationKey and must not reintroduce duplicated per-language project lists.
+  applies_to:
+    - component:editorial-content
+    - component:multilingual-site
+
+- schema_version: 1
+  id: CONSTRAINT-MULTILINGUAL-ROUTES
+  title: Public multilingual routes stay stable
+  statement: >-
+    Chinese remains the default language at the site root and English remains under /en/. Existing public article URLs must not move without an explicit redirect plan. Translation pairs must emit canonical and hreflang relationships that point to the correct language-specific pages. Existing RSS routes remain language-aware and full-content per item, while each feed is bounded to the 20 most recent entries to avoid duplicating the entire archive into every taxonomy feed.
+  applies_to:
+    - component:multilingual-site
+
+- schema_version: 1
+  id: CONSTRAINT-ACCESSIBLE-SHELL
+  title: Shared templates preserve keyboard and landmark navigation
+  statement: >-
+    Generated pages and localized 404 output must provide a visible-on-focus skip link targeting a unique main-content landmark, semantic header and footer landmarks, and a semantic main landmark around primary page content. The global search dialog must use native dialog semantics, move focus to its search field when opened, close with Escape, and restore focus when dismissed. Inner pages must use the page title as their primary h1 while the site-brand heading remains h1 only on the home page. Multi-page archives must expose pagination as a named navigation landmark. Blog articles with at least four Markdown headings must expose a compact keyboard-native details/summary table of contents limited to heading levels 2 and 3; shorter articles and non-blog pages must not gain an empty navigation block. Highlighted blog code blocks may gain localized keyboard-accessible copy buttons, but copy enhancement must load only on blog articles, preserve the rendered code text, and fail gracefully without affecting code readability. Blog H2/H3 headings may expose hover/focus permalink anchors, but these links must reuse Hugo's existing heading Anchor value so built-in table-of-contents fragments and public section URLs cannot diverge. Dark mode must override the light-oriented inline Chroma token colors used by current articles with readable dark-background equivalents without changing the light-mode highlight output. Root and English 404 pages must use the shared shell and be marked noindex rather than falling back to the legacy static error page. These structural improvements must not rewrite user-owned identity labels or introduce a normal-state visual redesign.
+  applies_to:
+    - component:site-shell
+
+- schema_version: 1
+  id: CONSTRAINT-LANGUAGE-ISOLATED-SEARCH
+  title: Static search never crosses language or content boundaries
+  statement: >-
+    Search is a global keyboard-invoked dialog rather than a public navigation page. Pressing / outside editable controls or Cmd/Ctrl+K from any page opens the dialog; Escape closes it. Chinese pages query only /index.json and English pages query only /en/index.json. Indexes include visible blog pages only, exclude Gallery, About and hidden/non-blog content, and contain title, stable URL, description, tags, date, and plain searchable article text. Search uses no external service, does not publish /search/ or /en/search/ routes, and does not fetch the JSON index until the user enters a query.
+  applies_to:
+    - component:content-discovery
+    - component:multilingual-site
+
+- schema_version: 1
+  id: CONSTRAINT-GALLERY-COMPATIBILITY
+  title: Gallery keeps its dedicated rendering stack
+  statement: >-
+    The photography gallery must remain an explicit gallery page and keep the local gallery shortcode, native image lazy loading, JustifiedGallery, and Swipebox lifecycle working. Original photo resources must not be published when processed derivatives are available; only images with non-neutral EXIF orientation should pay for AutoOrient. Gallery pages must not inherit article-only reading progress, sharing, comments, or related-post UI. Changes to script loading, page type detection, image processing, or CSS must preserve gallery layout and lightbox behavior.
+  applies_to:
+    - component:gallery
+
+- schema_version: 1
+  id: CONSTRAINT-HUGO-BUILD-GATE
+  title: Site changes require a real Hugo build
+  statement: >-
+    Template, content-routing, asset-pipeline, multilingual, and gallery changes are not considered verified by diff checks alone. The site declares Hugo 0.165.0 as its minimum supported generator version, while production pins Hugo 0.166.0. The repository check target must perform a real Hugo production-style build and assert the critical bilingual wcode routes and gallery shell before changes are treated as ready.
+  applies_to:
+    - component:build-verification
+
+- schema_version: 1
+  id: CONSTRAINT-DUAL-STATIC-DEPLOYMENT
+  title: GitHub and Cloudflare builds share one canonical Hugo output
+  statement: >-
+    GitHub Pages and Cloudflare must build from the same hugo.toml and verification path, keep https://francis.run/ as the canonical base URL, initialize Git submodules, and preserve full Git history when enableGitInfo is active. Cloudflare builds must pin Hugo 0.166.0 in both production and preview environments, persist Hugo image caches under .cache, emit Cloudflare-only security/cache headers, and prevent generated pages.dev deployment URLs from competing with the canonical domain in search results. Hugo-generated WebP derivatives may use year-long immutable browser caching only while static/ and content/ contain no source .webp files, so every published WebP filename remains content-derived. Custom-domain indexing policy must not be changed without an explicit user decision.
+  applies_to:
+    - component:build-verification
+    - component:multilingual-site
+
+- schema_version: 1
+  id: CONSTRAINT-DESIGN-SYNC
+  title: Design State changes with site behavior
+  statement: >-
+    Changes that alter public routing, multilingual behavior, content discovery/search, shared accessibility structure, gallery rendering, editorial policy, or build verification must update the matching .wcode Design State in the same change.
+  applies_to:
+    - component:multilingual-site
+    - component:site-shell
+    - component:content-discovery
+    - component:gallery
+    - component:editorial-content
+    - component:build-verification

@@ -1,0 +1,9 @@
+{{- $headingCount := len .Fragments.Identifiers -}}
+{{- if ge $headingCount 4 -}}
+<details class="article-toc">
+	<summary><span>{{ i18n "articleToc" }}</span><small>{{ printf (i18n "articleTocSections") $headingCount }}</small></summary>
+	<div class="article-toc-body">
+		{{ .Fragments.ToHTML 2 3 false }}
+	</div>
+</details>
+{{- end -}}

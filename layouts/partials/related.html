@@ -1,0 +1,21 @@
+{{- if eq .Section "blogs" -}}
+	{{- $opts := dict "document" . "indices" (slice "tags" "fragmentrefs" "date") -}}
+	{{- $related := .Site.RegularPages.Related $opts -}}
+	{{- $related = where $related "Section" "blogs" -}}
+	{{- $related = first 3 $related -}}
+	{{- with $related }}
+<section class="related-posts" aria-labelledby="related-posts-title">
+	<span class="eyebrow">{{ i18n "keepReading" }}</span>
+	<h2 id="related-posts-title">{{ i18n "relatedArticles" }}</h2>
+	<div class="related-grid">
+		{{- range . }}
+		<article class="related-card">
+			<time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date | time.Format ":date_medium" }}</time>
+			<h3><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h3>
+			{{- with .Description }}<p>{{ . }}</p>{{ end }}
+		</article>
+		{{- end }}
+	</div>
+</section>
+	{{- end -}}
+{{- end -}}

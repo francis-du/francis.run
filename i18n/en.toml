@@ -1,0 +1,155 @@
+[writing]
+other = "Writing"
+
+[recentPosts]
+other = "Recent writing"
+
+[viewAll]
+other = "View all"
+
+[explore]
+other = "Explore"
+
+[browseByTopic]
+other = "Browse articles by topic"
+
+[articleCount]
+other = "%d articles"
+
+[postCount]
+other = "%d posts"
+
+[tag]
+other = "Tag"
+
+[readingTime]
+other = "%d min read"
+
+[wordCount]
+other = "%d words"
+
+[previousPage]
+other = "Previous page"
+
+[nextPage]
+other = "Next page"
+
+[switchLanguage]
+other = "Switch language"
+
+[toggleTheme]
+other = "Toggle color theme"
+
+[toggleToLight]
+other = "Switch to light mode"
+
+[toggleToDark]
+other = "Switch to dark mode"
+
+[relatedArticles]
+other = "Related articles"
+
+[keepReading]
+other = "Keep reading"
+
+[socialNavigation]
+other = "Social links"
+
+[primaryNavigation]
+other = "Primary navigation"
+
+[switchToEnglish]
+other = "Switch to English"
+
+[switchToChinese]
+other = "Switch to Chinese"
+
+[shareArticle]
+other = "Share article"
+
+[shareFacebook]
+other = "Share on Facebook"
+
+[shareTwitter]
+other = "Share on X"
+
+[shareLinkedIn]
+other = "Share on LinkedIn"
+
+[shareEmail]
+other = "Share by email"
+
+[openPhoto]
+other = "Open photo"
+
+[skipToContent]
+other = "Skip to main content"
+
+[paginationNavigation]
+other = "Article pagination"
+
+[notFoundTitle]
+other = "Page not found"
+
+[notFoundDescription]
+other = "This address may have changed, or the page does not exist."
+
+[backToHome]
+other = "Back to home"
+
+[searchEyebrow]
+other = "Article search"
+
+[searchTitle]
+other = "Search articles"
+
+[searchInputLabel]
+other = "Keywords"
+
+[searchPlaceholder]
+other = "Try wcode, Rust, agents…"
+
+[searchHint]
+other = "Searches titles, tags, descriptions, and full article text. All keywords must match; use ↑↓ to select, Enter to open, and Esc to close."
+
+[closeSearch]
+other = "Close search"
+
+[searchReady]
+other = "Enter keywords to search."
+
+[searchLoading]
+other = "Loading search index…"
+
+[searchNoResults]
+other = "No matching articles for:"
+
+[searchError]
+other = "The search index could not be loaded. Please try again."
+
+[searchResultSingular]
+other = "result"
+
+[searchResultPlural]
+other = "results"
+
+[searchNoScript]
+other = "Enable JavaScript to use site search."
+
+[articleToc]
+other = "On this page"
+
+[articleTocSections]
+other = "%d sections"
+
+[copyCode]
+other = "Copy"
+
+[copiedCode]
+other = "Copied"
+
+[copyCodeFailed]
+other = "Copy failed"
+
+[headingPermalink]
+other = "Permalink to section: %s"

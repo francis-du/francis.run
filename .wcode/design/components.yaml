@@ -1,0 +1,171 @@
+- schema_version: 1
+  id: component:editorial-content
+  name: Editorial Content
+  responsibilities:
+    - keep technical writing concrete, first-hand, and free of obvious AI-generated prose patterns
+    - maintain natural Chinese and English wcode introduction articles
+    - keep About profile facts in one shared bilingual data source so both languages move together
+  constraints:
+    - CONSTRAINT-EDITORIAL-HUMAN-VOICE
+    - CONSTRAINT-WCODE-BILINGUAL-INTRO
+    - CONSTRAINT-BILINGUAL-PROFILE-SYNC
+  implementation:
+    - kind: file
+      path: content/blogs/what-is-wcode.md
+    - kind: file
+      path: content/blogs/what-is-wcode.en.md
+    - kind: file
+      path: data/profile.toml
+    - kind: file
+      path: layouts/shortcodes/profile-about.html
+    - kind: file
+      path: content/about.md
+    - kind: file
+      path: content/about.en.md
+
+- schema_version: 1
+  id: component:multilingual-site
+  name: Multilingual Hugo Site
+  responsibilities:
+    - keep Chinese at root and English under /en/
+    - keep translated About pages bound to the same shared profile facts
+    - emit language-aware navigation canonical RSS and hreflang links
+    - keep RSS routes full-content while bounding each feed to the 20 most recent entries
+  constraints:
+    - CONSTRAINT-MULTILINGUAL-ROUTES
+    - CONSTRAINT-BILINGUAL-PROFILE-SYNC
+    - CONSTRAINT-DUAL-STATIC-DEPLOYMENT
+    - CONSTRAINT-DESIGN-SYNC
+  implementation:
+    - kind: file
+      path: hugo.toml
+    - kind: file
+      path: layouts/partials/head.html
+    - kind: file
+      path: layouts/partials/header.html
+
+- schema_version: 1
+  id: component:site-shell
+  name: Accessible Site Shell
+  responsibilities:
+    - provide keyboard skip navigation and semantic header main footer landmarks on generated pages
+    - keep the site title as the primary heading only on the home page and expose page titles as the primary heading on inner pages
+    - expose pagination as a named navigation landmark without changing normal visual layout
+    - provide a compact native-details table of contents for blog articles with at least four headings
+    - add localized keyboard-accessible copy controls to highlighted code blocks without modifying code content
+    - expose stable H2/H3 article permalink anchors without changing Hugo heading IDs or table-of-contents targets
+    - keep syntax-highlight tokens readable in dark mode without replacing the light-mode Hugo highlight theme
+    - render localized root and English 404 pages through the shared site shell instead of the legacy static error page
+  constraints:
+    - CONSTRAINT-ACCESSIBLE-SHELL
+    - CONSTRAINT-SITE-IDENTITY-LABELS
+    - CONSTRAINT-DESIGN-SYNC
+  implementation:
+    - kind: file
+      path: layouts/index.html
+    - kind: file
+      path: layouts/404.html
+    - kind: file
+      path: layouts/_default/list.html
+    - kind: file
+      path: layouts/_default/single.html
+    - kind: file
+      path: layouts/_default/term.html
+    - kind: file
+      path: layouts/_default/terms.html
+    - kind: file
+      path: layouts/partials/head.html
+    - kind: file
+      path: layouts/partials/footer.html
+    - kind: file
+      path: layouts/partials/paginator.html
+    - kind: file
+      path: layouts/partials/article-toc.html
+    - kind: file
+      path: layouts/_markup/render-heading.html
+    - kind: file
+      path: assets/js/code-copy.js
+    - kind: file
+      path: assets/css/main.css
+    - kind: file
+      path: assets/css/dark.css
+    - kind: file
+      path: i18n/zh-cn.toml
+    - kind: file
+      path: i18n/en.toml
+
+- schema_version: 1
+  id: component:content-discovery
+  name: Static Content Discovery
+  responsibilities:
+    - generate one JSON blog-search index per language without external services
+    - keep search results isolated to the current language and exclude non-blog or hidden pages
+    - expose search as a global accessible dialog opened by / or Cmd/Ctrl+K instead of a navigation page
+    - load the full-text JSON index only after the user enters a query
+  constraints:
+    - CONSTRAINT-LANGUAGE-ISOLATED-SEARCH
+    - CONSTRAINT-ACCESSIBLE-SHELL
+    - CONSTRAINT-DESIGN-SYNC
+  implementation:
+    - kind: file
+      path: hugo.toml
+    - kind: file
+      path: layouts/index.json.json
+    - kind: file
+      path: layouts/partials/search-overlay.html
+    - kind: file
+      path: layouts/partials/head.html
+    - kind: file
+      path: layouts/partials/header.html
+    - kind: file
+      path: assets/js/search.js
+    - kind: file
+      path: assets/css/search.css
+    - kind: file
+      path: i18n/zh-cn.toml
+    - kind: file
+      path: i18n/en.toml
+
+- schema_version: 1
+  id: component:gallery
+  name: Photography Gallery
+  responsibilities:
+    - preserve hugo-shortcode-gallery rendering and lightbox behavior
+    - keep gallery pages separate from article-only UI
+  constraints:
+    - CONSTRAINT-GALLERY-COMPATIBILITY
+    - CONSTRAINT-DESIGN-SYNC
+  implementation:
+    - kind: file
+      path: content/gallery/index.md
+    - kind: file
+      path: layouts/shortcodes/gallery.html
+    - kind: file
+      path: assets/css/gallery.css
+    - kind: file
+      path: layouts/_default/single.html
+    - kind: file
+      path: layouts/partials/header.html
+
+- schema_version: 1
+  id: component:build-verification
+  name: Hugo Build Verification
+  responsibilities:
+    - provide a repository-level check target wcode can infer and execute
+    - validate bilingual wcode routes and gallery-specific generated markup
+    - keep GitHub Pages and Cloudflare builds on the same Hugo configuration and verification contract
+    - preserve Git history, theme submodules, Cloudflare cache reuse, and mirror/preview indexing policy
+    - validate Cloudflare asset limits and generated structured-data types for profile and article pages
+  constraints:
+    - CONSTRAINT-HUGO-BUILD-GATE
+    - CONSTRAINT-DUAL-STATIC-DEPLOYMENT
+    - CONSTRAINT-DESIGN-SYNC
+  implementation:
+    - kind: file
+      path: Makefile
+    - kind: file
+      path: hugo.toml
+    - kind: file
+      path: deploy/cloudflare/_headers
+    - kind: file
+      path: .github/workflows/hugo.yml

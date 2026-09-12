@@ -1,0 +1,100 @@
+- schema_version: 1
+  id: REQ-CONTENT-001
+  title: Human-authored bilingual technical writing
+  intent: Published technical articles should sound like Francis's own engineering notes rather than generic AI or marketing copy, while both language sites keep a clear evergreen introduction to wcode.
+  priority: high
+  implemented_by:
+    - component:editorial-content
+  acceptance:
+    - AC-CONTENT-001
+  constraints:
+    - CONSTRAINT-EDITORIAL-HUMAN-VOICE
+    - CONSTRAINT-WCODE-BILINGUAL-INTRO
+  risk:
+    reliability: medium
+
+- schema_version: 1
+  id: REQ-PROFILE-001
+  title: About profile stays synchronized across Chinese and English
+  intent: Personal work history, current Agent/Data Agent work, wcode, open-source contributions, and other profile facts must be maintained from one bilingual source so a profile update cannot silently land in only one language.
+  priority: high
+  implemented_by:
+    - component:editorial-content
+    - component:multilingual-site
+  acceptance:
+    - AC-PROFILE-001
+  constraints:
+    - CONSTRAINT-BILINGUAL-PROFILE-SYNC
+  risk:
+    compatibility: medium
+
+- schema_version: 1
+  id: REQ-I18N-001
+  title: Stable Chinese and English publishing
+  intent: Chinese remains at root, English remains under /en/, and translated pages keep correct navigation, canonical URLs, RSS, and hreflang relationships.
+  priority: critical
+  implemented_by:
+    - component:multilingual-site
+  acceptance:
+    - AC-I18N-001
+  constraints:
+    - CONSTRAINT-MULTILINGUAL-ROUTES
+  risk:
+    compatibility: high
+
+- schema_version: 1
+  id: REQ-A11Y-001
+  title: Core pages provide accessible structural navigation
+  intent: Home, list, article, tag, About, Gallery, localized 404 pages, and the global search dialog must expose keyboard-accessible structure and controls without changing user-owned identity copy or normal visual layout.
+  priority: high
+  implemented_by:
+    - component:site-shell
+  acceptance:
+    - AC-A11Y-001
+  constraints:
+    - CONSTRAINT-ACCESSIBLE-SHELL
+  risk:
+    compatibility: medium
+
+- schema_version: 1
+  id: REQ-GALLERY-001
+  title: Photography gallery remains functional
+  intent: Gallery layout, lazy loading, justified rows, and lightbox behavior must survive global template and asset changes without inheriting article-only UI.
+  priority: critical
+  implemented_by:
+    - component:gallery
+  acceptance:
+    - AC-GALLERY-001
+  constraints:
+    - CONSTRAINT-GALLERY-COMPATIBILITY
+  risk:
+    reliability: critical
+
+- schema_version: 1
+  id: REQ-SEARCH-001
+  title: Keyboard-invoked language-isolated article search
+  intent: Readers can open a global search dialog from any page with / or Cmd/Ctrl+K and search blog titles, tags, descriptions, and full article text without an external service, while Chinese and English stay isolated to their own indexes and no dedicated Search page is published.
+  priority: high
+  implemented_by:
+    - component:content-discovery
+  acceptance:
+    - AC-SEARCH-001
+  constraints:
+    - CONSTRAINT-LANGUAGE-ISOLATED-SEARCH
+  risk:
+    compatibility: medium
+
+- schema_version: 1
+  id: REQ-BUILD-001
+  title: Hugo build is the repository quality gate
+  intent: wcode verification must run the same real Hugo build contract used by GitHub Pages and Cloudflare, check critical generated routes, and keep the two deployment targets from drifting.
+  priority: critical
+  implemented_by:
+    - component:build-verification
+  acceptance:
+    - AC-BUILD-001
+  constraints:
+    - CONSTRAINT-HUGO-BUILD-GATE
+    - CONSTRAINT-DUAL-STATIC-DEPLOYMENT
+  risk:
+    reliability: critical

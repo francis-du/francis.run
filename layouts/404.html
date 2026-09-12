@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.Language.Locale | default "zh-CN" }}">
+{{ partial "header.html" . }}
+<body>
+	<a class="skip-link" href="#main-content">{{ i18n "skipToContent" }}</a>
+	<div class="container wrapper">
+		{{ partial "head.html" . }}
+		<main id="main-content" tabindex="-1">
+			<div class="page-heading not-found">
+				<span class="eyebrow">404</span>
+				<h1 class="page-title">{{ i18n "notFoundTitle" }}</h1>
+				<p>{{ i18n "notFoundDescription" }}</p>
+				<p><a href="{{ .Site.Home.RelPermalink }}">{{ i18n "backToHome" }} <span aria-hidden="true">→</span></a></p>
+			</div>
+		</main>
+	</div>
+	{{ partial "footer.html" . }}
+</body>
+</html>

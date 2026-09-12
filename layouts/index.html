@@ -1,29 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ .Site.Language.Locale | default "zh-CN" }}">
 {{ partial "header.html" . }}
 <body>
 	<div class="container wrapper">
 		{{ partial "head.html" . }}
 
-		<div class="recent-posts section">
+		<main id="main-content" class="recent-posts section">
 			<div class="section-heading">
 				<div>
-					<span class="eyebrow">Writing</span>
-					<h2>最近文章</h2>
+					<span class="eyebrow">{{ i18n "writing" }}</span>
+					<h2>{{ i18n "recentPosts" }}</h2>
 				</div>
-				<a href="/blogs/">查看全部 <span aria-hidden="true">→</span></a>
+				<a href="{{ "/blogs/" | relLangURL }}">{{ i18n "viewAll" }} <span aria-hidden="true">→</span></a>
 			</div>
 			<div class="posts">
-				{{ $pages := where .Site.RegularPages "Type" "in" .Site.Params.mainSections }}
-				{{ $paginator := .Paginate (where $pages "Params.hidden" "ne" true) }}
-				{{ range $paginator.Pages }}
+				{{ $pages := where .Site.RegularPages "Section" "blogs" }}
+				{{ $pages = where $pages "Params.hidden" "ne" true }}
+				{{ range first 6 $pages.ByDate.Reverse }}
 					<div class="post">
 						{{ partial "post-preview.html" . }}
 					</div>
 				{{ end }}
-				{{ template "partials/paginator.html" . }}
 			</div>
-		</div>
+		</main>
 	</div>
 	{{ partial "footer.html" . }}
 </body>

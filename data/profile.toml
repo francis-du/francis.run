@@ -1,0 +1,75 @@
+[about]
+intro_zh = [
+  "我是 **Francis Du**，做数据工程，也在做 Agent / Data Agent 相关开发，平时写 Rust、折腾开源项目，也喜欢摄影。",
+  "这些年主要和数据平台、分布式系统、查询引擎打交道。现在也在持续做一个私有 Data Agent 项目，积累了不少 Agent 工程和评估方面的经验。",
+  "业余时间主要维护 [wcode](https://github.com/francis-du/wcode)。之前也参与过 Apache DataFusion 和 DataFusion Python 的开源贡献。"
+]
+intro_en = [
+  "I'm **Francis Du**. I work on data engineering and Agent / Data Agent development, write Rust, build open-source tools, and take photos when I am away from a terminal.",
+  "My background is mostly in data platforms, distributed systems, and query engines. I am also building a private Data Agent project, which is where much of my recent Agent engineering and evaluation work comes from.",
+  "Outside work, I spend most of my open-source time on [wcode](https://github.com/francis-du/wcode). I have also contributed to Apache DataFusion and DataFusion Python."
+]
+work_heading_zh = "🛠️ 我在做什么"
+work_heading_en = "What I work on"
+contact_heading_zh = "🔗 联系我 / Get in touch"
+contact_heading_en = "Get in touch"
+
+[[contacts]]
+label = "GitHub"
+display = "github.com/francis-du"
+url = "https://github.com/francis-du"
+
+[[contacts]]
+label = "LinkedIn"
+display = "linkedin.com/in/francis-du"
+url = "https://www.linkedin.com/in/francis-du/"
+
+[[contacts]]
+label = "Twitter / X"
+display = "@francis_run"
+url = "https://twitter.com/francis_run"
+
+[[contacts]]
+label = "Telegram"
+display = "@francisdu"
+url = "https://t.me/francisdu"
+
+[[contacts]]
+label = "Email"
+display = "francis@francis.run"
+url = "mailto:francis@francis.run"
+
+[[highlights]]
+id = "data-engineering"
+title_zh = "数据工程 · Data Engineering"
+title_en = "Data Engineering"
+body_zh = "主要做数据平台、分布式系统和查询引擎相关的工程工作。"
+body_en = "I work on data platforms, distributed systems, and query-engine infrastructure."
+
+[[highlights]]
+id = "data-agent"
+title_zh = "Agent / Data Agent"
+title_en = "Agents & Data Agents"
+body_zh = "有 Agent 开发和评估经验，目前也在持续开发一个私有 Data Agent 项目，主要关注数据检索、工具调用、任务编排和可靠性。"
+body_en = "I have hands-on Agent development and evaluation experience and am currently building a private Data Agent project, with a focus on retrieval, tool use, orchestration, and reliability."
+
+[[highlights]]
+id = "wcode"
+title_zh = "Rust · wcode"
+title_en = "Rust & wcode"
+body_zh = "[wcode](https://github.com/francis-du/wcode) 是我现在主要维护的开源项目，一套面向 Coding Agent 的本地 runtime / harness。"
+body_en = "[wcode](https://github.com/francis-du/wcode) is the open-source project I maintain most actively, a local runtime and harness for coding agents."
+
+[[highlights]]
+id = "datafusion"
+title_zh = "开源 · Open Source"
+title_en = "Open Source"
+body_zh = "参与过 [Apache DataFusion](https://github.com/apache/datafusion) 和 [DataFusion Python](https://github.com/apache/datafusion-python) 的开源贡献，其他项目和实验放在 [GitHub](https://github.com/francis-du)。"
+body_en = "I have contributed to [Apache DataFusion](https://github.com/apache/datafusion) and [DataFusion Python](https://github.com/apache/datafusion-python). Other projects and experiments live on [GitHub](https://github.com/francis-du)."
+
+[[highlights]]
+id = "photography"
+title_zh = "摄影 · Photography"
+title_en = "Photography"
+body_zh = "用镜头记录旅途与日常，作品收在本站的 [相册](/gallery/) 里。"
+body_en = "Travel and everyday life, collected in the [Gallery](/gallery/)."

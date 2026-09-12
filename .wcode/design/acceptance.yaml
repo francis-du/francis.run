@@ -1,0 +1,55 @@
+- schema_version: 1
+  id: AC-CONTENT-001
+  title: Bilingual wcode introduction is published
+  statement: A natural Chinese introduction and a separately written English introduction to wcode are present at their stable language-specific routes; editorial changes remain subject to the human-voice constraint.
+  verification:
+    - kind: check
+      id: make-check
+
+- schema_version: 1
+  id: AC-PROFILE-001
+  title: Chinese and English About render from the shared profile source
+  statement: Both About source files use the shared profile shortcode, and generated Chinese and English About pages contain the same core profile topics including Data Agent, wcode, Apache DataFusion, and DataFusion Python while excluding WikiGraph from the profile.
+  verification:
+    - kind: check
+      id: make-check
+
+- schema_version: 1
+  id: AC-I18N-001
+  title: Multilingual output keeps stable routes and relationships
+  statement: The generated site contains Chinese root pages and English /en/ pages with the expected wcode entry routes and language-aware output; RSS routes remain full-content and contain no more than the 20 most recent entries.
+  verification:
+    - kind: check
+      id: make-check
+
+- schema_version: 1
+  id: AC-A11Y-001
+  title: Generated pages expose accessible structural navigation
+  statement: The production build contains a localized skip link targeting main-content, semantic header/main/footer landmarks on representative pages, an h1 page title on archive pages, a named pagination navigation landmark when pagination is present, a global native-dialog search surface with keyboard focus handling, a localized native-details table of contents on long blog articles but not short/non-blog pages, localized article-only copy-code enhancement assets without changing rendered code content, stable localized H2/H3 permalink anchors that reuse TOC fragment IDs, dark-mode overrides for every inline Chroma token color currently emitted by blog content, and localized root/English 404 pages using the shared shell with noindex metadata.
+  verification:
+    - kind: check
+      id: make-check
+
+- schema_version: 1
+  id: AC-SEARCH-001
+  title: Global static search stays language-local and keyboard-driven
+  statement: The production build generates /index.json and /en/index.json but no /search/ or /en/search/ pages; every normal page contains the accessible search dialog and fingerprinted search JavaScript, / and Cmd/Ctrl+K open it, Escape closes it, each language points to its own JSON index, and the indexes contain only visible blog pages for that language.
+  verification:
+    - kind: check
+      id: make-check
+
+- schema_version: 1
+  id: AC-GALLERY-001
+  title: Gallery shell and dependencies survive production rendering
+  statement: The generated gallery page uses the gallery page shell, emits build-time lightbox grouping, loads only the minified JustifiedGallery/Swipebox runtime dependencies, preserves native image loading and EXIF orientation behavior, and does not include article-only sharing or related-content UI.
+  verification:
+    - kind: check
+      id: make-check
+
+- schema_version: 1
+  id: AC-BUILD-001
+  title: Repository check performs the shared production Hugo build
+  statement: The make-check verification target enforces the declared Hugo 0.165.0 minimum, completes a minified Hugo build and route assertions successfully from hugo.toml, checks Cloudflare free-tier asset limits, rejects mutable source WebP files before applying immutable WebP cache headers, and verifies generated ProfilePage/BlogPosting structured data, while the Cloudflare target reuses that check with persistent cache, Git/submodule preparation, and Cloudflare-only response headers.
+  verification:
+    - kind: check
+      id: make-check

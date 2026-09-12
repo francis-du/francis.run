@@ -6,6 +6,8 @@
 # Generated files by hugo
 /public/
 /resources/_gen/
+/target-hugo-check/
+/.cache/
 /.idea
 /.vscode
 /.claude

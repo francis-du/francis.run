@@ -1,0 +1,9 @@
+<h{{ .Level }} id="{{ .Anchor }}"
+{{- range $key, $value := .Attributes }}
+	{{- if ne $key "id" }}{{ printf " %s=%q" $key $value | safeHTMLAttr }}{{ end }}
+{{- end }}>
+	{{- .Text -}}
+	{{- if and (eq .Page.Section "blogs") (ge .Level 2) (le .Level 3) -}}
+	<a class="heading-anchor" href="#{{ .Anchor }}" aria-label="{{ printf (i18n "headingPermalink") .PlainText }}">#</a>
+	{{- end -}}
+</h{{ .Level }}>

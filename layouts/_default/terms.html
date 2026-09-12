@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ .Site.Language.Locale | default "zh-CN" }}">
 {{ partial "header.html" . }}
 
 <body>
 	<div class="container wrapper tags">
 		{{ partial "head.html" . }}
 
+		<main id="main-content">
 		<div class="page-heading">
-			<span class="eyebrow">Explore</span>
+			<span class="eyebrow">{{ i18n "explore" }}</span>
 			<h1 class="page-title">{{ .Name }}</h1>
-			<p>按主题浏览文章</p>
+			<p>{{ i18n "browseByTopic" }}</p>
 		</div>
 
 		<div class="tag-cloud">
 		{{ range .Data.Terms.ByCount }}
-			<a href="{{ .Page.RelPermalink }}"><span># {{ .Page.Title }}</span><small>{{ .Count }} 篇</small></a>
+			<a href="{{ .Page.RelPermalink }}"><span># {{ .Page.Title }}</span><small>{{ printf (i18n "postCount") .Count }}</small></a>
 		{{ end }}
 		</div>
+		</main>
 	</div>
 
 	{{ partial "footer.html" . }}

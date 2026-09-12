@@ -1,0 +1,48 @@
+{{- $src := .Destination -}}
+{{- $width := 0 -}}
+{{- $height := 0 -}}
+{{- $small := false -}}
+{{- $large := false -}}
+{{- $isPageResource := false -}}
+{{- $image := .PageInner.Resources.Get .Destination -}}
+{{- if $image -}}
+	{{- $isPageResource = true -}}
+{{- else -}}
+	{{- $assetPath := strings.TrimPrefix "/" .Destination -}}
+	{{- $image = resources.Get $assetPath -}}
+{{- end -}}
+{{- with $image -}}
+	{{- if eq .MediaType.MainType "image" -}}
+		{{- $width = .Width -}}
+		{{- $height = .Height -}}
+		{{- $subType := strings.ToLower .MediaType.SubType -}}
+		{{- if and (reflect.IsImageResourceProcessable .) (in (slice "jpeg" "png" "webp") $subType) (gt .Width 960) -}}
+			{{- $working := . -}}
+			{{- with .Meta -}}
+				{{- if gt .Orientation 1 -}}
+					{{- $working = $working.Filter images.AutoOrient -}}
+				{{- end -}}
+			{{- end -}}
+			{{- $largeWidth := $working.Width -}}
+			{{- if gt $largeWidth 1800 }}{{ $largeWidth = 1800 }}{{ end -}}
+			{{- $small = $working.Resize "960x webp q80 Lanczos" -}}
+			{{- $large = $working.Resize (printf "%dx webp q82 Lanczos" $largeWidth) -}}
+			{{- $src = $small.RelPermalink -}}
+			{{- $width = $working.Width -}}
+			{{- $height = $working.Height -}}
+		{{- else if $isPageResource -}}
+			{{- $src = .RelPermalink -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{{- if .IsBlock }}<figure class="content-image">{{ end -}}
+<img src="{{ $src | safeURL }}"
+	{{- with .PlainText }} alt="{{ . }}"{{ else }} alt=""{{ end -}}
+	 loading="lazy" decoding="async"
+	{{- if and $small $large }} srcset="{{ $small.RelPermalink }} {{ $small.Width }}w, {{ $large.RelPermalink }} {{ $large.Width }}w" sizes="(max-width: 900px) calc(100vw - 32px), 900px"{{ end -}}
+	{{- with $width }} width="{{ . }}"{{ end -}}
+	{{- with $height }} height="{{ . }}"{{ end -}}
+	{{- with .Title }} title="{{ . }}"{{ end -}}>
+{{- if and .IsBlock .Title }}<figcaption>{{ .Title }}</figcaption>{{ end -}}
+{{- if .IsBlock }}</figure>{{ end -}}
+{{- /* chomp trailing newline */ -}}

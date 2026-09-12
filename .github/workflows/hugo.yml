@@ -9,28 +9,41 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
-          submodules: true  # Fetch Hugo themes (true OR recursive)
+          submodules: recursive  # Match Cloudflare and include nested theme dependencies
           fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v3
+        uses: peaceiris/actions-hugo@v3.2.1
         with:
-          hugo-version: '0.163.3'  # matches local dev; keep in sync when upgrading
-          extended: true           # required for SASS/image pipeline; safe to keep on
+          hugo-version: '0.166.0'  # current stable Hugo; keep in sync with production
+          extended: true           # retained for gallery Sass compatibility; WebP itself no longer requires Extended
 
-      - name: Build
-        run: hugo --minify
+      - name: Cache Hugo resources
+        uses: actions/cache@v6.1.0
+        with:
+          path: .cache/hugo
+          key: hugo-${{ runner.os }}-0.166.0-${{ hashFiles('hugo.toml', '.gitmodules') }}
+          restore-keys: |
+            hugo-${{ runner.os }}-0.166.0-
+
+      - name: Verify and build
+        run: make check HUGO_CACHE_DIR=${{ github.workspace }}/.cache/hugo
 
       - name: Copy CNAME
-        run: cp ./CNAME ./public
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: cp ./CNAME ./target-hugo-check
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v4.1.0
         with:
           github_token: ${{ secrets.SITE_DEPLOY_KEY }}
-          publish_dir: ./public
+          publish_dir: ./target-hugo-check

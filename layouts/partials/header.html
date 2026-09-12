@@ -1,13 +1,12 @@
 <head>
-{{- $images := (slice) -}}
 	<meta charset="utf-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="cf-2fa-verify" content="D6tJ9oDrU0oNLP1c6rQcGtf27PTl37">
 
 	{{/* Set colour scheme before first paint to avoid a flash (FOUC).
-	     data-cf-async="false" opts this out of Cloudflare Rocket Loader so it
+	     data-cfasync="false" opts this out of Cloudflare Rocket Loader so it
 	     is not deferred (which would re-introduce the flash). */}}
-	<script data-cf-async="false">
+	<script data-cfasync="false">
 		(function () {
 			try {
 				var s = localStorage.getItem("scheme");
@@ -23,67 +22,123 @@
 		<link rel="icon" type="image/png" href="{{ .Site.BaseURL }}{{ .Site.Params.favicon }}" />
 	{{- end -}}
 
-	{{- $title := ( .Title ) -}}
-	{{- $siteTitle := ( .Site.Title ) -}}
+	{{- $title := .Title -}}
+	{{- $siteTitle := .Site.Title -}}
+	{{- $metaDescription := .Description -}}
+	{{- if eq .Kind "404" -}}
+		{{- $title = i18n "notFoundTitle" -}}
+		{{- $metaDescription = i18n "notFoundDescription" -}}
+	{{- end -}}
+	{{- if eq .Kind "404" -}}
+	<meta name="robots" content="noindex,follow">
+	{{- end -}}
+	{{- if not $metaDescription -}}
+		{{- if .IsPage -}}
+			{{- $metaDescription = .Summary | plainify -}}
+		{{- else -}}
+			{{- $metaDescription = .Site.Params.description -}}
+		{{- end -}}
+	{{- end -}}
+	{{- with $metaDescription }}
+	<meta name="description" content="{{ . | plainify }}">
+	{{- end }}
 	{{- if .IsHome -}}
 		<title>{{ $siteTitle }} {{ if isset .Site.Params "subtitle" }}- {{ .Site.Params.Subtitle }}{{ end }} </title>
 	{{- else -}}
 		<title>{{ $title }} - {{ $siteTitle }}</title>
 	{{- end -}}
 
-	<!-- Open Graph -->
+	{{/* Hugo's internal Open Graph template owns the primary OG metadata.
+	     Only emit locale alternates here to avoid duplicate/conflicting tags. */}}
 	{{- if eq .Kind "page" }}
-	<meta property="og:title" content="{{ .Title }}" />
-	<meta property="og:type" content="blog" />
-	<meta property="og:url" content="{{ .Permalink }}" />
-	{{- if .Params.album -}}
-	<meta property="og:image" content="{{ .Params.album }}" />
-	{{ end }}
-	<meta property="og:description" content="{{ .Params.Summary }}" />
-	<meta property="og:locale" content="{{ .Site.Language.Locale }}" />
-	{{ end }}
+		{{- range .Translations }}
+	<meta property="og:locale:alternate" content="{{ replace .Language.Locale "-" "_" }}" />
+		{{- end }}
+	{{- end }}
 
+	<link rel="canonical" href="{{ .Permalink }}" />
+	{{- range .AllTranslations }}
+	<link rel="alternate" hreflang="{{ .Language.Locale }}" href="{{ .Permalink }}" />
+	{{- if .Language.IsDefault }}
+	<link rel="alternate" hreflang="x-default" href="{{ .Permalink }}" />
+	{{- end }}
+	{{- end }}
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	{{ with .OutputFormats.Get "rss" -}}
 		{{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
 	{{- end -}}
 
-	{{/* --- images 兜底修正 start --- */}}
-	{{- if not (isset .Params "images") -}}
-	  {{- $.Scratch.Set "images" (slice) -}}
-	  {{- $.Scratch.SetInMap "Params" "images" ($.Scratch.Get "images") -}}
-	{{- else if not (reflect.IsSlice .Params.images) -}}
-	  {{- $.Scratch.Set "images" (slice .Params.images) -}}
-	  {{- $.Scratch.SetInMap "Params" "images" ($.Scratch.Get "images") -}}
-	{{- end -}}
-	{{/* --- images 兜底修正 end --- */}}
 
 	{{- partial "_internal/schema" . -}}
 	{{- template "_internal/opengraph.html" . -}}
 	{{- template "_internal/twitter_cards.html" . -}}
+	{{- $needsDisplayFont := or .IsHome (in (slice "section" "term") .Kind) -}}
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap">
+	<link rel="preconnect" href="https://avatars.githubusercontent.com">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..750&display=swap">
+	{{- if $needsDisplayFont }}
+	{{/* Playfair is only used for day numerals in archive cards; request only those glyphs. */}}
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&text=0123456789&display=swap">
+	{{- end }}
 
 	{{/* Bundle + minify + fingerprint all CSS into a single cache-busted file */}}
 	{{- $normalize := resources.Get "css/normalize.css" -}}
 	{{- $main := resources.Get "css/main.css" -}}
 	{{- $dark := resources.Get "css/dark.css" -}}
-	{{- $css := slice $normalize $main $dark | resources.Concat "css/bundle.css" -}}
+	{{- $search := resources.Get "css/search.css" -}}
+	{{- $css := slice $normalize $main $dark $search | resources.Concat "css/bundle.css" -}}
 	{{- if hugo.IsProduction -}}
-		{{- $css = $css | minify | fingerprint -}}
+		{{- $css = $css | minify -}}
 	{{- end -}}
+	{{- $css = $css | fingerprint -}}
+	{{/* Cloudflare Pages turns this preload into a 103 Early Hint. Keep it attribute-minimal. */}}
+	<link rel="preload" href="{{ $css.RelPermalink }}" as="style">
 	<link rel="stylesheet" href="{{ $css.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $css.Data.Integrity }}"{{ end }}>
+	{{- if eq .Type "gallery" }}
+		{{- with resources.Get "css/gallery.css" }}
+			{{- $galleryCSS := . -}}
+			{{- if hugo.IsProduction }}{{ $galleryCSS = $galleryCSS | minify }}{{ end -}}
+			{{- $galleryCSS = $galleryCSS | fingerprint -}}
+	<link rel="stylesheet" href="{{ $galleryCSS.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $galleryCSS.Data.Integrity }}"{{ end }}>
+		{{- end }}
+	<link rel="stylesheet" href="{{ "shortcode-gallery/swipebox/css/swipebox.min.css" | relURL }}">
+	<link rel="stylesheet" href="{{ "shortcode-gallery/justified_gallery/justifiedGallery.min.css" | relURL }}">
+		{{- if .Site.Params.galleryLoadJQuery }}
+	<link rel="preload" as="script" href="{{ "shortcode-gallery/jquery-3.7.1.min.js" | relURL }}">
+		{{- end }}
+	<link rel="preload" as="script" href="{{ "shortcode-gallery/swipebox/js/jquery.swipebox.min.js" | relURL }}">
+	<link rel="preload" as="script" href="{{ "shortcode-gallery/justified_gallery/jquery.justifiedGallery.min.js" | relURL }}">
+	{{- end }}
 
 	{{- if isset .Site.Params "customcss" }}
 		<link rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}{{ .Site.Params.customCSS }}" />
 	{{ end }}
 
-	{{/* Icons + theme toggle: self-hosted, deferred so they don't block render */}}
-	<script defer src="{{ .Site.BaseURL }}js/feather.min.js"></script>
-	<script defer src="{{ .Site.BaseURL }}js/main.js"></script>
-	{{- if eq .Section "gallery" }}
-	<script defer src="{{ .Site.BaseURL }}js/gallery.js"></script>
+	{{/* Self-hosted script through Hugo Pipes for cache-busted, integrity-checked behavior. */}}
+	{{- with resources.Get "js/main.js" }}
+		{{- $script := . | js.Build (dict "targetPath" "js/main.js" "minify" hugo.IsProduction) -}}
+		{{- $script = $script | fingerprint -}}
+	<script defer src="{{ $script.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $script.Data.Integrity }}" crossorigin="anonymous"{{ end }}></script>
+	{{- end }}
+	{{- if and .IsPage (eq .Section "blogs") -}}
+		{{- with resources.Get "js/code-copy.js" }}
+			{{- $copyCode := . | js.Build (dict "targetPath" "js/code-copy.js" "minify" hugo.IsProduction) -}}
+			{{- $copyCode = $copyCode | fingerprint -}}
+	<script defer src="{{ $copyCode.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $copyCode.Data.Integrity }}" crossorigin="anonymous"{{ end }}></script>
+		{{- end }}
+	{{- end }}
+	{{- if and .IsPage (eq .Section "blogs") .Site.Params.comment -}}
+		{{- with resources.Get "js/comments.js" }}
+			{{- $comments := . | js.Build (dict "targetPath" "js/comments.js" "minify" hugo.IsProduction) -}}
+			{{- $comments = $comments | fingerprint -}}
+	<script defer src="{{ $comments.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $comments.Data.Integrity }}" crossorigin="anonymous"{{ end }}></script>
+		{{- end }}
+	{{- end }}
+	{{- with resources.Get "js/search.js" }}
+		{{- $search := . | js.Build (dict "targetPath" "js/search.js" "minify" hugo.IsProduction) -}}
+		{{- $search = $search | fingerprint -}}
+	<script defer src="{{ $search.RelPermalink }}"{{ if hugo.IsProduction }} integrity="{{ $search.Data.Integrity }}" crossorigin="anonymous"{{ end }}></script>
 	{{- end }}
 	{{- if isset .Site.Params "customjs" -}}
 		{{- range .Site.Params.customJS }}<script defer src="{{ $.Site.BaseURL }}{{ . }}"></script>{{- end }}
