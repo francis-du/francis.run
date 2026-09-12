@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Observability | Francis Du</title><link>https://francis.run/tags/observability/</link><atom:link href="https://francis.run/tags/observability/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 12 Sep 2026 05:32:00 +0800</lastBuildDate><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：&lt;strong&gt;数字挺忙，任务不一定真快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我把执行链拆开看了一遍，问题就清楚了。&lt;/p&gt;
+&lt;p&gt;外层 Tool Slot 只表示请求已经准入。CPU、文件 I/O、&lt;code&gt;cargo&lt;/code&gt;、&lt;code&gt;git&lt;/code&gt;、Language Server 还有各自的线程池或队列，外面 32 个槽位全亮，并不代表里面 32 份工作都在向前跑。&lt;/p&gt;
+&lt;p&gt;0.6.2 先把这些资源分开计量和限制。&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp" alt="wcode Project Observatory"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp 960w, https://francis.run/img/wcode/wcode-observatory-full_hu_77a4ca195d4c7462.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="5017"&gt;&lt;/figure&gt;&lt;h2 id="slotscpuio子进程是四件事"&gt;SLOTS、CPU、I/O、子进程是四件事&lt;a class="heading-anchor" href="#slotscpuio%e5%ad%90%e8%bf%9b%e7%a8%8b%e6%98%af%e5%9b%9b%e4%bb%b6%e4%ba%8b" aria-label="章节链接：SLOTS、CPU、I/O、子进程是四件事"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;现在我更愿意把执行路径看成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tool admission
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Foreground CPU budget
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Bounded file I/O pool
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Child process / Git probe queues
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它们有不同的瓶颈。&lt;/p&gt;
+&lt;p&gt;前台 CPU 工作线程会取硬件并行度、8 个线程、内存推导上限和请求并行度的最小值。阻塞线程池上限提高到 64，是为了不让大量独立阻塞请求被隐藏的较小线程上限卡住。&lt;/p&gt;
+&lt;p&gt;独立文件修改走共享、有界的 I/O Pool；固定形式的 Git 状态和差异检查走独立 Probe Queue，不再和重型编译器进程抢同一组名额。&lt;/p&gt;
+&lt;p&gt;默认资源预算下，重型子进程仍然是很小的并发数。因为同时启动 20 个 &lt;code&gt;cargo&lt;/code&gt; 不会 magically 变快，只会把机器打爆。&lt;/p&gt;
+&lt;h2 id="我专门撤回过一个看起来更并行的优化"&gt;我专门撤回过一个“看起来更并行”的优化&lt;a class="heading-anchor" href="#%e6%88%91%e4%b8%93%e9%97%a8%e6%92%a4%e5%9b%9e%e8%bf%87%e4%b8%80%e4%b8%aa%e7%9c%8b%e8%b5%b7%e6%9d%a5%e6%9b%b4%e5%b9%b6%e8%a1%8c%e7%9a%84%e4%bc%98%e5%8c%96" aria-label="章节链接：我专门撤回过一个“看起来更并行”的优化"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这轮有一件事我觉得挺重要：我试过把热读取也放进更宽的线程池，结果本地配对实验更慢。&lt;/p&gt;
+&lt;p&gt;所以撤回了。&lt;/p&gt;
+&lt;p&gt;做 Agent Runtime 很容易有一种冲动：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;线程更多 = 更快
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;队列更深 = 吞吐更高
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;并发数更大 = Agent 更强
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;配对结果不好看就撤回。0.6.2 后面的资源调整也基本按这个标准做：先把不同类型的工作隔开，别靠调大一个统一并发值解决所有问题。&lt;/p&gt;
+&lt;h2 id="32-个命令排队时我还希望-read-能进去"&gt;32 个命令排队时，我还希望 Read 能进去&lt;a class="heading-anchor" href="#32-%e4%b8%aa%e5%91%bd%e4%bb%a4%e6%8e%92%e9%98%9f%e6%97%b6%e6%88%91%e8%bf%98%e5%b8%8c%e6%9c%9b-read-%e8%83%bd%e8%bf%9b%e5%8e%bb" aria-label="章节链接：32 个命令排队时，我还希望 Read 能进去"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;如果所有 Tool Slot 都被执行进程占满，Agent 连 &lt;code&gt;read_file&lt;/code&gt;、状态查询这种轻操作都进不来，系统就会出现另一种死锁感。&lt;/p&gt;
+&lt;p&gt;所以执行进程类工具在拿总 Tool Slot 前，还要先拿一层 Execution Admission。&lt;/p&gt;
+&lt;p&gt;总量是 32 时，执行类请求最多占 28 个槽位，给非执行工具留四个受控余量。单槽位配置则保留一个可用名额，不会把自己完全饿死。&lt;/p&gt;
+&lt;p&gt;它不保证固定延迟，但编译队列再长，&lt;code&gt;read_file&lt;/code&gt; 和状态查询至少还有机会进来。&lt;/p&gt;
+&lt;h2 id="明确的错误位置不应该先全仓搜索"&gt;明确的错误位置，不应该先全仓搜索&lt;a class="heading-anchor" href="#%e6%98%8e%e7%a1%ae%e7%9a%84%e9%94%99%e8%af%af%e4%bd%8d%e7%bd%ae%e4%b8%8d%e5%ba%94%e8%af%a5%e5%85%88%e5%85%a8%e4%bb%93%e6%90%9c%e7%b4%a2" aria-label="章节链接：明确的错误位置，不应该先全仓搜索"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;性能不只在 Scheduler。&lt;/p&gt;
+&lt;p&gt;我调真实任务时发现另一个很浪费的路径：模型已经拿到了这种信息：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;error[E0308] at src/runtime/harness/context_budget.rs:33:9
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;结果 &lt;code&gt;agent_context&lt;/code&gt; 还先做一遍广域符号检索，再回来读这个明确位置。&lt;/p&gt;
+&lt;p&gt;这顺序反了。&lt;/p&gt;
+&lt;p&gt;现在带文件和行号的诊断会先经过 Workspace 保护解析，然后直接保留对应源码原文、行范围和 SHA 编辑前置条件。简单位置查询可以暂缓 Repo Graph 扩展；调用方、Impact、架构或显式 Scope 查询仍然走深入路径。&lt;/p&gt;
+&lt;p&gt;缺失位置也不会先把一堆无关文件索引起来再告诉我“没找到”。&lt;/p&gt;
+&lt;p&gt;这类任务现在先吃掉已有的精确位置，只有问题真的需要跨文件关系时才继续扩图。&lt;/p&gt;
+&lt;h2 id="同一个冷索引也不应该被重复建-10-次"&gt;同一个冷索引也不应该被重复建 10 次&lt;a class="heading-anchor" href="#%e5%90%8c%e4%b8%80%e4%b8%aa%e5%86%b7%e7%b4%a2%e5%bc%95%e4%b9%9f%e4%b8%8d%e5%ba%94%e8%af%a5%e8%a2%ab%e9%87%8d%e5%a4%8d%e5%bb%ba-10-%e6%ac%a1" aria-label="章节链接：同一个冷索引也不应该被重复建 10 次"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;并发 Agent 很容易同时问同一个文件。&lt;/p&gt;
+&lt;p&gt;以前多个冷查询可能一起发现“没有索引”，然后各自开始建。&lt;/p&gt;
+&lt;p&gt;现在同一 Workspace、同一文件的冷查询会共享正在进行的索引构建。不同文件仍然可以独立执行；失效和版本变化会阻止旧构建结果晚到后重新污染缓存。&lt;/p&gt;
+&lt;p&gt;这里没有做增量 Tree-sitter，也没有引入全仓快照，只是把同一份冷索引的重复构建合掉。&lt;/p&gt;
+&lt;h2 id="symbol_context-开始对自己返回的版本负责"&gt;&lt;code&gt;symbol_context&lt;/code&gt; 开始对自己返回的版本负责&lt;a class="heading-anchor" href="#symbol_context-%e5%bc%80%e5%a7%8b%e5%af%b9%e8%87%aa%e5%b7%b1%e8%bf%94%e5%9b%9e%e7%9a%84%e7%89%88%e6%9c%ac%e8%b4%9f%e8%b4%a3" aria-label="章节链接：symbol_context 开始对自己返回的版本负责"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;另一个一致性问题是：索引说 Symbol 在 A，但真正读正文时文件已经变了。&lt;/p&gt;
+&lt;p&gt;如果这时还把旧签名和新正文拼成一个结果，Agent 会拿到一个内部自相矛盾的 Context。&lt;/p&gt;
+&lt;p&gt;现在 &lt;code&gt;symbol_context&lt;/code&gt; 会核对符号信息和正文是不是同一文件版本。发现旧索引最多重新获取一次；文件持续变化、拿不到稳定版本时，就明确失败。&lt;/p&gt;
+&lt;p&gt;我宁愿返回“现在无法稳定读取”，也不想返回一个看起来完整的 Frankenstein Context。&lt;/p&gt;
+&lt;h2 id="验证计划不能静默只跑前八项"&gt;验证计划不能静默只跑前八项&lt;a class="heading-anchor" href="#%e9%aa%8c%e8%af%81%e8%ae%a1%e5%88%92%e4%b8%8d%e8%83%bd%e9%9d%99%e9%bb%98%e5%8f%aa%e8%b7%91%e5%89%8d%e5%85%ab%e9%a1%b9" aria-label="章节链接：验证计划不能静默只跑前八项"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;0.6.2 还修了一个更严重的问题。&lt;/p&gt;
+&lt;p&gt;混合语言仓库里，完整验证可能推导出十几项检查。旧路径有一处会静默只取前八项。&lt;/p&gt;
+&lt;p&gt;这类优化最危险的地方不是少跑了几个命令，而是上层可能还把已经执行的前缀描述成“完整验证”。&lt;/p&gt;
+&lt;p&gt;现在先构造完整计划，整体上限是 32。超限就&lt;strong&gt;在派发前失败&lt;/strong&gt;，明确告诉调用者没有执行检查，而不是偷偷截断。&lt;/p&gt;
+&lt;p&gt;验证历史也会在一次请求里共享代码 Revision 和 Evidence Snapshot，减少重复扫描；结果要同时匹配 Code 和 Design State 才能展示为当前有效。&lt;/p&gt;
+&lt;p&gt;窄范围检查不能把宽范围失败抹掉，时间戳冲突按失败关闭。Evidence 缺失或扫描截断，也不能被解释成通过。&lt;/p&gt;
+&lt;h2 id="verify_project-可以断线以后再查"&gt;&lt;code&gt;verify_project&lt;/code&gt; 可以断线以后再查&lt;a class="heading-anchor" href="#verify_project-%e5%8f%af%e4%bb%a5%e6%96%ad%e7%ba%bf%e4%bb%a5%e5%90%8e%e5%86%8d%e6%9f%a5" aria-label="章节链接：verify_project 可以断线以后再查"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;项目验证现在还复用了 MCP Tasks 扩展。&lt;/p&gt;
+&lt;p&gt;客户端支持 Tasks 时，服务端可以先持久化任务并返回 &lt;code&gt;taskId&lt;/code&gt;，验证继续由 Runtime 管理。客户端断线后，可以拿同一个 ID 查询状态。&lt;/p&gt;
+&lt;p&gt;这里我刻意没有加一个模型可见的 &lt;code&gt;async=true&lt;/code&gt; 参数，也没有把断线等同于自动重试。&lt;/p&gt;
+&lt;p&gt;因为对带副作用的系统来说，最危险的一句话就是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;没收到响应，那再执行一遍吧。
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;完成状态只表示底层工具返回了结果，不等于检查通过；调用者还必须读真正的 &lt;code&gt;passed&lt;/code&gt; / error 状态。&lt;/p&gt;
+&lt;h2 id="配置终于开始收敛"&gt;配置终于开始收敛&lt;a class="heading-anchor" href="#%e9%85%8d%e7%bd%ae%e7%bb%88%e4%ba%8e%e5%bc%80%e5%a7%8b%e6%94%b6%e6%95%9b" aria-label="章节链接：配置终于开始收敛"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode 可调参数越来越多以后，另一个问题也很明显：高级参数是给调试和特殊机器用的，不应该逼所有人启动时手写一排数字。&lt;/p&gt;
+&lt;p&gt;所以现在有三档常用性能配置：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;balanced
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fast
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;light
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也可以先预览：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode setup --performance fast --dry-run
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --show-config
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;真的执行 Setup 才会保存审核过的启动选项。&lt;/p&gt;
+&lt;p&gt;同时新增了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all setup
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all --json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它直接从真实 CLI Parser 生成完整命令和参数目录，包括隐藏高级选项、短参数、别名、默认值和枚举值。&lt;/p&gt;
+&lt;p&gt;普通 &lt;code&gt;--help&lt;/code&gt; 继续保持短。我不想为了“可发现性”把日常帮助页重新塞成说明书。&lt;/p&gt;
+&lt;h2 id="webui-首屏也一起收了"&gt;WebUI 首屏也一起收了&lt;a class="heading-anchor" href="#webui-%e9%a6%96%e5%b1%8f%e4%b9%9f%e4%b8%80%e8%b5%b7%e6%94%b6%e4%ba%86" aria-label="章节链接：WebUI 首屏也一起收了"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Observatory 这轮主要改首屏信息层级。&lt;/p&gt;
+&lt;p&gt;现在执行活动、待批准请求、工作树变更、当前有效验证结果分开显示。Architecture 入口改成可搜索组件卡片和详情 Inspector，Design / Implementation / Overlay 图仍然保留，但不再要求用户先读一张很大的图才能知道项目现在发生了什么。&lt;/p&gt;
+&lt;p&gt;活动刷新也和慢项目刷新拆开。页面隐藏时停止轮询；共享进程资源和当前项目任务分开标记；“没有采样”不再画成“0”。&lt;/p&gt;
+&lt;p&gt;我主要想避免一件事：没有数据时别画成一个看起来很健康的数字。&lt;/p&gt;
+&lt;h2 id="做完以后我给自己留了几条检查项"&gt;做完以后，我给自己留了几条检查项&lt;a class="heading-anchor" href="#%e5%81%9a%e5%ae%8c%e4%bb%a5%e5%90%8e%e6%88%91%e7%bb%99%e8%87%aa%e5%b7%b1%e7%95%99%e4%ba%86%e5%87%a0%e6%9d%a1%e6%a3%80%e6%9f%a5%e9%a1%b9" aria-label="章节链接：做完以后，我给自己留了几条检查项"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;别再用 Slot 数代替吞吐；拿到文件和行号就先读那里；Verification mapped 和 executed 分开；Task completed 和 checks passed 分开；断线不自动重放；没有采样就显示 unknown。&lt;/p&gt;
+&lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item></channel></rss>

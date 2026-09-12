@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Security | Francis Du</title><link>https://francis.run/tags/security/</link><atom:link href="https://francis.run/tags/security/index.xml" rel="self" type="application/rss+xml"/><description>Security</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 23:35:00 +0800</lastBuildDate><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Security | Francis Du</title><link>https://francis.run/tags/security/</link><atom:link href="https://francis.run/tags/security/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Wed, 26 Aug 2026 23:35:00 +0800</lastBuildDate><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
 &lt;p&gt;但实际用久了以后，我也越来越不喜欢另一个极端：只要一个工具不在默认列表里，就永久拒绝；真要用的时候，只能重启进程加一个很宽的 Trust Flag。&lt;/p&gt;
 &lt;p&gt;这两个选择都太粗：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;完全不许
@@ -9,8 +9,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;模型可以提出权限请求，但决定权必须留在用户手里。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
-&lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;/h2&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp" alt="wcode 授权与访问控制界面"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp 960w, https://francis.run/img/wcode/wcode-access-management_hu_e5f2de5679dfbc7e.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;a class="heading-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88-yn-%e4%bb%a5%e5%89%8d%e7%9c%8b%e8%b5%b7%e6%9d%a5%e6%b2%a1%e7%94%a8" aria-label="章节链接：为什么 Y/N 以前看起来没用"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;TUI 其实早就有 &lt;code&gt;Y/N&lt;/code&gt; 的 Key Handler。&lt;/p&gt;
 &lt;p&gt;问题是 UI 只在 Footer 里塞了一个 Pending 数字。&lt;/p&gt;
 &lt;p&gt;用户看不到：&lt;/p&gt;
@@ -33,7 +32,7 @@
 &lt;p&gt;它只批准当前选中的 Request。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;N&lt;/code&gt; 也一样。&lt;/p&gt;
 &lt;p&gt;当多个 Agent / Tool 同时工作时，这个区别很重要。&lt;/p&gt;
-&lt;h2 id="命令授权不再被默认-catalog-封死"&gt;命令授权不再被默认 Catalog 封死&lt;/h2&gt;
+&lt;h2 id="命令授权不再被默认-catalog-封死"&gt;命令授权不再被默认 Catalog 封死&lt;a class="heading-anchor" href="#%e5%91%bd%e4%bb%a4%e6%8e%88%e6%9d%83%e4%b8%8d%e5%86%8d%e8%a2%ab%e9%bb%98%e8%ae%a4-catalog-%e5%b0%81%e6%ad%bb" aria-label="章节链接：命令授权不再被默认 Catalog 封死"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最开始 wcode 有一份固定 Command Catalog：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cargo
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rustc
@@ -74,7 +73,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这不是让模型自己扩权。&lt;/p&gt;
 &lt;p&gt;第一次请求仍然失败。&lt;/p&gt;
 &lt;p&gt;真正改变权限的是本地用户的批准动作。&lt;/p&gt;
-&lt;h2 id="为什么我还是不让它授权-bash"&gt;为什么我还是不让它授权 &lt;code&gt;bash&lt;/code&gt;&lt;/h2&gt;
+&lt;h2 id="为什么我还是不让它授权-bash"&gt;为什么我还是不让它授权 &lt;code&gt;bash&lt;/code&gt;&lt;a class="heading-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e8%bf%98%e6%98%af%e4%b8%8d%e8%ae%a9%e5%ae%83%e6%8e%88%e6%9d%83-bash" aria-label="章节链接：为什么我还是不让它授权 bash"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;“用户可以授权模型请求的命令”不等于“所有字符串都应该变成可授权请求”。&lt;/p&gt;
 &lt;p&gt;wcode 仍然有一层不能被 UI 点掉的硬边界。&lt;/p&gt;
 &lt;p&gt;Program 必须是合法的裸可执行程序名：&lt;/p&gt;
@@ -101,7 +100,7 @@
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;shell -c arbitrary_string
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果允许模型拿到 Shell，前面的 Argument Inspection、Protected Path Check 和 No-shell 边界都会变得很容易绕。&lt;/p&gt;
 &lt;p&gt;我宁愿让用户授权更多具体 Program，也不想把整个模型重新变成远程 Terminal。&lt;/p&gt;
-&lt;h2 id="commandaccess-和-riskyexecution-是两层"&gt;&lt;code&gt;CommandAccess&lt;/code&gt; 和 &lt;code&gt;RiskyExecution&lt;/code&gt; 是两层&lt;/h2&gt;
+&lt;h2 id="commandaccess-和-riskyexecution-是两层"&gt;&lt;code&gt;CommandAccess&lt;/code&gt; 和 &lt;code&gt;RiskyExecution&lt;/code&gt; 是两层&lt;a class="heading-anchor" href="#commandaccess-%e5%92%8c-riskyexecution-%e6%98%af%e4%b8%a4%e5%b1%82" aria-label="章节链接：CommandAccess 和 RiskyExecution 是两层"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;这个地方容易混。&lt;/p&gt;
 &lt;p&gt;假设模型第一次想跑：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;hugo --minify
@@ -127,22 +126,22 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Risky Operation Trust
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Execute
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="现在有四类-authorization"&gt;现在有四类 Authorization&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="现在有四类-authorization"&gt;现在有四类 Authorization&lt;a class="heading-anchor" href="#%e7%8e%b0%e5%9c%a8%e6%9c%89%e5%9b%9b%e7%b1%bb-authorization" aria-label="章节链接：现在有四类 Authorization"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;当前我把它们分成四种。&lt;/p&gt;
-&lt;h3 id="1-commandaccess"&gt;1. CommandAccess&lt;/h3&gt;
+&lt;h3 id="1-commandaccess"&gt;1. CommandAccess&lt;a class="heading-anchor" href="#1-commandaccess" aria-label="章节链接：1. CommandAccess"&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;模型请求当前 Workspace 尚未授权的 Program。&lt;/p&gt;
 &lt;p&gt;批准以后，这个 Program 加进当前 Workspace 的运行时 allowlist。&lt;/p&gt;
-&lt;h3 id="2-riskyexecution"&gt;2. RiskyExecution&lt;/h3&gt;
+&lt;h3 id="2-riskyexecution"&gt;2. RiskyExecution&lt;a class="heading-anchor" href="#2-riskyexecution" aria-label="章节链接：2. RiskyExecution"&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;Program 本身允许，但这组参数可能加载或执行仓库控制的代码、配置或插件。&lt;/p&gt;
 &lt;p&gt;批准的是精确 Operation Fingerprint 的 Session Grant。&lt;/p&gt;
-&lt;h3 id="3-runtimeexecutor"&gt;3. RuntimeExecutor&lt;/h3&gt;
+&lt;h3 id="3-runtimeexecutor"&gt;3. RuntimeExecutor&lt;a class="heading-anchor" href="#3-runtimeexecutor" aria-label="章节链接：3. RuntimeExecutor"&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;Property / Mutation / Fuzz / Runtime Canary 等 Verification Executor 可能来自仓库配置。&lt;/p&gt;
 &lt;p&gt;它们是另一条显式 Trust Boundary。&lt;/p&gt;
-&lt;h3 id="4-destructivedelete"&gt;4. DestructiveDelete&lt;/h3&gt;
+&lt;h3 id="4-destructivedelete"&gt;4. DestructiveDelete&lt;a class="heading-anchor" href="#4-destructivedelete" aria-label="章节链接：4. DestructiveDelete"&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;这是最严格的。&lt;/p&gt;
 &lt;p&gt;只能删除一个普通文件或空目录，文件要求当前 SHA，批准是 exact one-shot，用一次就失效。&lt;/p&gt;
 &lt;p&gt;我不想让一个“同意删除”自动变成当前 Session 后续所有 Delete 都合法。&lt;/p&gt;
-&lt;h2 id="webui-也必须能处理同一批-request"&gt;WebUI 也必须能处理同一批 Request&lt;/h2&gt;
+&lt;h2 id="webui-也必须能处理同一批-request"&gt;WebUI 也必须能处理同一批 Request&lt;a class="heading-anchor" href="#webui-%e4%b9%9f%e5%bf%85%e9%a1%bb%e8%83%bd%e5%a4%84%e7%90%86%e5%90%8c%e4%b8%80%e6%89%b9-request" aria-label="章节链接：WebUI 也必须能处理同一批 Request"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;只在 TUI 做授权有个现实问题：我可能正盯着浏览器里的 Project Observatory，而不是 Terminal。&lt;/p&gt;
 &lt;p&gt;所以现在 WebUI 的 &lt;code&gt;Manage access&lt;/code&gt; 里有三块：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Authorized projects
@@ -164,7 +163,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; same runtime authorization state
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;WebUI 的这些 API 仍然需要原有的 Local UI Token 和 Origin Validation。&lt;/p&gt;
 &lt;p&gt;不能因为它是“管理页面”，就变成一个没有保护的本地管理接口。&lt;/p&gt;
-&lt;h2 id="多-workspace-时授权必须跟着项目走"&gt;多 Workspace 时，授权必须跟着项目走&lt;/h2&gt;
+&lt;h2 id="多-workspace-时授权必须跟着项目走"&gt;多 Workspace 时，授权必须跟着项目走&lt;a class="heading-anchor" href="#%e5%a4%9a-workspace-%e6%97%b6%e6%8e%88%e6%9d%83%e5%bf%85%e9%a1%bb%e8%b7%9f%e7%9d%80%e9%a1%b9%e7%9b%ae%e8%b5%b0" aria-label="章节链接：多 Workspace 时，授权必须跟着项目走"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我还顺手修了一个容易忽略的问题。&lt;/p&gt;
 &lt;p&gt;如果同一个进程同时暴露：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;backend
@@ -175,7 +174,7 @@
 &lt;p&gt;所以现在授权 Request 会带精确 Workspace ID。&lt;/p&gt;
 &lt;p&gt;批准 &lt;code&gt;website&lt;/code&gt; 的 &lt;code&gt;hugo&lt;/code&gt;，不会顺手让 &lt;code&gt;backend&lt;/code&gt; 也能跑 &lt;code&gt;hugo&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;这是我想要的权限粒度。&lt;/p&gt;
-&lt;h2 id="授权以后仍然不是-os-sandbox"&gt;授权以后仍然不是 OS Sandbox&lt;/h2&gt;
+&lt;h2 id="授权以后仍然不是-os-sandbox"&gt;授权以后仍然不是 OS Sandbox&lt;a class="heading-anchor" href="#%e6%8e%88%e6%9d%83%e4%bb%a5%e5%90%8e%e4%bb%8d%e7%84%b6%e4%b8%8d%e6%98%af-os-sandbox" aria-label="章节链接：授权以后仍然不是 OS Sandbox"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最后还是要强调这一点。&lt;/p&gt;
 &lt;p&gt;这些授权机制解决的是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;谁可以请求什么
@@ -207,8 +206,7 @@
 &lt;p&gt;是 Workspace。&lt;/p&gt;
 &lt;p&gt;因为把模型接到本地仓库以后，最危险的从来不是它看错一个函数，而是 Tool Runtime 的边界没守住。&lt;/p&gt;
 &lt;p&gt;上层现在已经有 Design State、Graph、Reconciliation、Verification，复杂了很多。但越往上加东西，我越不想动底下这几条线。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制界面"&gt;&lt;/p&gt;
-&lt;h2 id="root-不是字符串前缀"&gt;Root 不是字符串前缀&lt;/h2&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp" alt="wcode 授权与访问控制界面"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp 960w, https://francis.run/img/wcode/wcode-access-management_hu_e5f2de5679dfbc7e.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;h2 id="root-不是字符串前缀"&gt;Root 不是字符串前缀&lt;a class="heading-anchor" href="#root-%e4%b8%8d%e6%98%af%e5%ad%97%e7%ac%a6%e4%b8%b2%e5%89%8d%e7%bc%80" aria-label="章节链接：Root 不是字符串前缀"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最偷懒的 Workspace 隔离大概是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;path.starts_with(workspace_root)
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这当然不够。&lt;/p&gt;
@@ -217,14 +215,14 @@
 &lt;p&gt;Unix 上会记 Device / Inode，所以服务启动以后，如果同一个路径被换成了另一个目录，字符串虽然没变，身份已经变了，也会停下来。&lt;/p&gt;
 &lt;p&gt;模型传进来的路径只能是相对路径。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;..&lt;/code&gt;、绝对路径、Windows Prefix、受保护的凭据和 VCS 路径，都是 Workspace 层直接挡，不靠 Agent 自觉。&lt;/p&gt;
-&lt;h2 id="symlink-是我早期低估过的坑"&gt;Symlink 是我早期低估过的坑&lt;/h2&gt;
+&lt;h2 id="symlink-是我早期低估过的坑"&gt;Symlink 是我早期低估过的坑&lt;a class="heading-anchor" href="#symlink-%e6%98%af%e6%88%91%e6%97%a9%e6%9c%9f%e4%bd%8e%e4%bc%b0%e8%bf%87%e7%9a%84%e5%9d%91" aria-label="章节链接：Symlink 是我早期低估过的坑"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;只拦 &lt;code&gt;..&lt;/code&gt; 看起来像是做了 Path Traversal 防护，实际上一个 Symlink 就能把你带出去。&lt;/p&gt;
 &lt;p&gt;所以 Workspace Path 的 Component 里有 Symlink，直接拒绝。&lt;/p&gt;
 &lt;p&gt;已有文件和新文件还不能完全用同一种检查方式。&lt;/p&gt;
 &lt;p&gt;已有文件能解析最终目标；新文件的叶子还不存在，只能先确认父目录安全，再创建。&lt;/p&gt;
 &lt;p&gt;Unix 上写 Hard Link 也有限制，因为同一个 inode 可能从另一个名字被修改。&lt;/p&gt;
 &lt;p&gt;这些逻辑写起来比一个 &lt;code&gt;canonicalize()&lt;/code&gt; 麻烦很多，但这是我不太愿意“简化”的地方。&lt;/p&gt;
-&lt;h2 id="sha-是防-agent-和我互相踩代码"&gt;SHA 是防 Agent 和我互相踩代码&lt;/h2&gt;
+&lt;h2 id="sha-是防-agent-和我互相踩代码"&gt;SHA 是防 Agent 和我互相踩代码&lt;a class="heading-anchor" href="#sha-%e6%98%af%e9%98%b2-agent-%e5%92%8c%e6%88%91%e4%ba%92%e7%9b%b8%e8%b8%a9%e4%bb%a3%e7%a0%81" aria-label="章节链接：SHA 是防 Agent 和我互相踩代码"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;文件读出来以后，wcode 会给当前 SHA-256。&lt;/p&gt;
 &lt;p&gt;后面修改已有文件，必须把这个 SHA 带回来。&lt;/p&gt;
 &lt;p&gt;这个机制最常见的用途不是防攻击，而是防一个很普通的并发场景：Agent 读了版本 A，在它思考时我手动改成了版本 B，它最后还拿 A 的上下文回来写。&lt;/p&gt;
@@ -232,7 +230,7 @@
 &lt;p&gt;真正提交写入前还会拿锁、重新解析路径、重新读内容、再校一次 Hash。&lt;/p&gt;
 &lt;p&gt;最后用同目录临时文件做原子替换，而不是直接 &lt;code&gt;truncate&lt;/code&gt; 原文件。&lt;/p&gt;
 &lt;p&gt;这层我实际遇到过几次救命的情况，所以一直保留得很死。&lt;/p&gt;
-&lt;h2 id="delete-后来加了但故意做得很烦"&gt;Delete 后来加了，但故意做得很烦&lt;/h2&gt;
+&lt;h2 id="delete-后来加了但故意做得很烦"&gt;Delete 后来加了，但故意做得很烦&lt;a class="heading-anchor" href="#delete-%e5%90%8e%e6%9d%a5%e5%8a%a0%e4%ba%86%e4%bd%86%e6%95%85%e6%84%8f%e5%81%9a%e5%be%97%e5%be%88%e7%83%a6" aria-label="章节链接：Delete 后来加了，但故意做得很烦"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;第一版 wcode 干脆没有 Delete Tool。&lt;/p&gt;
 &lt;p&gt;后来实际 Coding Workflow 里确实有删除文件的需要，所以最终还是加了 &lt;code&gt;delete_path&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;但它不是普通 Write。&lt;/p&gt;
@@ -242,7 +240,7 @@
 &lt;p&gt;这会让“帮我顺便清理十几个目录”没那么丝滑。&lt;/p&gt;
 &lt;p&gt;我接受这个麻烦。&lt;/p&gt;
 &lt;p&gt;恢复一个误删目录比多确认几次麻烦得多。&lt;/p&gt;
-&lt;h2 id="run_command-还是不经过-shell"&gt;&lt;code&gt;run_command&lt;/code&gt; 还是不经过 Shell&lt;/h2&gt;
+&lt;h2 id="run_command-还是不经过-shell"&gt;&lt;code&gt;run_command&lt;/code&gt; 还是不经过 Shell&lt;a class="heading-anchor" href="#run_command-%e8%bf%98%e6%98%af%e4%b8%8d%e7%bb%8f%e8%bf%87-shell" aria-label="章节链接：run_command 还是不经过 Shell"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;这一条从第一版到现在没变。&lt;/p&gt;
 &lt;p&gt;命令执行是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;program + args[]
@@ -260,7 +258,7 @@
 &lt;p&gt;Git Mutation 会被挡，敏感环境变量会清掉，输出有限制，进程有 Timeout。&lt;/p&gt;
 &lt;p&gt;我一直不认同“既然模型已经能写代码，不如直接给它 Terminal”这种推导。&lt;/p&gt;
 &lt;p&gt;写代码能力和拿到一个继承了我所有环境的 Shell，不是一个权限级别。&lt;/p&gt;
-&lt;h2 id="高风险执行现在可以按操作授权"&gt;高风险执行现在可以按操作授权&lt;/h2&gt;
+&lt;h2 id="高风险执行现在可以按操作授权"&gt;高风险执行现在可以按操作授权&lt;a class="heading-anchor" href="#%e9%ab%98%e9%a3%8e%e9%99%a9%e6%89%a7%e8%a1%8c%e7%8e%b0%e5%9c%a8%e5%8f%af%e4%bb%a5%e6%8c%89%e6%93%8d%e4%bd%9c%e6%8e%88%e6%9d%83" aria-label="章节链接：高风险执行现在可以按操作授权"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;这一块和第一版相比变过。&lt;/p&gt;
 &lt;p&gt;以前要跑 Language Server、Runtime Executor 这类 repository-aware 操作，基本就是启动时加：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;--allow-risky-exec
@@ -271,14 +269,14 @@
 &lt;p&gt;这和 &lt;code&gt;CommandAccess&lt;/code&gt; 是两层：前者决定“这个 Program 能不能在这个 Workspace 出现”，后者继续决定“当前这组 repository-aware 参数是否值得信任”。&lt;/p&gt;
 &lt;p&gt;这不是 OS Sandbox。&lt;/p&gt;
 &lt;p&gt;只是把“你信不信这个仓库里的代码会被执行”从一个粗开关拆得更细一点。&lt;/p&gt;
-&lt;h2 id="并发写入也不是谁先抢到锁谁赢"&gt;并发写入也不是谁先抢到锁谁赢&lt;/h2&gt;
+&lt;h2 id="并发写入也不是谁先抢到锁谁赢"&gt;并发写入也不是谁先抢到锁谁赢&lt;a class="heading-anchor" href="#%e5%b9%b6%e5%8f%91%e5%86%99%e5%85%a5%e4%b9%9f%e4%b8%8d%e6%98%af%e8%b0%81%e5%85%88%e6%8a%a2%e5%88%b0%e9%94%81%e8%b0%81%e8%b5%a2" aria-label="章节链接：并发写入也不是谁先抢到锁谁赢"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;现在 &lt;code&gt;parallel_tools&lt;/code&gt; 能处理一部分独立 Workspace Write，这又多了一个安全问题：两个任务到底能不能同时跑。&lt;/p&gt;
 &lt;p&gt;Scheduler 会先建立 Path Resource Model。&lt;/p&gt;
 &lt;p&gt;如果两个操作碰同一个文件，或者 Move / Delete / Create 之间有父子路径依赖，就排序，不硬并发。&lt;/p&gt;
 &lt;p&gt;同文件 &lt;code&gt;apply_edits&lt;/code&gt; 只有 SHA 一样、Edit Range 不冲突时才会合并成一次原子提交。&lt;/p&gt;
 &lt;p&gt;我不想让“支持并发”最后变成“把 race condition 交给文件锁处理”。&lt;/p&gt;
 &lt;p&gt;能不能并发应该在执行前就尽量说清楚。&lt;/p&gt;
-&lt;h2 id="security-不能写在-prompt-里"&gt;Security 不能写在 Prompt 里&lt;/h2&gt;
+&lt;h2 id="security-不能写在-prompt-里"&gt;Security 不能写在 Prompt 里&lt;a class="heading-anchor" href="#security-%e4%b8%8d%e8%83%bd%e5%86%99%e5%9c%a8-prompt-%e9%87%8c" aria-label="章节链接：Security 不能写在 Prompt 里"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我还是会在 Skill 和 Agent Instructions 里写：不要逃出 Workspace，不要绕过授权，不要自己扩大 risky execution。&lt;/p&gt;
 &lt;p&gt;但这些只能算工作习惯。&lt;/p&gt;
 &lt;p&gt;真正的安全边界必须在 Tool Runtime。&lt;/p&gt;
@@ -298,11 +296,10 @@
 &lt;p&gt;但我并不想再造一个 Agent。&lt;/p&gt;
 &lt;p&gt;模型、上下文管理和 Agent Loop，Web 端都已经有了。我缺的只是一根管子，让它能在我允许的范围内读写本地代码。于是有了 &lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt;：一个用 Rust 写的 Remote MCP Bridge。&lt;/p&gt;
 &lt;p&gt;在项目目录里运行一个二进制，它会启动本地 MCP Server、OAuth、HTTPS Tunnel、配置页和终端监控。然后把生成的 &lt;code&gt;/mcp&lt;/code&gt; 地址加到 Grok、Claude、ChatGPT、Mistral 或其他支持 Remote MCP 的客户端里，就可以直接聊本地代码。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui.png" alt="wcode 终端实时面板"&gt;&lt;/p&gt;
-&lt;p&gt;还有一个很现实的用法：&lt;strong&gt;薅 Web 端。&lt;/strong&gt;&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp" alt="wcode 终端实时面板"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp 960w, https://francis.run/img/wcode/wcode-tui_hu_6437a17a51f06ca3.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2146"&gt;&lt;/figure&gt;&lt;p&gt;还有一个很现实的用法：&lt;strong&gt;薅 Web 端。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;如果一个 Web 产品允许在对话里接入自定义 MCP，那么模型继续用 Web 端提供的能力，代码搜索、读取、修改和验证则由本机的 wcode 完成。这样不需要为了 Code Agent 再配一套模型 API Key，也没有额外的按量 API Token 账单。&lt;/p&gt;
 &lt;p&gt;这不是绕过平台限制。模型回复仍然受 Web 端自己的套餐、消息数、Credits、速率或上下文规则约束。准确地说，wcode 省掉的是“为了让 AI 访问本地代码，再买一份 API Token”的成本。&lt;/p&gt;
-&lt;h2 id="wcode-只做桥接"&gt;wcode 只做桥接&lt;/h2&gt;
+&lt;h2 id="wcode-只做桥接"&gt;wcode 只做桥接&lt;a class="heading-anchor" href="#wcode-%e5%8f%aa%e5%81%9a%e6%a1%a5%e6%8e%a5" aria-label="章节链接：wcode 只做桥接"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我一开始就给它定了边界：不负责选模型，不负责实现 Agent Loop，也不保存聊天记录。它只把 MCP 请求转换成受控的本地代码操作。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Web AI / Coding Agent
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
@@ -329,7 +326,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; axum::serve(listener, app).&lt;span style="color:#00f"&gt;await&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;});
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;本地 Server 先启动，公网 Tunnel 后启动。这样即使 Cloudflare DNS 或 TLS 还在预热，本地服务和公网问题也不会搅在一起。&lt;/p&gt;
-&lt;h2 id="一次-mcp-请求怎么进来"&gt;一次 MCP 请求怎么进来&lt;/h2&gt;
+&lt;h2 id="一次-mcp-请求怎么进来"&gt;一次 MCP 请求怎么进来&lt;a class="heading-anchor" href="#%e4%b8%80%e6%ac%a1-mcp-%e8%af%b7%e6%b1%82%e6%80%8e%e4%b9%88%e8%bf%9b%e6%9d%a5" aria-label="章节链接：一次 MCP 请求怎么进来"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;wcode 的 &lt;code&gt;/mcp&lt;/code&gt; 不是拿到 URL 就能调用。一个请求真正进入工具层之前，要依次过四关：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Origin 是否匹配
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
@@ -343,7 +340,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;MCP 生态还在快速变化，各个客户端升级并不同步。所以 wcode 里保留了两条路径：新协议走无状态 POST，老客户端仍然可以通过 &lt;code&gt;initialize&lt;/code&gt; 握手连接。未知版本会明确报错并返回支持的版本，不会悄悄猜一个版本继续跑。&lt;/p&gt;
 &lt;p&gt;如果 HTTP 请求里带了 &lt;code&gt;Origin&lt;/code&gt;，wcode 会检查 Scheme、Host 和有效端口是否与公开 MCP 地址一致，同时拒绝额外的 Path、Query 和 Fragment。这不是普通的 CORS 装饰，主要是为了降低本地 HTTP Transport 被 DNS Rebinding 利用的风险。&lt;/p&gt;
 &lt;p&gt;新协议的请求还会交叉检查 &lt;code&gt;Mcp-Method&lt;/code&gt; Header 和 JSON-RPC 的 &lt;code&gt;method&lt;/code&gt;。调用工具时，&lt;code&gt;Mcp-Name&lt;/code&gt; 也必须和 &lt;code&gt;params.name&lt;/code&gt; 对得上。协议边界宁愿多拒绝一次，也不应该模糊地接受两个互相矛盾的路由信息。&lt;/p&gt;
-&lt;h2 id="oauth-为什么放在本地"&gt;OAuth 为什么放在本地&lt;/h2&gt;
+&lt;h2 id="oauth-为什么放在本地"&gt;OAuth 为什么放在本地&lt;a class="heading-anchor" href="#oauth-%e4%b8%ba%e4%bb%80%e4%b9%88%e6%94%be%e5%9c%a8%e6%9c%ac%e5%9c%b0" aria-label="章节链接：OAuth 为什么放在本地"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Grok、Claude 这类云端产品访问不到 &lt;code&gt;127.0.0.1&lt;/code&gt;，所以 wcode 默认会用 Cloudflare Quick Tunnel 创建临时 HTTPS 地址。但 Tunnel 只解决网络可达性，不负责授权。&lt;/p&gt;
 &lt;p&gt;第一次访问 &lt;code&gt;/mcp&lt;/code&gt;，客户端会得到 &lt;code&gt;401&lt;/code&gt; 和 Protected Resource Metadata 地址：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-http" data-lang="http"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;&lt;span style="color:#00f"&gt;HTTP&lt;/span&gt;/1.1 401 Unauthorized
@@ -360,10 +357,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └─ Bearer + tools/call ───────►│ │
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;授权页还要输入终端显示的六位验证码。只拿到临时公网 URL 的人，不能直接替你授权。Authorization Code 是单次、短时的，Refresh Token 会轮换，Redirect URI 只接受 HTTPS 或受约束的 Loopback 地址。&lt;/p&gt;
 &lt;p&gt;MCP 新版更推荐 Client ID Metadata Document，但我没有默认抓取客户端随便给出的 Metadata URL。自动化是多了一点，同时也新开了一个出站网络、SSRF 和 DNS Rebinding 的口子。在没有完整处理这个信任边界之前，我更愿意保留 DCR 兼容路径。&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-setup-hub.png" alt="wcode Setup Hub"&gt;&lt;/p&gt;
-&lt;p&gt;授权面板把项目、命令白名单和精确仓库操作的授权放在本地显式管理，模型不能批准自己的请求：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management.png" alt="wcode 授权与访问控制"&gt;&lt;/p&gt;
-&lt;h2 id="文件沙箱最麻烦的不是-"&gt;文件沙箱最麻烦的不是 &lt;code&gt;../&lt;/code&gt;&lt;/h2&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-setup-hub_hu_dd9c03ed1e405294.webp" alt="wcode Setup Hub"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-setup-hub_hu_dd9c03ed1e405294.webp 960w, https://francis.run/img/wcode/wcode-setup-hub_hu_90866dee58816e01.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;p&gt;授权面板把项目、命令白名单和精确仓库操作的授权放在本地显式管理，模型不能批准自己的请求：&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp" alt="wcode 授权与访问控制"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp 960w, https://francis.run/img/wcode/wcode-access-management_hu_e5f2de5679dfbc7e.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;h2 id="文件沙箱最麻烦的不是-"&gt;文件沙箱最麻烦的不是 &lt;code&gt;../&lt;/code&gt;&lt;a class="heading-anchor" href="#%e6%96%87%e4%bb%b6%e6%b2%99%e7%ae%b1%e6%9c%80%e9%ba%bb%e7%83%a6%e7%9a%84%e4%b8%8d%e6%98%af-" aria-label="章节链接：文件沙箱最麻烦的不是 ../"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最早写 Workspace 层时，我很快发现：检查一下路径里有没有 &lt;code&gt;..&lt;/code&gt;，离“只能访问这个目录”还差得很远。&lt;/p&gt;
 &lt;p&gt;每个工作区在启动时都会先 &lt;code&gt;canonicalize&lt;/code&gt;。文件系统根目录、Home 目录这类范围过大的 Root 默认拒绝；多个工作区如果是父子关系，也默认拒绝。在 Unix 上，wcode 还会记住 Root 的 Device/Inode。&lt;/p&gt;
 &lt;p&gt;每次文件操作之前，Root 都要重新解析并核对身份。如果服务启动后，同一路径被换成了另一个目录，即使字符串完全没变，操作也会中止并要求重启。&lt;/p&gt;
@@ -380,13 +375,13 @@
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;stat before → read → stat after → SHA-256
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ │
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── 不相等就重试 ─┘
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="防止-ai-用旧上下文覆盖新代码"&gt;防止 AI 用旧上下文覆盖新代码&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id="防止-ai-用旧上下文覆盖新代码"&gt;防止 AI 用旧上下文覆盖新代码&lt;a class="heading-anchor" href="#%e9%98%b2%e6%ad%a2-ai-%e7%94%a8%e6%97%a7%e4%b8%8a%e4%b8%8b%e6%96%87%e8%a6%86%e7%9b%96%e6%96%b0%e4%bb%a3%e7%a0%81" aria-label="章节链接：防止 AI 用旧上下文覆盖新代码"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;假设模型读到了版本 A。在它思考的几秒里，我手动改成了版本 B。模型如果还按 A 去替换文本，很容易把我的改动一起覆盖掉。&lt;/p&gt;
 &lt;p&gt;wcode 的写入同时用了三层保护：请求携带读取时的 SHA-256；同一个文件的并发写入使用一把进程内锁；真正拿到锁以后，再重新解析路径、读取文件并检查哈希。&lt;/p&gt;
 &lt;p&gt;写入也不是直接 &lt;code&gt;truncate&lt;/code&gt; 原文件。它会在相同目录创建一个 &lt;code&gt;create_new&lt;/code&gt; 临时文件，写完 &lt;code&gt;sync_all&lt;/code&gt;，继承原权限，再原子替换目标。Unix 走同文件系统的 &lt;code&gt;rename&lt;/code&gt;；Windows 使用带 &lt;code&gt;REPLACE_EXISTING&lt;/code&gt; 和 &lt;code&gt;WRITE_THROUGH&lt;/code&gt; 的系统调用。最后再尽量同步父目录。&lt;/p&gt;
 &lt;p&gt;创建文件是另一条路径。临时文件会以 Create-new 语义落到目标位置；如果另一个任务恰好先创建了同名文件，这次请求失败，不会覆盖它。&lt;/p&gt;
 &lt;p&gt;另外我没有给模型 Delete Tool。大幅缩短现有文件也会被当成破坏性写入，除非用户显式开启 &lt;code&gt;--allow-destructive-writes&lt;/code&gt;。这不保证 AI 永远不犯错，但能把最难恢复的错误挡在默认路径之外。&lt;/p&gt;
-&lt;h2 id="tree-sitter-只承诺语法精度"&gt;Tree-sitter 只承诺语法精度&lt;/h2&gt;
+&lt;h2 id="tree-sitter-只承诺语法精度"&gt;Tree-sitter 只承诺语法精度&lt;a class="heading-anchor" href="#tree-sitter-%e5%8f%aa%e6%89%bf%e8%af%ba%e8%af%ad%e6%b3%95%e7%b2%be%e5%ba%a6" aria-label="章节链接：Tree-sitter 只承诺语法精度"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;如果工具只有全文搜索和 &lt;code&gt;read_file&lt;/code&gt;，模型很容易退化成“把整个文件发给我看看”。上下文浪费大，定位也不精确。&lt;/p&gt;
 &lt;p&gt;wcode 内置 Tree-sitter，提供三个语法级工具：&lt;/p&gt;
 &lt;ul&gt;
@@ -401,7 +396,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &amp;#34;precision&amp;#34;: &lt;span style="color:#a31515"&gt;&amp;#34;syntax&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它能回答哪里定义了函数、语法上出现了哪些调用，但不假装自己做了宏展开、类型推断、重载选择或动态分派。对 Agent 工具来说，明确能力边界比伪造一个很强的答案更重要。&lt;/p&gt;
-&lt;h2 id="并发不是越满越好"&gt;并发不是越满越好&lt;/h2&gt;
+&lt;h2 id="并发不是越满越好"&gt;并发不是越满越好&lt;a class="heading-anchor" href="#%e5%b9%b6%e5%8f%91%e4%b8%8d%e6%98%af%e8%b6%8a%e6%bb%a1%e8%b6%8a%e5%a5%bd" aria-label="章节链接：并发不是越满越好"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;wcode 只有一个全局 Tokio &lt;code&gt;Semaphore&lt;/code&gt;，所有真实工具任务都从这里拿 Permit。默认上限是逻辑 CPU 数的八倍，并 Clamp 到 64–128；也可以通过 &lt;code&gt;-j&lt;/code&gt; 调整，内部硬上限是 256。&lt;/p&gt;
 &lt;p&gt;一条任务只走这几个状态：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;queued → acquire permit → running → completed / failed
@@ -409,13 +404,13 @@
 &lt;p&gt;所以组合工具本身不占父 Permit，每个真正做事的 Child 自己排队。&lt;code&gt;parallel_tools&lt;/code&gt; 只允许 Read/Discovery 操作，最多 128 个子任务；单个结果最多 512 KiB，总响应最多 8 MiB。&lt;/p&gt;
 &lt;p&gt;另一方面，能一次遍历做完的工作没有必要强行并行。&lt;code&gt;search_many&lt;/code&gt; 和 &lt;code&gt;read_files&lt;/code&gt; 会优先做批量操作，减少 MCP Round Trip。互相依赖的编辑保持串行，Cargo Test、Clippy、Build 这类重任务也分阶段执行，避免一起争抢编译缓存。&lt;/p&gt;
 &lt;p&gt;TUI 里的 Slots 和 Peak 就来自这些真实 Permit，不是 UI 模拟出来的繁忙程度。&lt;/p&gt;
-&lt;h2 id="我不想给模型一个远程-shell"&gt;我不想给模型一个远程 Shell&lt;/h2&gt;
+&lt;h2 id="我不想给模型一个远程-shell"&gt;我不想给模型一个远程 Shell&lt;a class="heading-anchor" href="#%e6%88%91%e4%b8%8d%e6%83%b3%e7%bb%99%e6%a8%a1%e5%9e%8b%e4%b8%80%e4%b8%aa%e8%bf%9c%e7%a8%8b-shell" aria-label="章节链接：我不想给模型一个远程 Shell"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;run_command&lt;/code&gt; 接收的是 Program 和 Argument Array，从来不经过 Shell。默认允许面很窄：受限制的 Git/ripgrep 只读操作，以及形状完全匹配的 &lt;code&gt;cargo fmt --check&lt;/code&gt;、&lt;code&gt;cargo check&lt;/code&gt;、&lt;code&gt;cargo check --locked&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;Git Mutation 始终阻止。子进程的 &lt;code&gt;GIT_*&lt;/code&gt; 状态会被清理，交互式 Prompt、Helper、外部 Diff 以及能改变仓库发现范围的配置也会被拒绝。stdout/stderr 有上限，执行有 Timeout，敏感环境变量不会传进去。&lt;/p&gt;
 &lt;p&gt;为什么连 Build 和 Test 也不默认放开？因为 Cargo Build Script、Proc Macro、Makefile、Package Script 和测试代码都由仓库控制。“这是一个测试命令”不代表它安全。&lt;/p&gt;
 &lt;p&gt;项目级验证走 &lt;code&gt;verify_project&lt;/code&gt;。Harness 会先识别 Cargo、Go、Node、Flutter、Make 等项目，再根据 Manifest 和仓库规则推导检查命令。只有通过 Exact-shape Validation 的命令，才会临时进入验证通道。便宜的检查可以重叠，编译重任务按阶段跑，返回给模型的诊断只保留有界尾部。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;--allow-risky-exec&lt;/code&gt; 可以放宽命令策略，但它是一次明确的信任扩张，不是 OS Sandbox。我不希望为了让 Demo 看起来“什么都能跑”，把这个 Flag 默认打开。&lt;/p&gt;
-&lt;h2 id="harness-不是一句-prompt"&gt;Harness 不是一句 Prompt&lt;/h2&gt;
+&lt;h2 id="harness-不是一句-prompt"&gt;Harness 不是一句 Prompt&lt;a class="heading-anchor" href="#harness-%e4%b8%8d%e6%98%af%e4%b8%80%e5%8f%a5-prompt" aria-label="章节链接：Harness 不是一句 Prompt"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;这里单独说一下 Harness，因为它不是在 System Prompt 里写一句“改完记得跑测试”。它是一层有状态、可执行、带边界的工程工作流。&lt;/p&gt;
 &lt;p&gt;模型第一次进入仓库，应该先调用 &lt;code&gt;project_context&lt;/code&gt;。Harness 会查看根目录里的 Manifest 和 Lockfile，识别 Rust、Node、Python、Go、Make 等项目类型；同时按固定优先级读取 &lt;code&gt;AGENTS.md&lt;/code&gt;、&lt;code&gt;CLAUDE.md&lt;/code&gt;、&lt;code&gt;README.md&lt;/code&gt; 一类仓库说明。每个文件有行数和字符上限，所有说明还有总字符预算，内容仍然经过 Workspace 的敏感信息脱敏。&lt;/p&gt;
 &lt;p&gt;识别结果会生成一个 &lt;code&gt;ProjectProfile&lt;/code&gt;，里面包括项目类型、Manifest、仓库规则、推荐检查和默认工作流。例如发现 &lt;code&gt;Cargo.toml&lt;/code&gt; 时，会推导：&lt;/p&gt;
@@ -434,8 +429,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;unstaged diff-check staged diff-check
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Harness 把结果合并成文件列表、增删行数和风险分类。改了源码却没改测试、动了认证或 Token 文件、改了 Manifest、删了测试、碰了 Migration/Workflow，都会产生对应 Finding。变更超过 25 个文件或约 1,000 行会提示拆分；风险再高一些时，会直接推荐 Full Verification。这里最多分析 500 个文件、保留 64 条 Finding，避免一个巨大 Working Tree 把上下文打爆。&lt;/p&gt;
 &lt;p&gt;这些分析结果在 WebUI 里可以直接看到：当前变更、每个文件命中的 Requirement、代码统计和风险等级：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-workspace-intelligence.png" alt="wcode 工作区智能视图"&gt;&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 接受 &lt;code&gt;quick&lt;/code&gt; 或 &lt;code&gt;full&lt;/code&gt;。它先把推导出的检查排序，再按 Phase 执行：&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-workspace-intelligence_hu_24fb32e29a6a581a.webp" alt="wcode 工作区智能视图"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-workspace-intelligence_hu_24fb32e29a6a581a.webp 960w, https://francis.run/img/wcode/wcode-workspace-intelligence_hu_6e8fd5f6bd6bada.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; 接受 &lt;code&gt;quick&lt;/code&gt; 或 &lt;code&gt;full&lt;/code&gt;。它先把推导出的检查排序，再按 Phase 执行：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Phase 0 format / static check / diff check
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓ barrier
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Phase 1 tests
@@ -446,23 +440,20 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;同一个 Phase 内彼此独立的检查可以并发，不同 Phase 之间有 Barrier。这样既不把所有命令串行到底，也不会让 Test、Clippy 和 Release Build 同时争 Cargo Cache。每个检查仍然单独获取全局 Semaphore Permit，单独进入 Monitor，并返回 Exit Code、耗时与截断后的 stdout/stderr 尾部。&lt;/p&gt;
 &lt;p&gt;最关键的是，&lt;code&gt;verify_project&lt;/code&gt; 不能借“自动验证”绕过命令策略。推导出的 Program 和 Args 还要经过内部 Exact-shape Validator，只临时放行这一条已经识别的命令，再委托给同一个 Workspace Command Policy。Harness 提供的是一条更容易走对的路，不是第二个后门。&lt;/p&gt;
 &lt;p&gt;需求详情页把 Desired State → Actual State → Change → Proof → Convergence 排成一条链，验证证据挂在 Proof 一环：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-verification-detail.png" alt="wcode 需求验证证据"&gt;&lt;/p&gt;
-&lt;h2 id="tunnel-挂了以后怎么办"&gt;Tunnel 挂了以后怎么办&lt;/h2&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-verification-detail_hu_11b6c44307e59389.webp" alt="wcode 需求验证证据"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-verification-detail_hu_11b6c44307e59389.webp 960w, https://francis.run/img/wcode/wcode-verification-detail_hu_a6a04b35e0461913.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;h2 id="tunnel-挂了以后怎么办"&gt;Tunnel 挂了以后怎么办&lt;a class="heading-anchor" href="#tunnel-%e6%8c%82%e4%ba%86%e4%bb%a5%e5%90%8e%e6%80%8e%e4%b9%88%e5%8a%9e" aria-label="章节链接：Tunnel 挂了以后怎么办"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;每个 wcode 进程都有一个随机 &lt;code&gt;instance_id&lt;/code&gt;。&lt;code&gt;cloudflared&lt;/code&gt; 输出公网 URL 后，wcode 不会立刻显示 Ready，而是从公网请求 &lt;code&gt;/healthz&lt;/code&gt;。只有响应里的 &lt;code&gt;ok&lt;/code&gt; 为真，并且 &lt;code&gt;instance_id&lt;/code&gt; 与当前进程一致，才会打开 Setup Hub。&lt;/p&gt;
 &lt;p&gt;这个检查主要防两个问题：Tunnel 的 DNS/TLS 还没准备好；或者同一台机器上的另一个 wcode 实例恰好能响应，造成假就绪。&lt;/p&gt;
 &lt;p&gt;运行期间每 25 秒检查一次公网状态。连续失败三次，或者发现自己启动的 &lt;code&gt;cloudflared&lt;/code&gt; 子进程退出，就把整个 Runtime 当成恢复边界：先恢复终端，再停健康任务和本地 Server，Kill 并 Wait 子进程，最后用原参数重新启动。&lt;/p&gt;
 &lt;p&gt;Quick Tunnel 重启后 URL 可能会变，所以 wcode 不会假装旧 OAuth 状态还能继续用。需要稳定地址时，应该配置自己的 Reverse Proxy，再通过 &lt;code&gt;--public-url&lt;/code&gt; 交给 wcode。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;wcode restart&lt;/code&gt; 和 &lt;code&gt;wcode stop&lt;/code&gt; 复用了同一条 Graceful Shutdown 路径。控制接口有一枚 256-bit 本地随机 Token，保存在权限为 &lt;code&gt;0600&lt;/code&gt; 的 Runtime File 中，并做 Constant-time Compare。因为这条 Route 也可能被公网反向代理带出去，所以“它只在本机用”不能成为免认证的理由。&lt;/p&gt;
-&lt;h2 id="tui-展示的都是真实状态"&gt;TUI 展示的都是真实状态&lt;/h2&gt;
+&lt;h2 id="tui-展示的都是真实状态"&gt;TUI 展示的都是真实状态&lt;a class="heading-anchor" href="#tui-%e5%b1%95%e7%a4%ba%e7%9a%84%e9%83%bd%e6%98%af%e7%9c%9f%e5%ae%9e%e7%8a%b6%e6%80%81" aria-label="章节链接：TUI 展示的都是真实状态"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Ratatui 面板里有本地服务、公网 Tunnel、OAuth、MCP 最近活动、工作区任务、队列、Slots、Peak 和吞吐量。&lt;/p&gt;
 &lt;p&gt;这些数据来自同一个 &lt;code&gt;TaskTicket&lt;/code&gt; 生命周期：收到请求时入队，拿到 Permit 时运行，返回时完成或失败。如果异步任务异常 Drop，Ticket 也会结束记录，不会在面板上永久留下一个 Running。&lt;/p&gt;
 &lt;p&gt;交互式终端使用 Alternate Screen 和 Raw Mode，并通过 RAII Guard 恢复鼠标捕获、光标和主屏幕。忙时大约 150 ms 刷新一次，闲时降到 500 ms。stdout 不是 TTY 或传入 &lt;code&gt;--no-monitor&lt;/code&gt; 时，就退化成普通日志。&lt;/p&gt;
 &lt;p&gt;我不喜欢一些 Agent 产品为了显得很忙，凭空画出一堆并行任务。wcode 的原则很简单：没有发生的事，不显示。&lt;/p&gt;
 &lt;p&gt;WebUI 侧遵循同一个原则。Project Observatory 把期望架构、实际依赖、漂移、证据与实现覆盖率放在同一个视图里：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture.png" alt="wcode 架构总览"&gt;&lt;/p&gt;
-&lt;p&gt;完整页面从架构总览、需求详情、当前变更、代码统计到图快照历史，一图到底：&lt;/p&gt;
-&lt;p&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full.png" alt="wcode Project Observatory 整页"&gt;&lt;/p&gt;
-&lt;h2 id="怎么用"&gt;怎么用&lt;/h2&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp" alt="wcode 架构总览"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp 960w, https://francis.run/img/wcode/wcode-architecture_hu_3f3f08e508cea449.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3232" height="1932"&gt;&lt;/figure&gt;&lt;p&gt;完整页面从架构总览、需求详情、当前变更、代码统计到图快照历史，一图到底：&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp" alt="wcode Project Observatory 整页"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp 960w, https://francis.run/img/wcode/wcode-observatory-full_hu_77a4ca195d4c7462.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="5017"&gt;&lt;/figure&gt;&lt;h2 id="怎么用"&gt;怎么用&lt;a class="heading-anchor" href="#%e6%80%8e%e4%b9%88%e7%94%a8" aria-label="章节链接：怎么用"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;macOS 和 Linux：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -fsSL https://raw.githubusercontent.com/francis-du/wcode/main/install.sh | sh
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Windows 有 PowerShell 安装脚本，也可以在源码目录直接构建：&lt;/p&gt;
@@ -475,7 +466,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; --workspace ~/Code/frontend
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;启动后，在 AI 客户端中添加终端显示的 &lt;code&gt;https://…/mcp&lt;/code&gt;，选择 OAuth，再在授权页输入六位配对码。&lt;/p&gt;
 &lt;p&gt;只想读代码可以加 &lt;code&gt;--read-only&lt;/code&gt;；不允许执行命令可以加 &lt;code&gt;--no-exec&lt;/code&gt;；已经有固定反向代理，就使用 &lt;code&gt;--public-url https://your-domain.example&lt;/code&gt;。&lt;/p&gt;
-&lt;h2 id="还没解决的东西"&gt;还没解决的东西&lt;/h2&gt;
+&lt;h2 id="还没解决的东西"&gt;还没解决的东西&lt;a class="heading-anchor" href="#%e8%bf%98%e6%b2%a1%e8%a7%a3%e5%86%b3%e7%9a%84%e4%b8%9c%e8%a5%bf" aria-label="章节链接：还没解决的东西"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;wcode 现在已经能稳定完成我最初想做的事，但它当然不是终点。&lt;/p&gt;
 &lt;p&gt;Quick Tunnel 适合零配置，不适合需要固定地址的长期部署；Tree-sitter 是跨语言的语法索引，不是 Language Server；不同 Web 产品对 Remote MCP 和 OAuth Discovery 的支持也一直在变化。即使一个客户端声称支持 Streamable HTTP，也不代表它已经能完整跑通 OAuth。&lt;/p&gt;
 &lt;p&gt;接下来我会继续补客户端实测、协议兼容、代码索引精度、诊断和安全回归。至于模型和 Agent Loop，我还是不打算做。让 wcode 保持一座小而清楚的桥，比长成另一套平台更有价值。&lt;/p&gt;

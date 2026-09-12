@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Software Design | Francis Du</title><link>https://francis.run/tags/software-design/</link><atom:link href="https://francis.run/tags/software-design/index.xml" rel="self" type="application/rss+xml"/><description>Software Design</description><generator>Source Themes Academic (https://sourcethemes.com/academic/)</generator><language>en</language><copyright>© Copyright [Francis Du](https://twitter.com/francis_run) | [Ink](https://github.com/knadh/hugo-ink) theme on [Hugo](https://gohugo.io)</copyright><lastBuildDate>Wed, 26 Aug 2026 03:15:00 +0800</lastBuildDate><item><title>wcode：我为什么开始把 edit file 往后放</title><link>https://francis.run/blog/wcode-reconciliation/</link><pubDate>Wed, 26 Aug 2026 03:15:00 +0800</pubDate><guid>https://francis.run/blog/wcode-reconciliation/</guid><description>&lt;p&gt;写 Coding Agent 很容易最后都收敛到几个工具：&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Software Design | Francis Du</title><link>https://francis.run/tags/software-design/</link><atom:link href="https://francis.run/tags/software-design/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Wed, 26 Aug 2026 03:15:00 +0800</lastBuildDate><item><title>wcode：我为什么开始把 edit file 往后放</title><link>https://francis.run/blog/wcode-reconciliation/</link><pubDate>Wed, 26 Aug 2026 03:15:00 +0800</pubDate><guid>https://francis.run/blog/wcode-reconciliation/</guid><description>&lt;p&gt;写 Coding Agent 很容易最后都收敛到几个工具：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read_file
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;search
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit_file
@@ -9,7 +9,7 @@
 &lt;p&gt;但用久以后我发现，&lt;code&gt;edit_file&lt;/code&gt; 其实不是最难的部分。&lt;/p&gt;
 &lt;p&gt;真正让我头疼的是一个稍微大一点的修改：为什么要改？这次到底影响什么？哪件事必须先做？什么时候算完成？如果一个模型做到一半退出了，第二个模型从哪里接？&lt;/p&gt;
 &lt;p&gt;所以我后来开始把 &lt;code&gt;edit file&lt;/code&gt; 往后放，前面先补 Reconciliation。&lt;/p&gt;
-&lt;h2 id="我先想要的是一个能恢复的-plan"&gt;我先想要的是一个能恢复的 Plan&lt;/h2&gt;
+&lt;h2 id="我先想要的是一个能恢复的-plan"&gt;我先想要的是一个能恢复的 Plan&lt;a class="heading-anchor" href="#%e6%88%91%e5%85%88%e6%83%b3%e8%a6%81%e7%9a%84%e6%98%af%e4%b8%80%e4%b8%aa%e8%83%bd%e6%81%a2%e5%a4%8d%e7%9a%84-plan" aria-label="章节链接：我先想要的是一个能恢复的 Plan"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;现在一条链大概是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
@@ -29,7 +29,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Plan 不是一句“修好这个问题”。&lt;/p&gt;
 &lt;p&gt;它会带上这次 Design Change、发现的 Drift、Impact、Risk、Change Intent 和 Verification Requirement，然后再拆成有依赖的 Task。&lt;/p&gt;
 &lt;p&gt;这听起来有点重，但我做它的原因其实很现实：&lt;strong&gt;聊天记录不是工作状态。&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="session-断掉比想象中常见"&gt;Session 断掉比想象中常见&lt;/h2&gt;
+&lt;h2 id="session-断掉比想象中常见"&gt;Session 断掉比想象中常见&lt;a class="heading-anchor" href="#session-%e6%96%ad%e6%8e%89%e6%af%94%e6%83%b3%e8%b1%a1%e4%b8%ad%e5%b8%b8%e8%a7%81" aria-label="章节链接：Session 断掉比想象中常见"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;模型会换，工具会重连，Web Session 会过期，有时我自己也会中途停下来改别的东西。&lt;/p&gt;
 &lt;p&gt;如果任务做到一半，所有进度都只存在上一段 Conversation 里，下一次基本又得从头解释。&lt;/p&gt;
 &lt;p&gt;所以 Reconciliation Plan 和 Execution 都会持久化。&lt;/p&gt;
@@ -42,7 +42,7 @@
 &lt;p&gt;Submit 会留下执行结果和 Evidence。&lt;/p&gt;
 &lt;p&gt;失败就是失败，不会因为任务“差不多做完了”自动翻成成功。要继续就 Retry。&lt;/p&gt;
 &lt;p&gt;这套状态机没有多复杂，但它给不同模型之间提供了一个比聊天记录稳定得多的交接面。&lt;/p&gt;
-&lt;h2 id="代码写完不等于修改完成"&gt;“代码写完”不等于“修改完成”&lt;/h2&gt;
+&lt;h2 id="代码写完不等于修改完成"&gt;“代码写完”不等于“修改完成”&lt;a class="heading-anchor" href="#%e4%bb%a3%e7%a0%81%e5%86%99%e5%ae%8c%e4%b8%8d%e7%ad%89%e4%ba%8e%e4%bf%ae%e6%94%b9%e5%ae%8c%e6%88%90" aria-label="章节链接：“代码写完”不等于“修改完成”"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我后来很想把这两个状态拆开。&lt;/p&gt;
 &lt;p&gt;以前 Agent 写完最后一个 Patch，往往心理上任务就已经结束了，测试变成一个尾巴：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;TODO: run tests
@@ -54,7 +54,7 @@
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Change converged
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不是同一个状态。&lt;/p&gt;
 &lt;p&gt;这个区别在安全相关修改里尤其明显。代码可能十分钟前已经写完，但 Security Review、Maintainability Review、Full Verification 还没结束，那我就不希望系统把它显示成“完成”。&lt;/p&gt;
-&lt;h2 id="plan-没有超级写权限"&gt;Plan 没有超级写权限&lt;/h2&gt;
+&lt;h2 id="plan-没有超级写权限"&gt;Plan 没有超级写权限&lt;a class="heading-anchor" href="#plan-%e6%b2%a1%e6%9c%89%e8%b6%85%e7%ba%a7%e5%86%99%e6%9d%83%e9%99%90" aria-label="章节链接：Plan 没有超级写权限"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Reconciliation 做到这里，很容易给它加一条捷径：既然 Plan 已经知道要改什么，那直接让执行器 Patch 不就行了。&lt;/p&gt;
 &lt;p&gt;我没有这么做。&lt;/p&gt;
 &lt;p&gt;真正的文件修改仍然走 Workspace 原来的边界：&lt;/p&gt;
@@ -68,14 +68,14 @@
 &lt;p&gt;执行者拿旧 SHA 去写，照样失败。&lt;/p&gt;
 &lt;p&gt;Plan 不能因为“自己是计划”就压过现在的文件状态。&lt;/p&gt;
 &lt;p&gt;这条限制看起来会让自动化麻烦一点，但我觉得值得。&lt;/p&gt;
-&lt;h2 id="并行也没有直接全开"&gt;并行也没有直接全开&lt;/h2&gt;
+&lt;h2 id="并行也没有直接全开"&gt;并行也没有直接全开&lt;a class="heading-anchor" href="#%e5%b9%b6%e8%a1%8c%e4%b9%9f%e6%b2%a1%e6%9c%89%e7%9b%b4%e6%8e%a5%e5%85%a8%e5%bc%80" aria-label="章节链接：并行也没有直接全开"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;现在 &lt;code&gt;parallel_tools&lt;/code&gt; 已经能处理不只是 Read/Discovery，也包括一部分独立的 Workspace Write。&lt;/p&gt;
 &lt;p&gt;但不是把一堆写操作扔进 Tokio 就结束了。&lt;/p&gt;
 &lt;p&gt;Scheduler 会先按路径做 Resource Model：哪些操作读同一个文件、哪些写同一个文件、Move / Delete / Create 有没有父子目录依赖。&lt;/p&gt;
 &lt;p&gt;独立的可以 fan out；冲突的先排序。&lt;/p&gt;
 &lt;p&gt;同一个文件上的 &lt;code&gt;apply_edits&lt;/code&gt; 只有在 SHA 一样、Edit 本身不冲突时才会合并成一次原子提交。&lt;/p&gt;
 &lt;p&gt;这和 Reconciliation 的想法很接近：不是追求“看起来同时跑了很多东西”，而是先搞清楚哪些事情真的互相独立。&lt;/p&gt;
-&lt;h2 id="continuous-reconciliation-我现在还是很谨慎"&gt;Continuous Reconciliation 我现在还是很谨慎&lt;/h2&gt;
+&lt;h2 id="continuous-reconciliation-我现在还是很谨慎"&gt;Continuous Reconciliation 我现在还是很谨慎&lt;a class="heading-anchor" href="#continuous-reconciliation-%e6%88%91%e7%8e%b0%e5%9c%a8%e8%bf%98%e6%98%af%e5%be%88%e8%b0%a8%e6%85%8e" aria-label="章节链接：Continuous Reconciliation 我现在还是很谨慎"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;“Reconciliation” 这个词很容易让人联想到 Kubernetes Controller：不停观察 Desired / Actual，然后自动把实际状态修回去。&lt;/p&gt;
 &lt;p&gt;wcode 确实有往这个方向走的设计，但我暂时不想让代码库也变成那种全自动 Controller。&lt;/p&gt;
 &lt;p&gt;软件修改和副本数不一样。&lt;/p&gt;
@@ -88,7 +88,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;证据
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这几段先做成可靠的状态。&lt;/p&gt;
 &lt;p&gt;自动化程度以后再加。&lt;/p&gt;
-&lt;h2 id="不同模型终于不用共享一段脑内上下文"&gt;不同模型终于不用共享一段脑内上下文&lt;/h2&gt;
+&lt;h2 id="不同模型终于不用共享一段脑内上下文"&gt;不同模型终于不用共享一段脑内上下文&lt;a class="heading-anchor" href="#%e4%b8%8d%e5%90%8c%e6%a8%a1%e5%9e%8b%e7%bb%88%e4%ba%8e%e4%b8%8d%e7%94%a8%e5%85%b1%e4%ba%ab%e4%b8%80%e6%ae%b5%e8%84%91%e5%86%85%e4%b8%8a%e4%b8%8b%e6%96%87" aria-label="章节链接：不同模型终于不用共享一段脑内上下文"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;这是我现在最喜欢 Reconciliation 的地方。&lt;/p&gt;
 &lt;p&gt;一个模型可以做 Implementation，另一个做 Security Review，再换一个看 Maintainability 或补 Test。&lt;/p&gt;
 &lt;p&gt;它们不需要彼此复述上一段 Chat。&lt;/p&gt;
@@ -100,7 +100,7 @@
 &lt;p&gt;这些问题以前都靠人自己补。&lt;/p&gt;
 &lt;p&gt;Agent 也一样，只不过它能补多少，很看这一次上下文有没有给够。&lt;/p&gt;
 &lt;p&gt;所以做完 Design State 和 Software Graph 以后，我开始把其中一部分变成 wcode 可以直接算的东西。&lt;/p&gt;
-&lt;h2 id="traceability-先回答最笨的问题"&gt;Traceability 先回答最笨的问题&lt;/h2&gt;
+&lt;h2 id="traceability-先回答最笨的问题"&gt;Traceability 先回答最笨的问题&lt;a class="heading-anchor" href="#traceability-%e5%85%88%e5%9b%9e%e7%ad%94%e6%9c%80%e7%ac%a8%e7%9a%84%e9%97%ae%e9%a2%98" aria-label="章节链接：Traceability 先回答最笨的问题"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;code&gt;traceability_status&lt;/code&gt; 主要看几条链有没有断：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement → Component
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component → Implementation
@@ -118,13 +118,13 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance 还指着一个已经改名的 test
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种错误没有多高级，但特别常见。&lt;/p&gt;
-&lt;h2 id="product-scope-解决别把整个仓库都拖进来"&gt;Product Scope 解决“别把整个仓库都拖进来”&lt;/h2&gt;
+&lt;h2 id="product-scope-解决别把整个仓库都拖进来"&gt;Product Scope 解决“别把整个仓库都拖进来”&lt;a class="heading-anchor" href="#product-scope-%e8%a7%a3%e5%86%b3%e5%88%ab%e6%8a%8a%e6%95%b4%e4%b8%aa%e4%bb%93%e5%ba%93%e9%83%bd%e6%8b%96%e8%bf%9b%e6%9d%a5" aria-label="章节链接：Product Scope 解决“别把整个仓库都拖进来”"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;wcode 后来又加了 Product Scope，因为只靠 Requirement 还不够。&lt;/p&gt;
 &lt;p&gt;项目一大，Context 很容易横跨一堆不相关目录。&lt;/p&gt;
 &lt;p&gt;现在我通常先跑 &lt;code&gt;scope_status&lt;/code&gt;，看看源码是怎么落在各个 Scope 里的，还有没有没归类的文件。真正做任务时，&lt;code&gt;software_context(scopes=...)&lt;/code&gt; 会把源码导航收窄到指定范围。&lt;/p&gt;
 &lt;p&gt;例如我只在 &lt;code&gt;workspace&lt;/code&gt; / &lt;code&gt;risk&lt;/code&gt; 一类 Scope 里查，就不会顺手把 UI、Connector、Release 相关东西一起塞进来。&lt;/p&gt;
 &lt;p&gt;这个功能对模型没有那么“惊艳”，但对长期项目很实用。Context 少一点，误判也少一点。&lt;/p&gt;
-&lt;h2 id="drift-不是报错更像提醒"&gt;Drift 不是报错，更像提醒&lt;/h2&gt;
+&lt;h2 id="drift-不是报错更像提醒"&gt;Drift 不是报错，更像提醒&lt;a class="heading-anchor" href="#drift-%e4%b8%8d%e6%98%af%e6%8a%a5%e9%94%99%e6%9b%b4%e5%83%8f%e6%8f%90%e9%86%92" aria-label="章节链接：Drift 不是报错，更像提醒"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Traceability 看的是“关系还通不通”，Drift 看的是“变化之后，两边是不是开始不一致”。&lt;/p&gt;
 &lt;p&gt;现在大致有两类。&lt;/p&gt;
 &lt;p&gt;一种是 Implementation Drift。&lt;/p&gt;
@@ -138,7 +138,7 @@
 &lt;p&gt;这个地方在 Design State 里是有名字的，现在代码变了，确认一下原来的描述还成立。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;我不想把这种 heuristic 叫 formal verification。它没那么聪明。&lt;/p&gt;
-&lt;h2 id="impact-是我真正天天想看的东西"&gt;Impact 是我真正天天想看的东西&lt;/h2&gt;
+&lt;h2 id="impact-是我真正天天想看的东西"&gt;Impact 是我真正天天想看的东西&lt;a class="heading-anchor" href="#impact-%e6%98%af%e6%88%91%e7%9c%9f%e6%ad%a3%e5%a4%a9%e5%a4%a9%e6%83%b3%e7%9c%8b%e7%9a%84%e4%b8%9c%e8%a5%bf" aria-label="章节链接：Impact 是我真正天天想看的东西"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Git 能给 Changed Paths，但 Review 时我通常还想看：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;碰到了哪些 Component
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;关联哪些 Requirement
@@ -151,14 +151,14 @@
 &lt;p&gt;有 fresh LSP / Runtime Provider 就用更高精度的关系；没有就退到 Tree-sitter Syntax Edge。结果里会保留 Provider 和 Precision，不把不同来源混成一句“确定会影响”。&lt;/p&gt;
 &lt;p&gt;这也是为什么前面 Software Graph 那篇我一直强调 provenance。&lt;/p&gt;
 &lt;p&gt;没有 provenance，Impact 最后只剩一个很自信的列表，但没人知道它为什么这么判断。&lt;/p&gt;
-&lt;h2 id="transitive-analysis-一定得有刹车"&gt;Transitive Analysis 一定得有刹车&lt;/h2&gt;
+&lt;h2 id="transitive-analysis-一定得有刹车"&gt;Transitive Analysis 一定得有刹车&lt;a class="heading-anchor" href="#transitive-analysis-%e4%b8%80%e5%ae%9a%e5%be%97%e6%9c%89%e5%88%b9%e8%bd%a6" aria-label="章节链接：Transitive Analysis 一定得有刹车"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;调用图特别容易爆。&lt;/p&gt;
 &lt;p&gt;一个底层 helper 可能被几百个地方用。如果“所有调用方的调用方再递归展开”没有上限，最后返回的 Context 比直接把仓库读一遍还离谱。&lt;/p&gt;
 &lt;p&gt;所以 wcode 这类 Query 都是 bounded 的。&lt;/p&gt;
 &lt;p&gt;到上限就明确返回：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;truncated = true
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我宁愿看到一个“这里没展开完”，也不要看到一份看起来完整、其实只是因为上下文被截断而少东西的结果。&lt;/p&gt;
-&lt;h2 id="review-里现在还会看代码是不是开始长歪"&gt;Review 里现在还会看代码是不是开始长歪&lt;/h2&gt;
+&lt;h2 id="review-里现在还会看代码是不是开始长歪"&gt;Review 里现在还会看代码是不是开始长歪&lt;a class="heading-anchor" href="#review-%e9%87%8c%e7%8e%b0%e5%9c%a8%e8%bf%98%e4%bc%9a%e7%9c%8b%e4%bb%a3%e7%a0%81%e6%98%af%e4%b8%8d%e6%98%af%e5%bc%80%e5%a7%8b%e9%95%bf%e6%ad%aa" aria-label="章节链接：Review 里现在还会看代码是不是开始长歪"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最近 &lt;code&gt;review_changes&lt;/code&gt; 又加了一些结构信号。&lt;/p&gt;
 &lt;p&gt;例如：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一个源码文件从 1,000 行以下跨到 1,000 行以上
@@ -176,7 +176,7 @@
 &lt;p&gt;人长期待在项目里还好，换一个 Agent 进来，它看到的通常只有当前源码。&lt;/p&gt;
 &lt;p&gt;于是我开始把一部分“为什么”写进仓库。&lt;/p&gt;
 &lt;p&gt;不是 README，也不是另起一个 Wiki，而是一份机器也能读的 Design State。&lt;/p&gt;
-&lt;h2 id="其实就是几份-yaml"&gt;其实就是几份 YAML&lt;/h2&gt;
+&lt;h2 id="其实就是几份-yaml"&gt;其实就是几份 YAML&lt;a class="heading-anchor" href="#%e5%85%b6%e5%ae%9e%e5%b0%b1%e6%98%af%e5%87%a0%e4%bb%bd-yaml" aria-label="章节链接：其实就是几份 YAML"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;现在结构很普通：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;.wcode/
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;├── project.yaml
@@ -236,7 +236,7 @@
 &lt;p&gt;看一下 workspace root isolation 现在的实现、约束和验证。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;文件名反而是后面的事情。&lt;/p&gt;
-&lt;h2 id="我不想维护第二份源码"&gt;我不想维护第二份源码&lt;/h2&gt;
+&lt;h2 id="我不想维护第二份源码"&gt;我不想维护第二份源码&lt;a class="heading-anchor" href="#%e6%88%91%e4%b8%8d%e6%83%b3%e7%bb%b4%e6%8a%a4%e7%ac%ac%e4%ba%8c%e4%bb%bd%e6%ba%90%e7%a0%81" aria-label="章节链接：我不想维护第二份源码"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Design State 最容易做过头。&lt;/p&gt;
 &lt;p&gt;如果每个函数、每个类型、每条调用关系都要手工抄进 YAML，那这东西一定会烂掉。代码一重构，Design State 马上过期，最后大家只能一起假装它还可信。&lt;/p&gt;
 &lt;p&gt;所以我现在只放那些值得稳定命名的东西：&lt;/p&gt;
@@ -247,7 +247,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;重要 Decision
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;至于“这个函数现在调用谁”“某个模块里有哪些 Symbol”，让代码索引和 Software Graph 自己算。&lt;/p&gt;
 &lt;p&gt;Design State 负责的是“应该是什么”，不是给源码做一份手写镜像。&lt;/p&gt;
-&lt;h2 id="product-scope-是后来补的一层"&gt;Product Scope 是后来补的一层&lt;/h2&gt;
+&lt;h2 id="product-scope-是后来补的一层"&gt;Product Scope 是后来补的一层&lt;a class="heading-anchor" href="#product-scope-%e6%98%af%e5%90%8e%e6%9d%a5%e8%a1%a5%e7%9a%84%e4%b8%80%e5%b1%82" aria-label="章节链接：Product Scope 是后来补的一层"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;项目拆大以后，我还遇到过另一个问题。&lt;/p&gt;
 &lt;p&gt;Design State 能告诉我 Requirement 属于什么能力，但 Agent 做源码导航时仍然可能在整个仓库里乱跑。&lt;/p&gt;
 &lt;p&gt;所以后来 wcode 又有了 Product Scope。&lt;/p&gt;
@@ -258,7 +258,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Product Scope：这类能力大致落在哪块源码
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Software Graph：代码现在实际怎么连
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;比起把所有东西都塞进一张图里，这样更容易维护。&lt;/p&gt;
-&lt;h2 id="tree-sitter-解析到了也只能说明解析到了"&gt;Tree-sitter 解析到了，也只能说明解析到了&lt;/h2&gt;
+&lt;h2 id="tree-sitter-解析到了也只能说明解析到了"&gt;Tree-sitter 解析到了，也只能说明解析到了&lt;a class="heading-anchor" href="#tree-sitter-%e8%a7%a3%e6%9e%90%e5%88%b0%e4%ba%86%e4%b9%9f%e5%8f%aa%e8%83%bd%e8%af%b4%e6%98%8e%e8%a7%a3%e6%9e%90%e5%88%b0%e4%ba%86" aria-label="章节链接：Tree-sitter 解析到了，也只能说明解析到了"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Component 和 Acceptance 可以引用 Symbol，但基础解析还是 Tree-sitter。&lt;/p&gt;
 &lt;p&gt;所以结果会明确带：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider = tree-sitter
@@ -266,7 +266,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这表示“这里有这个语法定义”，不是“编译器已经证明这就是最终绑定到的实现”。&lt;/p&gt;
 &lt;p&gt;这种区别有时候很烦，尤其写展示页面时，直接写成“已解析”会好看很多。&lt;/p&gt;
 &lt;p&gt;但我宁愿页面上多一个 &lt;code&gt;syntax&lt;/code&gt;，也不想让 Design State 借着结构化格式显得比底层事实更可靠。&lt;/p&gt;
-&lt;h2 id="我最后还是让-wcode-管自己"&gt;我最后还是让 wcode 管自己&lt;/h2&gt;
+&lt;h2 id="我最后还是让-wcode-管自己"&gt;我最后还是让 wcode 管自己&lt;a class="heading-anchor" href="#%e6%88%91%e6%9c%80%e5%90%8e%e8%bf%98%e6%98%af%e8%ae%a9-wcode-%e7%ae%a1%e8%87%aa%e5%b7%b1" aria-label="章节链接：我最后还是让 wcode 管自己"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Design State 真正变得有用，是我开始拿它 Dogfood wcode 自己以后。&lt;/p&gt;
 &lt;p&gt;源码一移动，Traceability 会暴露旧路径；Requirement 加了 Acceptance 但测试没接上，也会直接出现 Gap。现在 Project Observatory 里还能从 Requirement 一路看到 Component、当前实现、Verification 和这次 Git Change。&lt;/p&gt;
 &lt;p&gt;这时候 &lt;code&gt;.wcode/design&lt;/code&gt; 才不是“又多了几份文档”。&lt;/p&gt;

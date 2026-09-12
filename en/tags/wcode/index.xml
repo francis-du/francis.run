@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wcode | Francis Du</title><link>https://francis.run/en/tags/wcode/</link><atom:link href="https://francis.run/en/tags/wcode/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>en-US</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 12 Sep 2026 05:41:00 +0800</lastBuildDate><item><title>What wcode Is: A Local Runtime for Coding Agents</title><link>https://francis.run/en/blog/what-is-wcode/</link><pubDate>Sat, 12 Sep 2026 05:41:00 +0800</pubDate><guid>https://francis.run/en/blog/what-is-wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode documentation"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p class="project-links"&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;Docs ↗&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;wcode started because I was tired of moving code between a browser and my editor.&lt;/p&gt;
+&lt;p&gt;I already had AI products I liked using. The annoying part was local repository access: copy a file into chat, upload an archive, switch to a different coding client, or configure another API key just so a model could inspect the same code that was already on my machine.&lt;/p&gt;
+&lt;p&gt;The first version of wcode was basically a bridge: a local workspace over MCP, with authentication and file boundaries around it.&lt;/p&gt;
+&lt;p&gt;Once I started letting agents make real edits, most of my bugs and design work moved somewhere else. I needed to know which revision an agent had read, whether a symbol result came from Tree-sitter or a language server, whether two edits could overlap, and whether a test result still belonged to the current code.&lt;/p&gt;
+&lt;p&gt;That is where the project spends most of its time now.&lt;/p&gt;
+&lt;h2 id="how-i-think-about-wcode-now"&gt;How I think about wcode now&lt;a class="heading-anchor" href="#how-i-think-about-wcode-now" aria-label="Permalink to section: How I think about wcode now"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;wcode is a local runtime and engineering harness for coding agents.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The model can live in ChatGPT, Claude, Codex, or another MCP-capable client. wcode stays on the machine with the repository and handles the parts that should be local and inspectable.&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ChatGPT / Claude / Codex / another agent
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ MCP
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;┌──────────────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ wcode │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Workspace / Auth / Permissions │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Search / Tree-sitter / LSP │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Guarded edits / Git / Commands │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Design State / Verification │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Evidence / Observatory │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└────────────────┬─────────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; local repository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I want that layer to stay useful when I change models. Repository boundaries, edit safety, indexing, and verification should not need to be rebuilt every time the model on the other end gets better.&lt;/p&gt;
+&lt;h2 id="repository-access-with-an-actual-boundary"&gt;Repository access with an actual boundary&lt;a class="heading-anchor" href="#repository-access-with-an-actual-boundary" aria-label="Permalink to section: Repository access with an actual boundary"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A path mentioned by a model is not permission to access it.&lt;/p&gt;
+&lt;p&gt;wcode works inside configured workspaces. File operations reject common escape paths and protected locations, and edits to existing files use the SHA of the version the agent actually read. If I change a file while the model is thinking, an edit based on the stale SHA fails instead of overwriting my newer work.&lt;/p&gt;
+&lt;p&gt;The same idea applies to commands. A command can be safe, blocked, or require an exact local approval depending on its shape. Approval is attached to the real operation rather than a vague “the agent can run commands now” switch.&lt;/p&gt;
+&lt;p&gt;I do not expect models to be the authority on their own permissions.&lt;/p&gt;
+&lt;h2 id="code-intelligence-has-more-than-one-precision-level"&gt;Code intelligence has more than one precision level&lt;a class="heading-anchor" href="#code-intelligence-has-more-than-one-precision-level" aria-label="Permalink to section: Code intelligence has more than one precision level"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Tree-sitter is cheap and useful for outlines, definitions, ranges, and syntax-level relationships. It is also not a compiler.&lt;/p&gt;
+&lt;p&gt;When a task needs cross-file references, implementations, call hierarchy, or similar semantic information, wcode can use the language server installed for the project. Results keep their provider and revision information so a syntax result is not presented as compiler-grade fact, and stale semantic state can be rejected after source changes.&lt;/p&gt;
+&lt;p&gt;I have been bitten enough by confident answers built on the wrong precision level that I keep this metadata visible.&lt;/p&gt;
+&lt;h2 id="agent_context-is-the-entry-point-i-use-most"&gt;&lt;code&gt;agent_context&lt;/code&gt; is the entry point I use most&lt;a class="heading-anchor" href="#agent_context-is-the-entry-point-i-use-most" aria-label="Permalink to section: agent_context is the entry point I use most"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;For me, the useful part of context is having the right files and constraints ready before the first edit.&lt;/p&gt;
+&lt;p&gt;For a concrete task, &lt;code&gt;agent_context&lt;/code&gt; builds a bounded package around what the agent is about to do. It can include the likely target files and their SHAs, repository guidance, Design State, semantic-provider readiness, active work, verification hints, and dependency lanes that are safe to run in parallel.&lt;/p&gt;
+&lt;p&gt;If a compiler diagnostic already points at a file and line, wcode starts there instead of paying for a repository-wide search first.&lt;/p&gt;
+&lt;h2 id="parallel-work-follows-dependencies"&gt;Parallel work follows dependencies&lt;a class="heading-anchor" href="#parallel-work-follows-dependencies" aria-label="Permalink to section: Parallel work follows dependencies"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I spent a fair amount of time optimizing the wrong number: tool slots.&lt;/p&gt;
+&lt;p&gt;A high slot count looks good on a dashboard, but it does not tell me whether useful work finishes sooner. wcode now separates outer tool admission, CPU work, bounded file I/O, child processes, and Git probes. The scheduler starts a successor when its own dependencies are ready rather than waiting for unrelated work in the same batch.&lt;/p&gt;
+&lt;p&gt;Independent reads can overlap. Conflicting writes do not race. A build does not get to consume every resource simply because there are free outer slots.&lt;/p&gt;
+&lt;p&gt;That model has been much easier to reason about than “turn concurrency up until the graph looks busy.”&lt;/p&gt;
+&lt;h2 id="verification-belongs-to-a-revision"&gt;Verification belongs to a revision&lt;a class="heading-anchor" href="#verification-belongs-to-a-revision" aria-label="Permalink to section: Verification belongs to a revision"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A line saying &lt;code&gt;tests passed&lt;/code&gt; is almost useless after a long editing session unless I know which code it describes.&lt;/p&gt;
+&lt;p&gt;wcode records verification as evidence tied to code and Design State revisions. It can distinguish a test that is mapped to a requirement from one that was actually executed, passed, and is still fresh for the current source.&lt;/p&gt;
+&lt;p&gt;If the repository changes after verification, the old result does not silently become proof for the new version.&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp" alt="wcode Project Observatory"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp 960w, https://francis.run/img/wcode/wcode-observatory-full_hu_77a4ca195d4c7462.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="5017"&gt;&lt;/figure&gt;&lt;p&gt;I spend a surprising amount of time on this because patch generation is rarely the part that fails late in a long session. Stale or over-broad verification is.&lt;/p&gt;
+&lt;h2 id="design-state-gives-the-repository-a-memory-outside-the-chat"&gt;Design State gives the repository a memory outside the chat&lt;a class="heading-anchor" href="#design-state-gives-the-repository-a-memory-outside-the-chat" aria-label="Permalink to section: Design State gives the repository a memory outside the chat"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Source code describes the implementation you have. It does a poor job of describing every constraint you intended to preserve.&lt;/p&gt;
+&lt;p&gt;wcode can keep requirements, components, constraints, and acceptance criteria under &lt;code&gt;.wcode/&lt;/code&gt; in the repository. That Desired State is available to context retrieval, impact analysis, drift detection, and verification mapping.&lt;/p&gt;
+&lt;p&gt;I now use it on this blog too. The repository records things such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Chinese stays at root and English stays under &lt;code&gt;/en/&lt;/code&gt;;&lt;/li&gt;
+&lt;li&gt;the photography Gallery has its own rendering and JavaScript lifecycle;&lt;/li&gt;
+&lt;li&gt;technical posts should not turn into generic AI-sounding copy;&lt;/li&gt;
+&lt;li&gt;template changes need a real Hugo build, not only a clean diff check.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I trust those rules more when they live beside the code than when they only exist in an old chat.&lt;/p&gt;
+&lt;h2 id="where-i-use-wcode"&gt;Where I use wcode&lt;a class="heading-anchor" href="#where-i-use-wcode" aria-label="Permalink to section: Where I use wcode"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The first use case is still the one that started the project: connecting a web AI product to local code over MCP. The model stays in the product I already use; wcode provides the local repository tools.&lt;/p&gt;
+&lt;p&gt;I also use it as a harness for local coding agents. Search, guarded edits, permissions, project context, verification, and evidence do not need to be reimplemented by every agent loop.&lt;/p&gt;
+&lt;p&gt;The third case is long-running work across a real codebase. Stale context, conflicting edits, invalidated tests, and handoff state become much more noticeable after dozens of tool calls. Most of the recent wcode work is aimed there.&lt;/p&gt;
+&lt;h2 id="what-wcode-does-not-try-to-own"&gt;What wcode does not try to own&lt;a class="heading-anchor" href="#what-wcode-does-not-try-to-own" aria-label="Permalink to section: What wcode does not try to own"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode does not ship a model and it does not try to decide which model you should use.&lt;/p&gt;
+&lt;p&gt;It also does not need to own the chat UI or your conversation history. Provider rate limits, context limits, and subscription rules still belong to the provider you are using.&lt;/p&gt;
+&lt;p&gt;Its job is the local side of the connection: repository state, tools, authority, and evidence.&lt;/p&gt;
+&lt;p&gt;I change models often enough that I want the local repository layer to stay boring and predictable.&lt;/p&gt;
+&lt;h2 id="trying-it"&gt;Trying it&lt;a class="heading-anchor" href="#trying-it" aria-label="Permalink to section: Trying it"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The source is here:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;github.com/francis-du/wcode&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Installation, host setup, and the current command reference live here:&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://wcode.francis.run/"&gt;wcode.francis.run&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;After installing wcode, the normal starting point is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode setup
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For the full command surface, including advanced options:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If you are only trying to decide whether the extra runtime layer is useful, I would start with a repository you already know well. Give an agent one complete task that requires finding code, editing it, and verifying the result. That shows the difference much faster than reading a feature list.&lt;/p&gt;</description></item><item><title>wcode 0.6.2: Faster Execution Without Pretending Busy Means Fast</title><link>https://francis.run/en/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:35:00 +0800</pubDate><guid>https://francis.run/en/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;I spent several days watching wcode sit at 32 tool slots with decent peak occupancy while a few real tasks still felt slow.&lt;/p&gt;
+&lt;p&gt;After tracing the queues underneath that number, I stopped treating slot utilization as a performance signal. A slot only says the request got in. CPU work, file I/O, compilers, Git probes, and language servers can still be waiting somewhere deeper.&lt;/p&gt;
+&lt;p&gt;0.6.2 grew out of that debugging pass. I changed the resource model, then fixed a few other places where the runtime was reporting something cleaner than the underlying state really was.&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp" alt="wcode Project Observatory"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp 960w, https://francis.run/img/wcode/wcode-observatory-full_hu_77a4ca195d4c7462.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="5017"&gt;&lt;/figure&gt;&lt;h2 id="tool-slots-are-not-cpu-cores"&gt;Tool slots are not CPU cores&lt;a class="heading-anchor" href="#tool-slots-are-not-cpu-cores" aria-label="Permalink to section: Tool slots are not CPU cores"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The outer &lt;code&gt;SLOTS&lt;/code&gt; counter only means a tool request has been admitted. It does not tell you whether a CPU worker is executing useful code, a filesystem operation is waiting on storage, or a child process is queued behind another compiler.&lt;/p&gt;
+&lt;p&gt;0.6.2 makes those layers more explicit:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tool admission
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Foreground CPU budget
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Bounded file-I/O workers
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Child-process / Git probe queues
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Foreground CPU parallelism is bounded by hardware, memory-derived limits, a small runtime ceiling, and request concurrency. Blocking work has its own bounded capacity. Independent file modifications use a shared I/O pool. Fixed, read-oriented Git probes have a separate queue from heavier repository processes.&lt;/p&gt;
+&lt;p&gt;Starting twenty compilers at once is usually a good way to make one workstation slower, so those inner limits stay deliberately small.&lt;/p&gt;
+&lt;h2 id="i-removed-an-optimization-that-benchmarked-worse"&gt;I removed an optimization that benchmarked worse&lt;a class="heading-anchor" href="#i-removed-an-optimization-that-benchmarked-worse" aria-label="Permalink to section: I removed an optimization that benchmarked worse"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;One experiment moved more read work onto a wider thread pool. It looked like the kind of change that should increase throughput.&lt;/p&gt;
+&lt;p&gt;In the local paired workload it was slower, so I reverted it.&lt;/p&gt;
+&lt;p&gt;I kept the revert. A wider pool is only an optimization if the paired workload actually improves.&lt;/p&gt;
+&lt;p&gt;I also avoided putting an “X% faster” number on the release. Repository size, storage, dependency shape, language servers, and compiler behavior move the result too much for one number to mean much.&lt;/p&gt;
+&lt;h2 id="keep-lightweight-tools-alive-under-command-pressure"&gt;Keep lightweight tools alive under command pressure&lt;a class="heading-anchor" href="#keep-lightweight-tools-alive-under-command-pressure" aria-label="Permalink to section: Keep lightweight tools alive under command pressure"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;There is another failure mode in agent runtimes: a queue of expensive commands consumes every outer tool slot, then the agent cannot even perform a lightweight read or status query needed to understand the queue.&lt;/p&gt;
+&lt;p&gt;Execution-class requests in 0.6.2 pass through an additional admission layer before taking the global tool capacity. With the normal 32-slot configuration, command-like work cannot consume all 32 slots; a small amount of capacity remains available for non-execution tools.&lt;/p&gt;
+&lt;p&gt;This does not guarantee fixed latency under every kind of saturation. It does prevent one very avoidable form of self-starvation.&lt;/p&gt;
+&lt;h2 id="a-compiler-location-should-beat-a-repository-wide-search"&gt;A compiler location should beat a repository-wide search&lt;a class="heading-anchor" href="#a-compiler-location-should-beat-a-repository-wide-search" aria-label="Permalink to section: A compiler location should beat a repository-wide search"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Performance is also about doing less work.&lt;/p&gt;
+&lt;p&gt;Suppose the model already has this diagnostic:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;error[E0308] at src/runtime/harness/context_budget.rs:33:9
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Older retrieval paths could still begin with broad repository symbol discovery and only later prioritize the explicit location.&lt;/p&gt;
+&lt;p&gt;That ordering is backwards.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;agent_context&lt;/code&gt; now recognizes bounded file-and-line anchors first. It resolves them through the workspace safety boundary, preserves the source text and file SHA needed for safe editing, and can defer unnecessary repository-graph expansion for simple location-driven tasks.&lt;/p&gt;
+&lt;p&gt;Cross-file callers, impact analysis, architecture questions, and explicit product-scope queries still use the deeper graph and semantic paths.&lt;/p&gt;
+&lt;p&gt;So a file-and-line diagnostic now wins the first retrieval step. The broader graph only comes in when the task actually needs it.&lt;/p&gt;
+&lt;h2 id="concurrent-cold-queries-should-share-index-construction"&gt;Concurrent cold queries should share index construction&lt;a class="heading-anchor" href="#concurrent-cold-queries-should-share-index-construction" aria-label="Permalink to section: Concurrent cold queries should share index construction"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Multiple agent branches can ask about the same uncached file at nearly the same time.&lt;/p&gt;
+&lt;p&gt;Without coordination they can all notice the cache miss and independently build the same index.&lt;/p&gt;
+&lt;p&gt;0.6.2 shares an in-flight index build for the same workspace and file. Different files can still build independently. Invalidation updates the build generation so an old result that finishes late cannot quietly repopulate stale state.&lt;/p&gt;
+&lt;p&gt;I did not add incremental parsing here. This change only deduplicates the same cold index build.&lt;/p&gt;
+&lt;h2 id="symbol_context-now-checks-that-its-own-pieces-agree"&gt;&lt;code&gt;symbol_context&lt;/code&gt; now checks that its own pieces agree&lt;a class="heading-anchor" href="#symbol_context-now-checks-that-its-own-pieces-agree" aria-label="Permalink to section: symbol_context now checks that its own pieces agree"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A more serious version of the same problem appears when a symbol index and the source text come from different file revisions.&lt;/p&gt;
+&lt;p&gt;A response can look perfectly structured while combining an old signature with new source lines.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;symbol_context&lt;/code&gt; now checks the source identity used by the symbol fact against the content it is about to return. If the index is stale it can refresh once. If the file keeps changing and a stable answer cannot be produced, the operation fails explicitly.&lt;/p&gt;
+&lt;p&gt;I would rather return “unstable source” than a polished contradiction.&lt;/p&gt;
+&lt;h2 id="complete-verification-plans-or-no-verification-plan"&gt;Complete verification plans or no verification plan&lt;a class="heading-anchor" href="#complete-verification-plans-or-no-verification-plan" aria-label="Permalink to section: Complete verification plans or no verification plan"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A mixed-language repository can derive a surprisingly large set of checks.&lt;/p&gt;
+&lt;p&gt;One older path silently limited a plan to the first eight checks. That is dangerous because the executed prefix can still look like a complete verification report to a higher layer.&lt;/p&gt;
+&lt;p&gt;0.6.2 constructs and sorts the complete plan first, with a bounded maximum of 32 checks. If the plan exceeds that bound, the request fails before dispatch. It does not execute a partial prefix and call it full verification.&lt;/p&gt;
+&lt;p&gt;Within a request, verification history also shares a source/design revision snapshot instead of repeatedly rescanning the same state for every planned check.&lt;/p&gt;
+&lt;p&gt;Evidence remains scope-aware: a narrow success cannot erase a broader failure, and missing or truncated evidence is not interpreted as a pass.&lt;/p&gt;
+&lt;h2 id="verification-can-be-a-durable-mcp-task"&gt;Verification can be a durable MCP task&lt;a class="heading-anchor" href="#verification-can-be-a-durable-mcp-task" aria-label="Permalink to section: Verification can be a durable MCP task"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; now reuses the existing persistent Tasks runtime when the client advertises the MCP Tasks extension.&lt;/p&gt;
+&lt;p&gt;The server can persist the task and return a &lt;code&gt;taskId&lt;/code&gt; before waiting for the full verification workload. The authenticated owner can query that same task later, even after the creating request has ended.&lt;/p&gt;
+&lt;p&gt;A dropped connection does not cause automatic replay. A restarted runtime does not pretend an interrupted operation completed. Already-started blocking work is not advertised as transactionally rollbackable.&lt;/p&gt;
+&lt;p&gt;That distinction matters once commands can have side effects. A missing response tells me nothing about whether the command already started or finished.&lt;/p&gt;
+&lt;h2 id="configuration-needed-to-become-smaller-again"&gt;Configuration needed to become smaller again&lt;a class="heading-anchor" href="#configuration-needed-to-become-smaller-again" aria-label="Permalink to section: Configuration needed to become smaller again"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;As wcode accumulated resource controls, the advanced CLI became useful for debugging but unfriendly as a default setup surface.&lt;/p&gt;
+&lt;p&gt;0.6.2 introduces three practical performance profiles:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;balanced
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;fast
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;light
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You can preview before writing configuration:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode setup --performance fast --dry-run
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --show-config
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Advanced overrides still exist, but a normal user no longer needs to understand every internal queue before choosing a sensible starting point.&lt;/p&gt;
+&lt;p&gt;The release also adds:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all setup
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all --json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This catalog is generated from the real CLI parser, including advanced options, aliases, defaults, and enumerated values. Normal help stays compact; complete discoverability has a separate entry point.&lt;/p&gt;
+&lt;h2 id="i-cleaned-up-the-observatory-first-screen"&gt;I cleaned up the Observatory first screen&lt;a class="heading-anchor" href="#i-cleaned-up-the-observatory-first-screen" aria-label="Permalink to section: I cleaned up the Observatory first screen"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The Project Observatory received another structural pass.&lt;/p&gt;
+&lt;p&gt;The first screen now separates active execution, pending approvals, worktree changes, and verification evidence that is valid for the current revision. Architecture navigation starts from searchable component cards and a detail inspector, while Design / Implementation / Overlay graphs remain available for deeper inspection.&lt;/p&gt;
+&lt;p&gt;Fast activity refreshes are separated from slower project refreshes. Hidden pages stop polling. Shared process resources are labeled separately from work that belongs to the selected project. An unavailable sample is not rendered as zero.&lt;/p&gt;
+&lt;p&gt;The main rule for the UI is boring: if wcode did not sample something, it should say unknown instead of drawing a zero.&lt;/p&gt;
+&lt;h2 id="what-i-kept-from-this-release"&gt;What I kept from this release&lt;a class="heading-anchor" href="#what-i-kept-from-this-release" aria-label="Permalink to section: What I kept from this release"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I now check a few distinctions explicitly when changing the runtime: slot count is not throughput, a mapped test is not an executed test, task completion is not a passing verification result, and a missing response is not proof that nothing happened.&lt;/p&gt;
+&lt;p&gt;0.6.2 is mostly a pile of fixes around those details. None of them is a headline feature, but they make the runtime easier to trust when a coding session gets long.&lt;/p&gt;
+&lt;p&gt;The code is at &lt;a href="https://github.com/francis-du/wcode"&gt;github.com/francis-du/wcode&lt;/a&gt;, and the current documentation is at &lt;a href="https://wcode.francis.run/"&gt;wcode.francis.run&lt;/a&gt;.&lt;/p&gt;</description></item><item><title>How I Store Verification Evidence for Coding Agents</title><link>https://francis.run/en/blog/wcode-verification/</link><pubDate>Sat, 12 Sep 2026 05:34:00 +0800</pubDate><guid>https://francis.run/en/blog/wcode-verification/</guid><description>&lt;p&gt;I keep seeing the same line at the end of agent runs:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tests passed.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After a long edit session, that line is usually missing the part I care about.&lt;/p&gt;
+&lt;p&gt;Which tests ran? Were they quick checks or the full project gate? Did the source change while they were running? Did the design constraints change? Was the output complete? Is the result still valid for the code currently on disk?&lt;/p&gt;
+&lt;p&gt;In &lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt; I ended up storing verification as evidence tied to a repository revision instead of a boolean in the final chat message.&lt;/p&gt;
+&lt;h2 id="what-a-green-command-actually-tells-me"&gt;What a green command actually tells me&lt;a class="heading-anchor" href="#what-a-green-command-actually-tells-me" aria-label="Permalink to section: What a green command actually tells me"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Consider a very normal agent sequence:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit A
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit B
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;finish
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If the final answer says “tests passed,” the statement is technically true about some moment in the session, but it may say nothing about the final repository state.&lt;/p&gt;
+&lt;p&gt;The same problem appears when another process edits the repository during a test run, or when a model runs one language-specific check inside a polyglot project and reports the whole repository as verified.&lt;/p&gt;
+&lt;p&gt;wcode therefore separates several concepts that are often collapsed together:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification is mapped
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification was executed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification passed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence belongs to this revision
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Only the last one is useful as durable proof.&lt;/p&gt;
+&lt;h2 id="derive-checks-from-the-repository-not-from-imagination"&gt;Derive checks from the repository, not from imagination&lt;a class="heading-anchor" href="#derive-checks-from-the-repository-not-from-imagination" aria-label="Permalink to section: Derive checks from the repository, not from imagination"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; does not try to invent a new testing framework.&lt;/p&gt;
+&lt;p&gt;It inspects the repository and derives checks that actually exist. A Rust project may produce a sequence such as formatting, checking, tests, Clippy, and release build. A Node repository is driven by scripts that are actually declared. Other ecosystems have their own providers.&lt;/p&gt;
+&lt;p&gt;The important part is that the plan is explicit.&lt;/p&gt;
+&lt;p&gt;Recent wcode versions also stopped silently truncating large mixed-language verification plans. The runtime now constructs the complete bounded plan first. If it exceeds the supported plan size, it fails before dispatch instead of running an arbitrary prefix and presenting that prefix as complete verification.&lt;/p&gt;
+&lt;p&gt;The old truncation bug was a good reminder that this has to be enforced by the runtime, not left to wording in a report.&lt;/p&gt;
+&lt;h2 id="evidence-carries-provenance"&gt;Evidence carries provenance&lt;a class="heading-anchor" href="#evidence-carries-provenance" aria-label="Permalink to section: Evidence carries provenance"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A useful verification record needs more than &lt;code&gt;passed: true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The evidence layer can retain information such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;producer and check identity;&lt;/li&gt;
+&lt;li&gt;source and design revision;&lt;/li&gt;
+&lt;li&gt;verification policy or plan;&lt;/li&gt;
+&lt;li&gt;result and confidence where applicable;&lt;/li&gt;
+&lt;li&gt;diagnostics and bounded output metadata;&lt;/li&gt;
+&lt;li&gt;timestamps and provenance.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This means a later tool can ask a much better question than “did we ever run tests?”&lt;/p&gt;
+&lt;p&gt;It can ask whether there is current proof for &lt;em&gt;this&lt;/em&gt; revision under &lt;em&gt;this&lt;/em&gt; verification policy.&lt;/p&gt;
+&lt;h2 id="re-check-the-revision-before-accepting-the-result"&gt;Re-check the revision before accepting the result&lt;a class="heading-anchor" href="#re-check-the-revision-before-accepting-the-result" aria-label="Permalink to section: Re-check the revision before accepting the result"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;There is an unavoidable race in repository verification.&lt;/p&gt;
+&lt;p&gt;A check starts against revision A. While it is running, something changes the source to revision B. The command can still exit successfully, but assigning that success to B would be wrong.&lt;/p&gt;
+&lt;p&gt;wcode records the source and design state before execution and checks them again before promoting the report to evidence. If the relevant revision changed, the stale result is rejected rather than attached to the new state.&lt;/p&gt;
+&lt;p&gt;wcode still does not snapshot the filesystem or freeze the worktree during a build. It only refuses to attach an old success to a newer source/design revision.&lt;/p&gt;
+&lt;h2 id="fast-checks-cannot-erase-a-broader-failure"&gt;Fast checks cannot erase a broader failure&lt;a class="heading-anchor" href="#fast-checks-cannot-erase-a-broader-failure" aria-label="Permalink to section: Fast checks cannot erase a broader failure"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Another subtle problem is aggregation.&lt;/p&gt;
+&lt;p&gt;Suppose a full verification fails, then a later quick check passes. A naive “latest result wins” rule can make the repository appear healthy even though the broader failure was never resolved.&lt;/p&gt;
+&lt;p&gt;wcode keeps verification scope and producer semantics when aggregating evidence. A narrow check cannot erase a wider failure merely because it is newer. Conflicting records at the same timestamp fail closed rather than selecting the optimistic interpretation.&lt;/p&gt;
+&lt;p&gt;The same principle applies to language-quality checks: one lint provider proving its own check does not become a universal “project verified” record.&lt;/p&gt;
+&lt;h2 id="missing-evidence-is-not-success"&gt;Missing evidence is not success&lt;a class="heading-anchor" href="#missing-evidence-is-not-success" aria-label="Permalink to section: Missing evidence is not success"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Agent interfaces often have pressure to summarize everything into a positive status indicator.&lt;/p&gt;
+&lt;p&gt;I try to resist that in the Observatory.&lt;/p&gt;
+&lt;p&gt;A missing result is missing. A truncated scan is truncated. A mapped acceptance test that has not run is not “mostly verified.” An unsampled resource is not zero.&lt;/p&gt;
+&lt;p&gt;That makes the UI less cheerful, but much more useful when debugging a long task.&lt;/p&gt;
+&lt;p&gt;I keep three states separate in the UI: proved, failed, and unknown/inconclusive. Unknown stays unknown.&lt;/p&gt;
+&lt;h2 id="long-verification-should-survive-a-dropped-client"&gt;Long verification should survive a dropped client&lt;a class="heading-anchor" href="#long-verification-should-survive-a-dropped-client" aria-label="Permalink to section: Long verification should survive a dropped client"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Full project verification can take long enough that keeping one request connection alive is not a good durability model.&lt;/p&gt;
+&lt;p&gt;wcode can use the MCP Tasks extension for &lt;code&gt;verify_project&lt;/code&gt;. A compatible client receives a persisted task identifier and can query it later with the same authenticated owner. The work remains managed by the runtime after the creating request ends.&lt;/p&gt;
+&lt;p&gt;The task handle also means the client does not need to replay &lt;code&gt;verify_project&lt;/code&gt; just because one response disappeared. Once commands can have side effects, replay-on-timeout is a bad default.&lt;/p&gt;
+&lt;p&gt;The task ID is the durable handle; repeated polling reads the same task result instead of rerunning the verification.&lt;/p&gt;
+&lt;h2 id="completed-is-still-not-passed"&gt;&lt;code&gt;completed&lt;/code&gt; is still not &lt;code&gt;passed&lt;/code&gt;&lt;a class="heading-anchor" href="#completed-is-still-not-passed" aria-label="Permalink to section: completed is still not passed"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Even task state needs careful wording.&lt;/p&gt;
+&lt;p&gt;A persistent task can be &lt;em&gt;completed&lt;/em&gt; because the underlying tool returned a result. That result may still represent failed checks.&lt;/p&gt;
+&lt;p&gt;So a caller must inspect the verification result itself, not infer correctness from transport-level completion.&lt;/p&gt;
+&lt;p&gt;So &lt;code&gt;completed&lt;/code&gt; stays a transport/task state. The verification payload still decides whether the checks passed.&lt;/p&gt;
+&lt;h2 id="agents-make-stale-verification-easier-to-miss"&gt;Agents make stale verification easier to miss&lt;a class="heading-anchor" href="#agents-make-stale-verification-easier-to-miss" aria-label="Permalink to section: Agents make stale verification easier to miss"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Humans make stale-test mistakes too. Agents just compress more edits and checks into less time.&lt;/p&gt;
+&lt;p&gt;They operate quickly, they can issue multiple edits and checks in parallel, they can be interrupted and resumed, and they often summarize a long sequence into a few confident sentences. A single conversational “green” is therefore a weak audit trail.&lt;/p&gt;
+&lt;p&gt;Revision-bound evidence gives the next agent — or the human reviewing the work — something better than trust in the previous summary.&lt;/p&gt;
+&lt;p&gt;It can see what ran, what passed, what failed, what is stale, and what is still unknown.&lt;/p&gt;
+&lt;p&gt;For me, that is enough reason to keep verification outside the chat transcript. The useful part is being able to inspect the proof later, after the session that produced it is gone.&lt;/p&gt;</description></item><item><title>wcode: Connecting Web AI to a Local Repository</title><link>https://francis.run/en/blog/wcode/</link><pubDate>Sat, 12 Sep 2026 05:33:00 +0800</pubDate><guid>https://francis.run/en/blog/wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="Open the wcode documentation"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p class="project-links"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;Documentation ↗&lt;/a&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;I use several AI products in the browser. The annoying part starts when I want one of them to work on a repository that is already on my machine: copy files into chat, upload an archive, switch clients, or configure another API key.&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt; started as my way around that friction. It is a Rust runtime that exposes a local workspace through MCP, with OAuth, file boundaries, code indexing, guarded edits, and command policy on the local side.&lt;/p&gt;
+&lt;p&gt;The first version mostly stopped there. After I started using it for real edits, I spent more time on repository state than on the bridge itself.&lt;/p&gt;
+&lt;p&gt;The questions I kept hitting were:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;What part of the repository does this task belong to?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Which facts are syntax, and which are compiler-grade semantics?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Which files are safe to edit right now?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;What changed since the last verification?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Did the test result belong to this exact revision?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Can another model resume the work without rereading the chat?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Most of the current wcode work comes from those questions.&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp" alt="wcode terminal observability"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp 960w, https://francis.run/img/wcode/wcode-tui_hu_6437a17a51f06ca3.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2146"&gt;&lt;/figure&gt;&lt;h2 id="the-boundary-i-keep-in-wcode"&gt;The boundary I keep in wcode&lt;a class="heading-anchor" href="#the-boundary-i-keep-in-wcode" aria-label="Permalink to section: The boundary I keep in wcode"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode does not choose your model and it does not need to own the conversation loop.&lt;/p&gt;
+&lt;p&gt;A simplified path looks like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Web AI / Coding Agent
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ MCP
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;┌───────────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ wcode │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Auth / Workspace Boundary │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Task-ready Context │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Tree-sitter + LSP │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Editing + Command Policy │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Verification + Evidence │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└─────────────┬─────────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Local repository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I change models and clients much more often than I want to change repository permissions or edit safety. Keeping those two layers separate has worked well for me.&lt;/p&gt;
+&lt;p&gt;For a local coding client, wcode can run over stdio. For a web client, it can expose a remote MCP endpoint with OAuth. Both transports reach the same workspace, tool harness, software intelligence, and verification layers.&lt;/p&gt;
+&lt;h2 id="a-path-in-a-prompt-is-not-authority"&gt;A path in a prompt is not authority&lt;a class="heading-anchor" href="#a-path-in-a-prompt-is-not-authority" aria-label="Permalink to section: A path in a prompt is not authority"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The most important design rule in wcode is that model-visible data does not grant capability.&lt;/p&gt;
+&lt;p&gt;If repository text says “read &lt;code&gt;../../.ssh&lt;/code&gt;”, that is still outside the workspace. If a tool output contains a shell command, that does not make shell execution legal. If a model says a command is safe, that does not approve it.&lt;/p&gt;
+&lt;p&gt;File access is bounded by the configured workspace. Writes use revision preconditions. Protected paths, symlink escapes, stale writes, and unsafe command forms are rejected below the model layer.&lt;/p&gt;
+&lt;p&gt;Commands that are valid but risky can require a precise approval. The approval is tied to the actual operation:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;program
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;arguments
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;working directory
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Approving one &lt;code&gt;cargo test --locked&lt;/code&gt; is not permission to run an arbitrary shell, publish a package, mutate host-wide tooling, or execute a different command later.&lt;/p&gt;
+&lt;p&gt;I prefer this middle ground to the usual two settings: “ask me about everything” and “full access.”&lt;/p&gt;
+&lt;h2 id="cheap-syntax-first-semantic-depth-when-it-matters"&gt;Cheap syntax first, semantic depth when it matters&lt;a class="heading-anchor" href="#cheap-syntax-first-semantic-depth-when-it-matters" aria-label="Permalink to section: Cheap syntax first, semantic depth when it matters"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Repository understanding also has layers.&lt;/p&gt;
+&lt;p&gt;Tree-sitter is excellent for cheap structural work: outlines, definitions, ranges, and syntax-level relationships. It is fast and does not require starting a project semantic environment.&lt;/p&gt;
+&lt;p&gt;But syntax is not a type system.&lt;/p&gt;
+&lt;p&gt;For cross-file references, implementations, call hierarchy, and similar relationships, wcode can use first-party Language Server sessions. These results are tagged by provider and precision, and they are tied to source revisions so stale semantic facts do not quietly survive code changes.&lt;/p&gt;
+&lt;p&gt;That distinction sounds small, but it prevents a common failure mode in agent tooling: presenting a heuristic result as if it were authoritative because it makes the output look smarter.&lt;/p&gt;
+&lt;p&gt;If wcode only knows something syntactically, it says so.&lt;/p&gt;
+&lt;h2 id="agent_context-packages-the-task-i-am-about-to-run"&gt;&lt;code&gt;agent_context&lt;/code&gt; packages the task I am about to run&lt;a class="heading-anchor" href="#agent_context-packages-the-task-i-am-about-to-run" aria-label="Permalink to section: agent_context packages the task I am about to run"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A coding agent does not only need “more context.” It needs the right context in a form that helps it decide what to do next.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;agent_context&lt;/code&gt; therefore tries to produce a bounded, task-ready package. Depending on the task it can include:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;repository guidance;&lt;/li&gt;
+&lt;li&gt;product or architecture scope;&lt;/li&gt;
+&lt;li&gt;target source and exact file SHA;&lt;/li&gt;
+&lt;li&gt;relevant tests and design constraints;&lt;/li&gt;
+&lt;li&gt;semantic-provider readiness;&lt;/li&gt;
+&lt;li&gt;active work items;&lt;/li&gt;
+&lt;li&gt;a minimal-change strategy;&lt;/li&gt;
+&lt;li&gt;candidate dependency lanes and parallelism guidance.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I use it to avoid the usual first few tool calls where an agent rediscovers the repository layout before touching the actual target.&lt;/p&gt;
+&lt;p&gt;When an error already points to &lt;code&gt;src/runtime/foo.rs:120&lt;/code&gt;, the newest retrieval path starts there instead of paying for a broad repository search first. When the task is genuinely cross-file, the deeper graph and semantic paths remain available.&lt;/p&gt;
+&lt;h2 id="verification-is-attached-to-a-revision"&gt;Verification is attached to a revision&lt;a class="heading-anchor" href="#verification-is-attached-to-a-revision" aria-label="Permalink to section: Verification is attached to a revision"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;“Tests passed” is not a durable engineering artifact.&lt;/p&gt;
+&lt;p&gt;Which tests? On which source revision? Did the design state change between the test and the final edit? Was it a quick check or a full project gate? Was the output truncated? Did another process modify the repository while verification was running?&lt;/p&gt;
+&lt;p&gt;wcode records verification evidence with provenance and revision identity. Before a result is recorded as current proof, the relevant source and design state are checked again. If the repository changed, the old result is not promoted to the new revision.&lt;/p&gt;
+&lt;p&gt;The Project Observatory also distinguishes between a test that is &lt;em&gt;mapped&lt;/em&gt; to a requirement and a test that was actually &lt;em&gt;executed and passed&lt;/em&gt; for the current revision.&lt;/p&gt;
+&lt;p&gt;I notice this most after a long session, when there have already been enough edits that “tests passed earlier” is no longer useful.&lt;/p&gt;
+&lt;h2 id="parallelism-is-a-dependency-problem"&gt;Parallelism is a dependency problem&lt;a class="heading-anchor" href="#parallelism-is-a-dependency-problem" aria-label="Permalink to section: Parallelism is a dependency problem"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Recent versions also changed how I think about performance.&lt;/p&gt;
+&lt;p&gt;A large concurrency number is not the goal. Useful parallelism comes from independent work.&lt;/p&gt;
+&lt;p&gt;Reads of unrelated files can overlap. Independent discovery can overlap. A test that depends on a generated file cannot start early just because a slot is free. Two conflicting writes should not race merely to keep a dashboard busy.&lt;/p&gt;
+&lt;p&gt;wcode&amp;rsquo;s parallel scheduler is dependency-driven and completion-driven: a task can proceed when &lt;em&gt;its own&lt;/em&gt; prerequisites are complete, without waiting for an unrelated slow branch in the same conceptual layer.&lt;/p&gt;
+&lt;p&gt;The runtime separately accounts for outer tool admission, CPU work, bounded file I/O, and child-process queues. This prevents “32 slots” from being mistaken for “32 useful CPU tasks.”&lt;/p&gt;
+&lt;h2 id="why-build-this-as-a-local-native-runtime"&gt;Why build this as a local native runtime?&lt;a class="heading-anchor" href="#why-build-this-as-a-local-native-runtime" aria-label="Permalink to section: Why build this as a local native runtime?"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Because the boundary I care about is local.&lt;/p&gt;
+&lt;p&gt;The repository is local. Uncommitted changes are local. Installed language servers are local. Build tools, credentials, filesystem permissions, and project-specific constraints are local.&lt;/p&gt;
+&lt;p&gt;A small native runtime can mediate these things without shipping the entire repository to another orchestration service. wcode is written in Rust and ships as a native binary; it does not require a database or a second agent backend just to expose the local workspace.&lt;/p&gt;
+&lt;p&gt;That also makes the failure boundary easier to reason about. The model proposes; the runtime authorizes and executes.&lt;/p&gt;
+&lt;h2 id="what-i-am-working-on-now"&gt;What I am working on now&lt;a class="heading-anchor" href="#what-i-am-working-on-now" aria-label="Permalink to section: What I am working on now"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Most of my recent changes are in retrieval, permissions, parallel scheduling, verification, and project state. The model can already write code well enough to expose mistakes in the surrounding runtime, so that is where I keep finding work.&lt;/p&gt;
+&lt;p&gt;I also avoid broad speed claims unless I have a workload that supports them. wcode is still changing quickly, and I would rather publish the exact behavior than turn every release into a benchmark story.&lt;/p&gt;
+&lt;p&gt;If that problem is interesting to you, the code is on &lt;a href="https://github.com/francis-du/wcode"&gt;GitHub&lt;/a&gt; and the current documentation is at &lt;a href="https://wcode.francis.run/"&gt;wcode.francis.run&lt;/a&gt;.&lt;/p&gt;</description></item></channel></rss>

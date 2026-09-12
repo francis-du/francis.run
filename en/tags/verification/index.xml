@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Verification | Francis Du</title><link>https://francis.run/en/tags/verification/</link><atom:link href="https://francis.run/en/tags/verification/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>en-US</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 12 Sep 2026 05:34:00 +0800</lastBuildDate><item><title>How I Store Verification Evidence for Coding Agents</title><link>https://francis.run/en/blog/wcode-verification/</link><pubDate>Sat, 12 Sep 2026 05:34:00 +0800</pubDate><guid>https://francis.run/en/blog/wcode-verification/</guid><description>&lt;p&gt;I keep seeing the same line at the end of agent runs:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tests passed.
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After a long edit session, that line is usually missing the part I care about.&lt;/p&gt;
+&lt;p&gt;Which tests ran? Were they quick checks or the full project gate? Did the source change while they were running? Did the design constraints change? Was the output complete? Is the result still valid for the code currently on disk?&lt;/p&gt;
+&lt;p&gt;In &lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt; I ended up storing verification as evidence tied to a repository revision instead of a boolean in the final chat message.&lt;/p&gt;
+&lt;h2 id="what-a-green-command-actually-tells-me"&gt;What a green command actually tells me&lt;a class="heading-anchor" href="#what-a-green-command-actually-tells-me" aria-label="Permalink to section: What a green command actually tells me"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Consider a very normal agent sequence:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit A
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit B
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;finish
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If the final answer says “tests passed,” the statement is technically true about some moment in the session, but it may say nothing about the final repository state.&lt;/p&gt;
+&lt;p&gt;The same problem appears when another process edits the repository during a test run, or when a model runs one language-specific check inside a polyglot project and reports the whole repository as verified.&lt;/p&gt;
+&lt;p&gt;wcode therefore separates several concepts that are often collapsed together:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification is mapped
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification was executed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification passed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence belongs to this revision
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Only the last one is useful as durable proof.&lt;/p&gt;
+&lt;h2 id="derive-checks-from-the-repository-not-from-imagination"&gt;Derive checks from the repository, not from imagination&lt;a class="heading-anchor" href="#derive-checks-from-the-repository-not-from-imagination" aria-label="Permalink to section: Derive checks from the repository, not from imagination"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;verify_project&lt;/code&gt; does not try to invent a new testing framework.&lt;/p&gt;
+&lt;p&gt;It inspects the repository and derives checks that actually exist. A Rust project may produce a sequence such as formatting, checking, tests, Clippy, and release build. A Node repository is driven by scripts that are actually declared. Other ecosystems have their own providers.&lt;/p&gt;
+&lt;p&gt;The important part is that the plan is explicit.&lt;/p&gt;
+&lt;p&gt;Recent wcode versions also stopped silently truncating large mixed-language verification plans. The runtime now constructs the complete bounded plan first. If it exceeds the supported plan size, it fails before dispatch instead of running an arbitrary prefix and presenting that prefix as complete verification.&lt;/p&gt;
+&lt;p&gt;The old truncation bug was a good reminder that this has to be enforced by the runtime, not left to wording in a report.&lt;/p&gt;
+&lt;h2 id="evidence-carries-provenance"&gt;Evidence carries provenance&lt;a class="heading-anchor" href="#evidence-carries-provenance" aria-label="Permalink to section: Evidence carries provenance"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A useful verification record needs more than &lt;code&gt;passed: true&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;The evidence layer can retain information such as:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;producer and check identity;&lt;/li&gt;
+&lt;li&gt;source and design revision;&lt;/li&gt;
+&lt;li&gt;verification policy or plan;&lt;/li&gt;
+&lt;li&gt;result and confidence where applicable;&lt;/li&gt;
+&lt;li&gt;diagnostics and bounded output metadata;&lt;/li&gt;
+&lt;li&gt;timestamps and provenance.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This means a later tool can ask a much better question than “did we ever run tests?”&lt;/p&gt;
+&lt;p&gt;It can ask whether there is current proof for &lt;em&gt;this&lt;/em&gt; revision under &lt;em&gt;this&lt;/em&gt; verification policy.&lt;/p&gt;
+&lt;h2 id="re-check-the-revision-before-accepting-the-result"&gt;Re-check the revision before accepting the result&lt;a class="heading-anchor" href="#re-check-the-revision-before-accepting-the-result" aria-label="Permalink to section: Re-check the revision before accepting the result"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;There is an unavoidable race in repository verification.&lt;/p&gt;
+&lt;p&gt;A check starts against revision A. While it is running, something changes the source to revision B. The command can still exit successfully, but assigning that success to B would be wrong.&lt;/p&gt;
+&lt;p&gt;wcode records the source and design state before execution and checks them again before promoting the report to evidence. If the relevant revision changed, the stale result is rejected rather than attached to the new state.&lt;/p&gt;
+&lt;p&gt;wcode still does not snapshot the filesystem or freeze the worktree during a build. It only refuses to attach an old success to a newer source/design revision.&lt;/p&gt;
+&lt;h2 id="fast-checks-cannot-erase-a-broader-failure"&gt;Fast checks cannot erase a broader failure&lt;a class="heading-anchor" href="#fast-checks-cannot-erase-a-broader-failure" aria-label="Permalink to section: Fast checks cannot erase a broader failure"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Another subtle problem is aggregation.&lt;/p&gt;
+&lt;p&gt;Suppose a full verification fails, then a later quick check passes. A naive “latest result wins” rule can make the repository appear healthy even though the broader failure was never resolved.&lt;/p&gt;
+&lt;p&gt;wcode keeps verification scope and producer semantics when aggregating evidence. A narrow check cannot erase a wider failure merely because it is newer. Conflicting records at the same timestamp fail closed rather than selecting the optimistic interpretation.&lt;/p&gt;
+&lt;p&gt;The same principle applies to language-quality checks: one lint provider proving its own check does not become a universal “project verified” record.&lt;/p&gt;
+&lt;h2 id="missing-evidence-is-not-success"&gt;Missing evidence is not success&lt;a class="heading-anchor" href="#missing-evidence-is-not-success" aria-label="Permalink to section: Missing evidence is not success"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Agent interfaces often have pressure to summarize everything into a positive status indicator.&lt;/p&gt;
+&lt;p&gt;I try to resist that in the Observatory.&lt;/p&gt;
+&lt;p&gt;A missing result is missing. A truncated scan is truncated. A mapped acceptance test that has not run is not “mostly verified.” An unsampled resource is not zero.&lt;/p&gt;
+&lt;p&gt;That makes the UI less cheerful, but much more useful when debugging a long task.&lt;/p&gt;
+&lt;p&gt;I keep three states separate in the UI: proved, failed, and unknown/inconclusive. Unknown stays unknown.&lt;/p&gt;
+&lt;h2 id="long-verification-should-survive-a-dropped-client"&gt;Long verification should survive a dropped client&lt;a class="heading-anchor" href="#long-verification-should-survive-a-dropped-client" aria-label="Permalink to section: Long verification should survive a dropped client"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Full project verification can take long enough that keeping one request connection alive is not a good durability model.&lt;/p&gt;
+&lt;p&gt;wcode can use the MCP Tasks extension for &lt;code&gt;verify_project&lt;/code&gt;. A compatible client receives a persisted task identifier and can query it later with the same authenticated owner. The work remains managed by the runtime after the creating request ends.&lt;/p&gt;
+&lt;p&gt;The task handle also means the client does not need to replay &lt;code&gt;verify_project&lt;/code&gt; just because one response disappeared. Once commands can have side effects, replay-on-timeout is a bad default.&lt;/p&gt;
+&lt;p&gt;The task ID is the durable handle; repeated polling reads the same task result instead of rerunning the verification.&lt;/p&gt;
+&lt;h2 id="completed-is-still-not-passed"&gt;&lt;code&gt;completed&lt;/code&gt; is still not &lt;code&gt;passed&lt;/code&gt;&lt;a class="heading-anchor" href="#completed-is-still-not-passed" aria-label="Permalink to section: completed is still not passed"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Even task state needs careful wording.&lt;/p&gt;
+&lt;p&gt;A persistent task can be &lt;em&gt;completed&lt;/em&gt; because the underlying tool returned a result. That result may still represent failed checks.&lt;/p&gt;
+&lt;p&gt;So a caller must inspect the verification result itself, not infer correctness from transport-level completion.&lt;/p&gt;
+&lt;p&gt;So &lt;code&gt;completed&lt;/code&gt; stays a transport/task state. The verification payload still decides whether the checks passed.&lt;/p&gt;
+&lt;h2 id="agents-make-stale-verification-easier-to-miss"&gt;Agents make stale verification easier to miss&lt;a class="heading-anchor" href="#agents-make-stale-verification-easier-to-miss" aria-label="Permalink to section: Agents make stale verification easier to miss"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Humans make stale-test mistakes too. Agents just compress more edits and checks into less time.&lt;/p&gt;
+&lt;p&gt;They operate quickly, they can issue multiple edits and checks in parallel, they can be interrupted and resumed, and they often summarize a long sequence into a few confident sentences. A single conversational “green” is therefore a weak audit trail.&lt;/p&gt;
+&lt;p&gt;Revision-bound evidence gives the next agent — or the human reviewing the work — something better than trust in the previous summary.&lt;/p&gt;
+&lt;p&gt;It can see what ran, what passed, what failed, what is stale, and what is still unknown.&lt;/p&gt;
+&lt;p&gt;For me, that is enough reason to keep verification outside the chat transcript. The useful part is being able to inspect the proof later, after the session that produced it is gone.&lt;/p&gt;</description></item></channel></rss>
