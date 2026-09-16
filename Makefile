@@ -135,12 +135,24 @@ check:
 	grep -q '<generator>Hugo ' $(BUILD_DIR)/index.xml
 	test "$$(grep -o '<item>' $(BUILD_DIR)/index.xml | wc -l | tr -d ' ')" -le "20"
 	test "$$(grep -o '<item>' $(BUILD_DIR)/tags/wcode/index.xml | wc -l | tr -d ' ')" -le "20"
-	grep -q 'Repository access with an actual boundary' $(BUILD_DIR)/en/index.xml
+	grep -q 'Deciding what the assistant can access' $(BUILD_DIR)/en/index.xml
 	grep -q '<copyright>© Francis Du</copyright>' $(BUILD_DIR)/index.xml
 	! grep -q 'Source Themes Academic' $(BUILD_DIR)/index.xml
 	! grep -q 'Ink theme on Hugo' $(BUILD_DIR)/index.xml
-	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-intro-architecture.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-intro-architecture.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	for image in architecture evidence access activity; do \
+		test ! -L "static/img/wcode/wcode-intro-$$image.png" && \
+		cmp "static/img/wcode/wcode-intro-$$image.png" "$(BUILD_DIR)/img/wcode/wcode-intro-$$image.png" || exit 1; \
+	done
+	for diagram in intelligence-stack engineering-loop verification-mesh security-boundary; do \
+		for lang in "" ".zh-CN"; do \
+			test ! -L "static/img/wcode/wcode-intro-$$diagram$$lang.svg" && \
+			cmp "static/img/wcode/wcode-intro-$$diagram$$lang.svg" "$(BUILD_DIR)/img/wcode/wcode-intro-$$diagram$$lang.svg" || exit 1; \
+		done; \
+		grep -q "/img/wcode/wcode-intro-$$diagram.zh-CN.svg" $(BUILD_DIR)/blog/what-is-wcode/index.html && \
+		grep -q "/img/wcode/wcode-intro-$$diagram.svg" $(BUILD_DIR)/en/blog/what-is-wcode/index.html || exit 1; \
+	done
 	grep -q 'alt="wcode Architecture" loading=lazy decoding=async' $(BUILD_DIR)/blog/wcode-v0-6/index.html
 	grep -q 'srcset=' $(BUILD_DIR)/blog/wcode-v0-6/index.html
 	grep -q '960w' $(BUILD_DIR)/blog/wcode-v0-6/index.html

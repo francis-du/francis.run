@@ -548,7 +548,7 @@ pre {
 .related-card h3 a:hover { color: var(--accent); }
 .related-card p { margin: 0; color: var(--text-soft); font-size: 0.83rem; line-height: 1.55; }
 .content-image { margin: 1.6rem 0; }
-.content-image img { margin: 0 auto; }
+.content-image img { margin: 0 auto; height: auto; }
 
 .list .posts .post-header .meta { margin-bottom: 0; margin-left: 0; }
 .list .page-title { margin-bottom: 28px; }
