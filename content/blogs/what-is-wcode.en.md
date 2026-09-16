@@ -1,12 +1,12 @@
 ---
-title: "What Is wcode, and Why Did I Build It?"
+title: "How wcode Started, and What Problem It Actually Solves"
 date: 2026-09-12T05:41:00+08:00
-lastmod: 2026-09-16
+lastmod: 2026-09-17
 draft: false
 url: blog/what-is-wcode/
 translationKey: what-is-wcode
 image: /img/wcode/wcode-intro-architecture.png
-description: "wcode lets an AI coding assistant search, edit, and run checks in a local repository. A practical introduction to how it works, what its checks establish, and how to get started."
+description: "wcode started as a bridge between browser-based models and local code, then grew into an engineering layer for helping models read, understand, change, and verify real repositories."
 tags:
   - wcode
   - Rust
@@ -21,30 +21,46 @@ images:
 
 <p class="project-links"><a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener">GitHub ↗</a><a href="https://wcode.francis.run/docs/" target="_blank" rel="noopener">Docs ↗</a></p>
 
-I started wcode to get rid of a repetitive chore: moving code into an AI conversation.
+I did not start wcode because I wanted to build another coding agent.
 
-The project was already on my computer, but asking a question in a web client still meant copying files, uploading an archive, and explaining where things lived. If I edited the code halfway through, the copy in the conversation was already out of date.
+The first idea was much simpler: **use the models that vendors already made available in their web products for coding, while giving those models a way to work with the real repository on my machine.** The model was in the browser; the code was local. Anything beyond a tiny question meant copying files, uploading an archive, explaining the directory structure, and doing it again as soon as the repository changed.
 
-**The first job of wcode is to let an AI coding assistant search, edit, and run checks in a local project.** It is a Rust program that runs on the machine with the repository. It connects to an AI client through MCP, a protocol for calling external tools.
+The first version of wcode was therefore a bridge. It let a browser-based model search local files, read code, make changes, and run checks through tools. MCP later gave that connection a more standard shape, but getting the connection to work was not the part that kept me working on the project.
 
-Getting that connection working raised another set of questions. What did the assistant base its edit on? Could it overwrite a change I had just made? Did the tests actually run? Those questions account for much of what wcode does now.
+Once the bridge worked, a more interesting problem became obvious: **how was the agent actually reading the codebase?**
 
-## Working with the actual repository
+A lot of code-CLI discovery starts with `grep`, `ripgrep`, file listings, and shell-style repository scans. There is nothing wrong with that. I use those tools all the time, and for finding a string, filename, or obvious symbol they are often exactly the right choice.
 
-Suppose I want to add a status filter to a list endpoint.
+The problem is what happens next.
 
-Pasting the endpoint into a conversation may leave out most of what matters. The assistant needs to find the parameter definitions, query construction, callers, and tests. It also needs to know the existing rules: can the parameter be empty, and must older callers keep working?
+A search returns matching text. The model still has to reconstruct which definition matters, whether two same-named symbols are related, who calls what, what a change might affect, which test covers the behavior, and whether a relationship is merely plausible from text or actually resolved by a language-aware tool.
 
-wcode exposes tools for reading files, searching, locating symbols, and inspecting relationships. Its `agent_context` tool gathers relevant implementation, tests, project guidance, and verification entry points around the task. The agent can then investigate whatever is still unclear. The conversation has a way back to the actual project.
+Stronger models can reconstruct more of that from snippets, but the repository-understanding work is still being pushed back into the context window. As the codebase grows, repeated names, cross-module calls, generated code, and incomplete slices make that reconstruction increasingly fragile.
 
-The diagram below shows where that information comes from. Source, Git, and project guidance feed the repository model; tools use it to locate code, examine the impact of changes, and plan checks.
+That is where wcode changed direction. **Instead of only giving the model more commands, I started treating “how the model reads a repository” as an engineering problem of its own.**
+
+## The difference I care about is how the model reads the repository
+
+wcode still uses text search. Cheap localization should stay cheap. If the question is “where is `FooConfig`?”, starting a semantic pipeline just to look sophisticated would be wasteful.
+
+But once the question becomes “who calls this?”, “what implements it?”, “what does this rename affect?”, or “which test proves this behavior?”, matching text is no longer enough. wcode can use Tree-sitter for stable syntax structure, upgrade to a warm LSP session when cross-file semantic relationships matter, and combine that with the current Git state, Design State, tests, and known graph relationships.
+
+What reaches the model is therefore not only a pile of source snippets. It can be a bounded task context containing relevant symbols and exact ranges, references or calls, associated tests, current changes, project constraints, and the provenance, precision, and revision of those facts.
+
+A rough way to think about the two paths is:
+
+**Common text-discovery loop:** task → `grep/ripgrep` / file slices → matching text → model reconstructs the code relationships.
+
+**wcode repository-reading path:** task → cheap localization → syntax/semantic relationships when needed → task-ready evidence → model reasons over context with explicit provenance and precision.
 
 <figure class="content-image">
-  <img src="/img/wcode/wcode-intro-intelligence-stack.svg" alt="How wcode supplies source, Git state, project guidance, and code-analysis results to a coding assistant" width="1600" height="960" loading="lazy" decoding="async">
-  <figcaption>Results retain their source and revision, and distinguish syntax-derived information from language-server analysis.</figcaption>
+  <img src="/img/wcode/wcode-intro-intelligence-stack.svg" alt="Comparison between text-search code discovery and wcode's repository-reading path" width="1600" height="960" loading="lazy" decoding="async">
+  <figcaption>wcode is not trying to replace grep. Search is often the right tool for exact localization; stronger structure and semantics are added when the task asks about relationships, impact, or proof.</figcaption>
 </figure>
 
-Finding a name is not the same as finding every caller. Tree-sitter primarily describes code structure. An available language server can provide deeper reference, implementation, and call information. The result should say how much the tool was able to establish.
+Take a routine change such as adding a status filter to a list endpoint. Searching the endpoint name may find the handler, but that does not guarantee the parameter definition, query construction, callers, and regression tests are all in view. `agent_context` gathers the implementation, tests, project guidance, and verification entry points that look relevant to the current task. If the task explicitly needs callers, references, implementations, or impact, readiness can then direct the agent to semantic navigation.
+
+That distinction matters to me: **not every question should pay for the heaviest analysis, but the agent should know when search has stopped being enough.** wcode reports only the precision it actually has. Tree-sitter syntax is not presented as compiler semantics, and an unavailable LSP does not become a fake claim that every caller was found.
 
 ## Making an edit without losing someone else's work
 
