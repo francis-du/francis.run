@@ -1,90 +1,67 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Francis 的技术文章、项目记录与随笔。</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><item><title>wcode 是什么：给 Coding Agent 一套本地代码运行时</title><link>https://francis.run/blog/what-is-wcode/</link><pubDate>Sat, 12 Sep 2026 05:40:00 +0800</pubDate><guid>https://francis.run/blog/what-is-wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode 文档"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p class="project-links"&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;文档 ↗&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;我最开始写 wcode 时没打算再做一个 Coding Agent。&lt;/p&gt;
-&lt;p&gt;ChatGPT、Claude、Grok 我都在用。麻烦的是本地仓库：Web 端聊得挺顺，一碰代码就要复制文件、上传压缩包，或者换客户端、再配一套 API Key。&lt;/p&gt;
-&lt;p&gt;所以第一版 wcode 很简单：把本地代码库通过 MCP 接给我已经在用的 AI。&lt;/p&gt;
-&lt;p&gt;桥接做好以后，问题很快从“把文件给模型看”变成了仓库状态：它读的是不是最新版本？这个符号到底在哪？搜索结果来自 Tree-sitter 还是 Language Server？两个修改能不能并行？测试跑完以后代码又变了怎么办？&lt;/p&gt;
-&lt;p&gt;现在的 wcode，主要就在解决这些问题。&lt;/p&gt;
-&lt;h2 id="我现在怎么理解-wcode"&gt;我现在怎么理解 wcode&lt;a class="heading-anchor" href="#%e6%88%91%e7%8e%b0%e5%9c%a8%e6%80%8e%e4%b9%88%e7%90%86%e8%a7%a3-wcode" aria-label="章节链接：我现在怎么理解 wcode"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;&lt;strong&gt;wcode 是一套跑在本机的 Coding Agent runtime / harness。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;模型负责理解需求和做决策；wcode 负责把仓库变成一组有边界、可验证的工程能力。&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ChatGPT / Claude / Codex / 其他 Agent
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ MCP
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;┌──────────────────────────────────┐
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ wcode │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Workspace / Auth / Permissions │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Search / Tree-sitter / LSP │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Safe edits / Git / Commands │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Design State / Verification │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;│ Evidence / Observatory │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;└────────────────┬─────────────────┘
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 本地仓库
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它不绑定某个模型，也不要求聊天必须发生在 wcode 自己的 UI 里。能说 MCP 的客户端可以直接接；本地 Agent 也可以走 stdio。&lt;/p&gt;
-&lt;p&gt;我更想把 wcode 做成一层稳定的本地基础设施。模型换了，仓库访问、权限、索引和验证逻辑不用跟着重写。&lt;/p&gt;
-&lt;h2 id="我日常主要用它做这些事"&gt;我日常主要用它做这些事&lt;a class="heading-anchor" href="#%e6%88%91%e6%97%a5%e5%b8%b8%e4%b8%bb%e8%a6%81%e7%94%a8%e5%ae%83%e5%81%9a%e8%bf%99%e4%ba%9b%e4%ba%8b" aria-label="章节链接：我日常主要用它做这些事"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;h3 id="先把当前仓库搞清楚"&gt;先把当前仓库搞清楚&lt;a class="heading-anchor" href="#%e5%85%88%e6%8a%8a%e5%bd%93%e5%89%8d%e4%bb%93%e5%ba%93%e6%90%9e%e6%b8%85%e6%a5%9a" aria-label="章节链接：先把当前仓库搞清楚"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;最基础的是读文件、搜代码、找符号，但 wcode 不只返回一坨文本。&lt;/p&gt;
-&lt;p&gt;Tree-sitter 负责便宜的结构化索引，比如定义、范围、文件 outline。需要跨文件引用、实现、调用关系时，再进入 Language Server。两种结果会明确标出来源和精度，不会把语法猜测包装成“精确语义”。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;agent_context&lt;/code&gt; 会再往前走一步。它不是把整个仓库塞进上下文，而是根据当前任务整理出：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;直接相关的文件和 SHA；&lt;/li&gt;
-&lt;li&gt;仓库自己的说明和约束；&lt;/li&gt;
-&lt;li&gt;Design State；&lt;/li&gt;
-&lt;li&gt;当前语义能力是否就绪；&lt;/li&gt;
-&lt;li&gt;可以并行的工作 lane；&lt;/li&gt;
-&lt;li&gt;推荐的最小修改路径；&lt;/li&gt;
-&lt;li&gt;后面应该跑什么验证。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这样模型第一次动手时通常已经有目标文件、版本和验证入口，不用先从仓库根目录摸索。&lt;/p&gt;
-&lt;h3 id="编辑要带版本前置条件"&gt;编辑要带版本前置条件&lt;a class="heading-anchor" href="#%e7%bc%96%e8%be%91%e8%a6%81%e5%b8%a6%e7%89%88%e6%9c%ac%e5%89%8d%e7%bd%ae%e6%9d%a1%e4%bb%b6" aria-label="章节链接：编辑要带版本前置条件"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;Agent 最容易制造的一类事故，是拿旧上下文覆盖新代码。&lt;/p&gt;
-&lt;p&gt;wcode 读文件会返回 SHA。编辑已有文件时，这个 SHA 是前置条件。如果我在模型思考期间手动改过文件，旧编辑会直接失败，不会安静地把我的修改盖掉。&lt;/p&gt;
-&lt;p&gt;路径本身也不是权限。Workspace 会挡住父目录逃逸、Symlink、受保护文件和一些明显不该碰的位置。需要扩大权限时，由本地授权层决定，不能让模型自己说一句“这个命令没问题”就算批准。&lt;/p&gt;
-&lt;h3 id="并行按依赖走"&gt;并行按依赖走&lt;a class="heading-anchor" href="#%e5%b9%b6%e8%a1%8c%e6%8c%89%e4%be%9d%e8%b5%96%e8%b5%b0" aria-label="章节链接：并行按依赖走"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;我以前也很容易盯着 slots、peak 这些数字看性能。后来 0.6.x 重做了一轮以后，这个想法基本放下了。&lt;/p&gt;
-&lt;p&gt;现在的调度很朴素：互不依赖的读取和分析尽快一起跑；有依赖的任务等前置完成；两个会互相覆盖的写入排队。&lt;/p&gt;
-&lt;p&gt;wcode 现在把外层工具槽、CPU、文件 I/O、子进程、Git probe 分开控制。这样“并发 32”不会被误解成“同时跑 32 个编译任务”。&lt;/p&gt;
-&lt;h3 id="验证结果和代码版本绑在一起"&gt;验证结果和代码版本绑在一起&lt;a class="heading-anchor" href="#%e9%aa%8c%e8%af%81%e7%bb%93%e6%9e%9c%e5%92%8c%e4%bb%a3%e7%a0%81%e7%89%88%e6%9c%ac%e7%bb%91%e5%9c%a8%e4%b8%80%e8%b5%b7" aria-label="章节链接：验证结果和代码版本绑在一起"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;Agent 世界里，“tests passed”这句话太便宜了。&lt;/p&gt;
-&lt;p&gt;我会看四件事：跑了哪些检查、对应哪个代码 revision、当时的 Design State 是什么、这份结果现在还有效没有。&lt;/p&gt;
-&lt;p&gt;wcode 的 verification 会记录这些东西。如果测试跑完以后代码又变了，旧证据不会自动算到新版本头上。Project Observatory 里也会把“这个测试和需求有映射”“它实际执行了”“它通过了”“证据仍然新鲜”分开显示。&lt;/p&gt;
-&lt;p&gt;长任务做到后半段时，这些信息比一句 &lt;code&gt;tests passed&lt;/code&gt; 有用得多。&lt;/p&gt;
-&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp" alt="wcode Project Observatory"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-observatory-full_hu_2e0fc54b6ad597b6.webp 960w, https://francis.run/img/wcode/wcode-observatory-full_hu_77a4ca195d4c7462.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="5017"&gt;&lt;/figure&gt;&lt;h2 id="design-state-是后来加进去的一块"&gt;Design State 是后来加进去的一块&lt;a class="heading-anchor" href="#design-state-%e6%98%af%e5%90%8e%e6%9d%a5%e5%8a%a0%e8%bf%9b%e5%8e%bb%e7%9a%84%e4%b8%80%e5%9d%97" aria-label="章节链接：Design State 是后来加进去的一块"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;代码本身只能告诉 Agent“现在是什么样”，很难告诉它“本来应该是什么样”。&lt;/p&gt;
-&lt;p&gt;所以我后来把需求、组件、约束、验收条件也放进仓库里的 &lt;code&gt;.wcode/&lt;/code&gt;。它们会直接参与上下文、影响分析、漂移检测和验证映射，不是另外维护一套长篇架构文档。&lt;/p&gt;
-&lt;p&gt;比如我现在这个博客也已经用 wcode 管了。里面会明确写：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;中文 URL 保持在根路径，英文放 &lt;code&gt;/en/&lt;/code&gt;；&lt;/li&gt;
-&lt;li&gt;Gallery 有自己单独的脚本和渲染生命周期，不能被普通文章模板顺手改坏；&lt;/li&gt;
-&lt;li&gt;技术文章不能写成一眼 AI 生成的模板文；&lt;/li&gt;
-&lt;li&gt;改模板以后必须真的跑 Hugo build，不能只看 &lt;code&gt;git diff --check&lt;/code&gt;。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;这类东西靠聊天记忆很容易丢，放进仓库就清楚多了。&lt;/p&gt;
-&lt;h2 id="wcode-适合什么场景"&gt;wcode 适合什么场景&lt;a class="heading-anchor" href="#wcode-%e9%80%82%e5%90%88%e4%bb%80%e4%b9%88%e5%9c%ba%e6%99%af" aria-label="章节链接：wcode 适合什么场景"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;我自己主要拿它做三件事。&lt;/p&gt;
-&lt;p&gt;第一种是给 Web AI 接本地仓库。我可以继续用已经订阅的 Web 产品，让 wcode 只负责本地代码能力，不必因为“要读代码”再单独买一份模型 API Token。&lt;/p&gt;
-&lt;p&gt;第二种是给本地 Coding Agent 当 harness。Agent 不需要自己重复造搜索、权限、编辑事务、验证和项目状态这些东西。&lt;/p&gt;
-&lt;p&gt;第三种是长时间、跨很多文件的改动。任务越长，旧上下文、并发冲突、验证失效和“做到哪了”越容易出问题，这也是我现在花最多时间的方向。&lt;/p&gt;
-&lt;h2 id="它不负责什么"&gt;它不负责什么&lt;a class="heading-anchor" href="#%e5%ae%83%e4%b8%8d%e8%b4%9f%e8%b4%a3%e4%bb%80%e4%b9%88" aria-label="章节链接：它不负责什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;wcode 不提供模型，也不想替你决定哪个模型最好。&lt;/p&gt;
-&lt;p&gt;它没有自己的 Agent 人格，不保存你的聊天历史，也不会因为接了 MCP 就绕过模型提供商自己的套餐、速率和上下文限制。&lt;/p&gt;
-&lt;p&gt;它负责的是本机这一侧：仓库、工具、权限、状态和证据。&lt;/p&gt;
-&lt;p&gt;模型和客户端我会换，本地仓库的权限、验证和工程规则我不想跟着一起重写。&lt;/p&gt;
-&lt;h2 id="怎么开始"&gt;怎么开始&lt;a class="heading-anchor" href="#%e6%80%8e%e4%b9%88%e5%bc%80%e5%a7%8b" aria-label="章节链接：怎么开始"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;项目源码在 GitHub：&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;github.com/francis-du/wcode&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;完整安装、客户端接入和命令说明放在：&lt;/p&gt;
-&lt;p&gt;&lt;a href="https://wcode.francis.run/"&gt;wcode.francis.run&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;装好以后可以先跑：&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Francis 的技术文章、项目记录与随笔。</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><item><title>wcode 是什么，以及我为什么做它</title><link>https://francis.run/blog/what-is-wcode/</link><pubDate>Sat, 12 Sep 2026 05:40:00 +0800</pubDate><guid>https://francis.run/blog/what-is-wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode 文档"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p class="project-links"&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;a href="https://wcode.francis.run/zh/docs/" target="_blank" rel="noopener"&gt;文档 ↗&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;我最开始做 wcode，是想省掉一件反复在做的事：给 AI 搬代码。&lt;/p&gt;
+&lt;p&gt;项目就在电脑上，但在网页里聊一个问题，还是要复制文件、上传压缩包，告诉它目录怎么分、入口在哪里。聊到一半，代码又改了，前面传过去的内容也就旧了。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;wcode 做的第一件事，就是让 AI 编程助手直接在本地项目里查代码、改文件、跑检查。&lt;/strong&gt; 它是一个用 Rust 写的程序，运行在仓库所在的机器上，通过 MCP 和 AI 客户端连接。MCP 可以理解为一套让 AI 调用外部工具的协议。&lt;/p&gt;
+&lt;p&gt;接通以后，我发现“能改代码”只是开始。还要知道它根据什么改、有没有覆盖别人的修改、检查是不是真的跑过。现在的 wcode，也在处理这些事情。&lt;/p&gt;
+&lt;h2 id="先让-ai-看到正在用的那份代码"&gt;先让 AI 看到正在用的那份代码&lt;a class="heading-anchor" href="#%e5%85%88%e8%ae%a9-ai-%e7%9c%8b%e5%88%b0%e6%ad%a3%e5%9c%a8%e7%94%a8%e7%9a%84%e9%82%a3%e4%bb%bd%e4%bb%a3%e7%a0%81" aria-label="章节链接：先让 AI 看到正在用的那份代码"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;假设我要给一个列表接口增加“按状态筛选”。&lt;/p&gt;
+&lt;p&gt;只把接口那几十行代码贴给 AI，通常还不够。它需要知道参数在哪里定义、查询怎么拼、谁在调用这个接口、测试放在哪。有些限制也藏在项目约定里：参数可不可以为空，旧调用方要不要继续兼容。&lt;/p&gt;
+&lt;p&gt;wcode 提供读文件、搜索、查符号和调用关系等工具。&lt;code&gt;agent_context&lt;/code&gt; 会围绕这次任务，先整理相关实现、测试、项目约定和后续检查入口。遇到不清楚的地方，Agent 再继续查。这样每次讨论都能回到实际仓库，而不是一直围着几段粘贴的代码猜。&lt;/p&gt;
+&lt;p&gt;下面这张图画的是这些信息从哪里来。上面是源码、Git 和项目约定，中间把它们联系起来，下面是 Agent 用来定位问题、分析影响和执行检查的工具。&lt;/p&gt;
+&lt;figure class="content-image"&gt;
+&lt;img src="https://francis.run/img/wcode/wcode-intro-intelligence-stack.zh-CN.svg" alt="wcode 如何把源码、Git、项目约定和代码分析结果提供给 AI 编程助手" width="1600" height="960" loading="lazy" decoding="async"&gt;
+&lt;figcaption&gt;工具返回的信息会标明来源和版本。语法扫描与语言服务器分析的结果，精度也会区分。&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;这里有个容易忽略的区别：搜到一个名字，不等于找到了全部调用方。Tree-sitter 主要看代码结构；可用的语言服务器能提供更深入的引用、实现和调用关系。工具能确认多少，就应该说多少。&lt;/p&gt;
+&lt;h2 id="接上仓库以后还得防止改错"&gt;接上仓库以后，还得防止改错&lt;a class="heading-anchor" href="#%e6%8e%a5%e4%b8%8a%e4%bb%93%e5%ba%93%e4%bb%a5%e5%90%8e%e8%bf%98%e5%be%97%e9%98%b2%e6%ad%a2%e6%94%b9%e9%94%99" aria-label="章节链接：接上仓库以后，还得防止改错"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;继续拿筛选接口这个例子。Agent 读完文件，正在生成修改时，我也可能在编辑同一个文件。&lt;/p&gt;
+&lt;p&gt;如果它直接把旧版本上的修改写回来，就可能覆盖我刚加的内容。所以 wcode 读文件时会返回一个 SHA，可以把它理解成文件内容的指纹。编辑时必须带上这个指纹；内容已经变了，旧编辑就会被拒绝，Agent 要重新读。&lt;/p&gt;
+&lt;p&gt;修改也需要控制范围。读几个互不相关的文件可以一起做；两次修改都要动同一个文件，就不能随便同时写。改完之后，用 &lt;code&gt;review_changes&lt;/code&gt; 看实际差异，再用 &lt;code&gt;verify_project&lt;/code&gt; 跑项目里已有的检查。&lt;/p&gt;
+&lt;figure class="content-image"&gt;
+&lt;img src="https://francis.run/img/wcode/wcode-intro-engineering-loop.zh-CN.svg" alt="一次代码修改的流程：找依据、修改文件、检查结果，再继续下一步" width="1600" height="900" loading="lazy" decoding="async"&gt;
+&lt;figcaption&gt;我希望一次任务最后能回答：改了哪里，检查过什么，还有什么没确认。&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;wcode 文档里把这一层叫作“工程控制面”。落到日常使用，就是把文件、操作记录和检查结果留清楚。换一个模型或者接着做下一轮，也能查到前面发生过什么。&lt;/p&gt;
+&lt;h2 id="测试通过也得看是哪一次修改"&gt;测试通过，也得看是哪一次修改&lt;a class="heading-anchor" href="#%e6%b5%8b%e8%af%95%e9%80%9a%e8%bf%87%e4%b9%9f%e5%be%97%e7%9c%8b%e6%98%af%e5%93%aa%e4%b8%80%e6%ac%a1%e4%bf%ae%e6%94%b9" aria-label="章节链接：测试通过，也得看是哪一次修改"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;给接口加了筛选条件，测试通过了。接着又调整参数解析，却没有再跑测试。这时，前面的通过记录只能说明前一个版本通过了。&lt;/p&gt;
+&lt;p&gt;wcode 会把检查结果和当时的代码、设计版本关联起来。界面里的几个状态也有区别：找到测试文件，只能算“有对应检查”；真正运行过、结果通过、结果仍适用于当前版本，是后面的几件事。&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-evidence_hu_53064a9df2e7669f.webp" alt="wcode 验证页面：查看检查有没有执行、结果是否通过，以及是否对应当前版本"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-intro-evidence_hu_53064a9df2e7669f.webp 960w, https://francis.run/img/wcode/wcode-intro-evidence_hu_3aad68b05435b458.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2426"&gt;&lt;/figure&gt;&lt;p&gt;检查本身也要选对。这个博客用 Hugo 生成网页，写完 Markdown 以后，至少要真正构建一次，确认中英文页面都生成了、图片能找到、原来的地址没有变。只看文字没有语法错误，证明不了这些事情。&lt;/p&gt;
+&lt;p&gt;对代码项目，则需要运行相应的编译、测试或其他项目检查。涉及更大风险的改动，可以按配置增加更深入的验证。下图列出了这些通道，并不是每次修改都要把它们全部跑一遍。&lt;/p&gt;
+&lt;figure class="content-image"&gt;
+&lt;img src="https://francis.run/img/wcode/wcode-intro-verification-mesh.zh-CN.svg" alt="wcode 如何根据改动选择检查，并保存对应版本的执行结果" width="1600" height="940" loading="lazy" decoding="async"&gt;
+&lt;figcaption&gt;项目和验证计划决定哪些检查必须完成；缺少执行结果，不能靠一句“应该没问题”补上。&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;p&gt;历史上的成功修改可以帮助下一次任务找方向，但旧测试结果不能一直沿用。这是我希望 wcode 替我记住的一件事。&lt;/p&gt;
+&lt;h2 id="项目里的规矩得有地方放"&gt;项目里的规矩，得有地方放&lt;a class="heading-anchor" href="#%e9%a1%b9%e7%9b%ae%e9%87%8c%e7%9a%84%e8%a7%84%e7%9f%a9%e5%be%97%e6%9c%89%e5%9c%b0%e6%96%b9%e6%94%be" aria-label="章节链接：项目里的规矩，得有地方放"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;有些要求从一段代码里看不出来。&lt;/p&gt;
+&lt;p&gt;比如这个博客，中文页面一直在根路径，英文放在 &lt;code&gt;/en/&lt;/code&gt;；摄影 Gallery 有自己的页面和脚本；改文章时要保留原来的公开地址。Agent 如果不知道这些约定，很容易在完成眼前任务时，顺手改掉别的行为。&lt;/p&gt;
+&lt;p&gt;wcode 可以把这类要求写进仓库的 &lt;code&gt;.wcode/&lt;/code&gt; 目录。文档把它们称为 Design State，里面记录需求、组件、约束和验收条件。之后查项目、分析一次修改的影响时，可以把这些要求一起带出来。&lt;/p&gt;
+&lt;p&gt;工程观测台默认打开架构页面。从这里可以看组件对应哪些源码、关联哪些需求，以及分析工具发现了哪些依赖。&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-architecture_hu_a639e2cce8d6a6c5.webp" alt="wcode 工程架构页面：查看组件、源码归属、需求与依赖关系"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-intro-architecture_hu_a639e2cce8d6a6c5.webp 960w, https://francis.run/img/wcode/wcode-intro-architecture_hu_76554f90b45fd0d1.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2850"&gt;&lt;/figure&gt;&lt;p&gt;这些记录需要跟着项目维护。图画出来了，不代表架构就没有问题；它的用处是让原来散在文件和讨论里的信息，有一个可以一起核对的地方。&lt;/p&gt;
+&lt;h2 id="它能访问什么由谁决定"&gt;它能访问什么，由谁决定&lt;a class="heading-anchor" href="#%e5%ae%83%e8%83%bd%e8%ae%bf%e9%97%ae%e4%bb%80%e4%b9%88%e7%94%b1%e8%b0%81%e5%86%b3%e5%ae%9a" aria-label="章节链接：它能访问什么，由谁决定"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode 围绕选定的 Workspace 工作，也就是这次允许访问的项目范围。文件操作会检查路径、受保护位置和不安全的链接，已有文件的修改还要检查内容指纹。&lt;/p&gt;
+&lt;p&gt;命令另有规则。常见、有明确边界的开发命令可以直接运行；需要额外信任的操作，会进入本地授权流程。访问页面可以查看具体请求，由操作者决定是否允许。更宽的会话授权或 Full Access，也需要操作者明确选择。&lt;/p&gt;
+&lt;figure class="content-image"&gt;
+&lt;img src="https://francis.run/img/wcode/wcode-intro-security-boundary.zh-CN.svg" alt="AI 客户端到本地仓库之间的检查：连接认证、命令授权和文件访问范围" width="1600" height="920" loading="lazy" decoding="async"&gt;
+&lt;figcaption&gt;能连接到 wcode，不等于可以执行任意命令或访问任意文件。&lt;/figcaption&gt;
+&lt;/figure&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-access_hu_b12189c6e90c7fb.webp" alt="wcode 访问管理页面：查看当前项目的权限和待处理授权请求"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-intro-access_hu_b12189c6e90c7fb.webp 960w, https://francis.run/img/wcode/wcode-intro-access_hu_2dedf3cc804655ae.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2290"&gt;&lt;/figure&gt;&lt;p&gt;本地客户端可以用 stdio 启动 wcode；远程客户端通过 OAuth 连接运行中的服务。这两种接法提供同一套仓库能力。文件操作发生在仓库所在机器，使用云端模型时，读出的代码仍会作为工具结果交给对应客户端。&lt;/p&gt;
+&lt;p&gt;wcode 的这些检查属于工具和仓库层，并不等同于操作系统沙箱。&lt;/p&gt;
+&lt;h2 id="界面里能看到什么"&gt;界面里能看到什么&lt;a class="heading-anchor" href="#%e7%95%8c%e9%9d%a2%e9%87%8c%e8%83%bd%e7%9c%8b%e5%88%b0%e4%bb%80%e4%b9%88" aria-label="章节链接：界面里能看到什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我主要用界面确认工作进行到哪里。&lt;/p&gt;
+&lt;p&gt;终端面板能看到连接、当前项目、任务和授权请求。按 &lt;strong&gt;W&lt;/strong&gt; 打开工程观测台，按 &lt;strong&gt;O&lt;/strong&gt; 打开设置页面。观测台里可以看架构、当前修改、需求和项目文件，也可以查看前面提到的验证记录。&lt;/p&gt;
+&lt;p&gt;任务慢下来时，&lt;strong&gt;任务活动&lt;/strong&gt;页面会更有用。它把排队时间和实际执行时间分开，也显示子进程和资源使用情况。一个命令迟迟没结束，可能是在等运行机会，也可能是真的执行了很久，处理办法不一样。&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-activity_hu_2317004a5debedc0.webp" alt="wcode 任务活动页面：查看任务在排队还是执行，以及工具调用和资源使用情况"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-intro-activity_hu_2317004a5debedc0.webp 960w, https://francis.run/img/wcode/wcode-intro-activity_hu_43c09591b7bea99a.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="3328"&gt;&lt;/figure&gt;&lt;p&gt;wcode 也分别限制 CPU 工作、文件读写和子进程的并发量。互不依赖的事情可以一起做，机器也要留有余量。这部分仍然需要结合实际任务观察，不能只看一个并发数字。&lt;/p&gt;
+&lt;h2 id="怎么开始用"&gt;怎么开始用&lt;a class="heading-anchor" href="#%e6%80%8e%e4%b9%88%e5%bc%80%e5%a7%8b%e7%94%a8" aria-label="章节链接：怎么开始用"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;如果你已经有习惯使用的 AI 编程助手，可以拿一个自己熟悉的项目试试。先做一个小修改，比较容易判断工具找的代码对不对、修改有没有跑偏。&lt;/p&gt;
+&lt;p&gt;macOS 和 Linux 可以用发布版安装脚本：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -fsSL https://raw.githubusercontent.com/francis-du/wcode/main/install.sh | sh
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Windows 的安装方法见&lt;a href="https://wcode.francis.run/zh/docs/getting-started/"&gt;快速开始&lt;/a&gt;。装好后，在项目目录里运行：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode setup
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;想看所有普通和高级命令：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode help-all
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果只是想知道 wcode 值不值得折腾，我会建议先别看完所有文档。拿一个你熟悉的仓库接进去，让 Agent 做一次“找问题 → 改代码 → 跑验证”的完整任务，很快就能看出这层 runtime 对你有没有用。&lt;/p&gt;</description></item><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;按提示选择全局或当前项目配置，再重新连接 Agent。本地 stdio 模式由客户端启动进程；需要终端面板、网页界面或远程接入时，运行 &lt;code&gt;wcode&lt;/code&gt;。远程接入使用程序显示的当前 MCP 地址，并完成 OAuth，详细步骤见&lt;a href="https://wcode.francis.run/zh/docs/code-agent-integrations/"&gt;客户端集成文档&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;第一轮不用把所有功能都配置好。让 Agent 找到一处实现，改一个行为，跑对应检查，然后自己看一遍 diff。接下来再把确实需要反复遵守的项目约定写进 &lt;code&gt;.wcode/&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;源码在 GitHub&lt;/a&gt;，安装和接入说明放在&lt;a href="https://wcode.francis.run/zh/docs/"&gt;项目文档&lt;/a&gt;里。模型仍然由你正在使用的服务提供，wcode 负责连接和处理仓库这一侧的工作。&lt;/p&gt;</description></item><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：&lt;strong&gt;数字挺忙，任务不一定真快。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;我把执行链拆开看了一遍，问题就清楚了。&lt;/p&gt;
 &lt;p&gt;外层 Tool Slot 只表示请求已经准入。CPU、文件 I/O、&lt;code&gt;cargo&lt;/code&gt;、&lt;code&gt;git&lt;/code&gt;、Language Server 还有各自的线程池或队列，外面 32 个槽位全亮，并不代表里面 32 份工作都在向前跑。&lt;/p&gt;
