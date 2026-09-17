@@ -73,6 +73,12 @@
 &lt;p&gt;Fast activity refreshes are separated from slower project refreshes. Hidden pages stop polling. Shared process resources are labeled separately from work that belongs to the selected project. An unavailable sample is not rendered as zero.&lt;/p&gt;
 &lt;p&gt;The main rule for the UI is boring: if wcode did not sample something, it should say unknown instead of drawing a zero.&lt;/p&gt;
 &lt;h2 id="what-i-kept-from-this-release"&gt;What I kept from this release&lt;a class="heading-anchor" href="#what-i-kept-from-this-release" aria-label="Permalink to section: What I kept from this release"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;I now check a few distinctions explicitly when changing the runtime: slot count is not throughput, a mapped test is not an executed test, task completion is not a passing verification result, and a missing response is not proof that nothing happened.&lt;/p&gt;
+&lt;p&gt;I now check a few distinctions explicitly when changing the runtime:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;slot count is not throughput;&lt;/li&gt;
+&lt;li&gt;a mapped test is not an executed test;&lt;/li&gt;
+&lt;li&gt;task completion is not a passing verification result;&lt;/li&gt;
+&lt;li&gt;a missing response is not proof that nothing happened.&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;0.6.2 is mostly a pile of fixes around those details. None of them is a headline feature, but they make the runtime easier to trust when a coding session gets long.&lt;/p&gt;
 &lt;p&gt;The code is at &lt;a href="https://github.com/francis-du/wcode"&gt;github.com/francis-du/wcode&lt;/a&gt;, and the current documentation is at &lt;a href="https://wcode.francis.run/"&gt;wcode.francis.run&lt;/a&gt;.&lt;/p&gt;</description></item></channel></rss>

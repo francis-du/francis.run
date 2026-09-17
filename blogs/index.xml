@@ -14,8 +14,10 @@
 &lt;p&gt;但问题一旦变成“谁调用它”“这个实现有哪些引用”“改这里会影响什么”“哪个测试真正覆盖这条行为”，纯文本命中就不够了。wcode 会先用 Tree-sitter 建立稳定的语法结构，需要跨文件语义关系时再使用可用的 Warm LSP；同时把 Git 当前状态、Design State、测试入口和已经知道的软件图关系一起带进来。&lt;/p&gt;
 &lt;p&gt;最后交给模型的，不只是几段搜出来的源码，而是一份有边界的任务上下文：相关符号和精确范围、引用或调用关系、关联测试、当前修改、项目约束，以及这些信息来自哪里、是什么精度、对应哪个版本。&lt;/p&gt;
 &lt;p&gt;可以把两种读取方式粗略理解成：&lt;/p&gt;
-&lt;p&gt;**常见文本发现链路：**任务 → &lt;code&gt;grep/ripgrep&lt;/code&gt; / 文件切片 → 命中文本 → 模型自己重建代码关系。&lt;/p&gt;
-&lt;p&gt;**wcode 的链路：**任务 → 便宜定位 → 按需解析语法/语义关系 → 整理成任务上下文 → 模型基于带来源和精度的证据继续推理。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;常见文本发现链路&lt;/strong&gt;：任务 → &lt;code&gt;grep/ripgrep&lt;/code&gt; / 文件切片 → 命中文本 → 模型自己重建代码关系。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;wcode 的链路&lt;/strong&gt;：任务 → 便宜定位 → 按需解析语法/语义关系 → 整理成任务上下文 → 模型基于带来源和精度的证据继续推理。&lt;/li&gt;
+&lt;/ul&gt;
 &lt;figure class="content-image"&gt;
 &lt;img src="https://francis.run/img/wcode/wcode-intro-intelligence-stack.zh-CN.svg" alt="文本搜索式代码发现与 wcode 仓库读取方式的对比" width="1600" height="960" loading="lazy" decoding="async"&gt;
 &lt;figcaption&gt;wcode 不是为了淘汰 grep。精确定位时搜索通常就是正确工具；需要结构、调用、实现、影响或验证关系时，再增加更强的代码理解。&lt;/figcaption&gt;
@@ -58,7 +60,7 @@
 &lt;p&gt;wcode 的这些检查属于工具和仓库层，并不等同于操作系统沙箱。&lt;/p&gt;
 &lt;h2 id="界面里能看到什么"&gt;界面里能看到什么&lt;a class="heading-anchor" href="#%e7%95%8c%e9%9d%a2%e9%87%8c%e8%83%bd%e7%9c%8b%e5%88%b0%e4%bb%80%e4%b9%88" aria-label="章节链接：界面里能看到什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我主要用界面确认工作进行到哪里。&lt;/p&gt;
-&lt;p&gt;终端面板能看到连接、当前项目、任务和授权请求。按 &lt;strong&gt;W&lt;/strong&gt; 打开工程观测台，按 &lt;strong&gt;O&lt;/strong&gt; 打开设置页面。观测台里可以看架构、当前修改、需求和项目文件，也可以查看前面提到的验证记录。&lt;/p&gt;
+&lt;p&gt;终端面板能看到连接、当前项目、任务和授权请求。按 &lt;code&gt;W&lt;/code&gt; 打开工程观测台，按 &lt;code&gt;O&lt;/code&gt; 打开设置页面。观测台里可以看架构、当前修改、需求和项目文件，也可以查看前面提到的验证记录。&lt;/p&gt;
 &lt;p&gt;任务慢下来时，&lt;strong&gt;任务活动&lt;/strong&gt;页面会更有用。它把排队时间和实际执行时间分开，也显示子进程和资源使用情况。一个命令迟迟没结束，可能是在等运行机会，也可能是真的执行了很久，处理办法不一样。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-activity_hu_2317004a5debedc0.webp" alt="wcode 任务活动页面：查看任务在排队还是执行，以及工具调用和资源使用情况"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-intro-activity_hu_2317004a5debedc0.webp 960w, https://francis.run/img/wcode/wcode-intro-activity_hu_43c09591b7bea99a.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="3328"&gt;&lt;/figure&gt;&lt;p&gt;wcode 也分别限制 CPU 工作、文件读写和子进程的并发量。互不依赖的事情可以一起做，机器也要留有余量。这部分仍然需要结合实际任务观察，不能只看一个并发数字。&lt;/p&gt;
 &lt;h2 id="怎么开始用"&gt;怎么开始用&lt;a class="heading-anchor" href="#%e6%80%8e%e4%b9%88%e5%bc%80%e5%a7%8b%e7%94%a8" aria-label="章节链接：怎么开始用"&gt;#&lt;/a&gt;&lt;/h2&gt;
@@ -68,7 +70,14 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Windows 的安装方法见&lt;a href="https://wcode.francis.run/zh/docs/getting-started/"&gt;快速开始&lt;/a&gt;。装好后，在项目目录里运行：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode setup
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;按提示选择全局或当前项目配置，再重新连接 Agent。本地 stdio 模式由客户端启动进程；需要终端面板、网页界面或远程接入时，运行 &lt;code&gt;wcode&lt;/code&gt;。远程接入使用程序显示的当前 MCP 地址，并完成 OAuth，详细步骤见&lt;a href="https://wcode.francis.run/zh/docs/code-agent-integrations/"&gt;客户端集成文档&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;第一轮不用把所有功能都配置好。让 Agent 找到一处实现，改一个行为，跑对应检查，然后自己看一遍 diff。接下来再把确实需要反复遵守的项目约定写进 &lt;code&gt;.wcode/&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;第一轮不用把所有功能都配置好。先跑一个最小闭环：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;让 Agent 找到一处实现；&lt;/li&gt;
+&lt;li&gt;改一个行为；&lt;/li&gt;
+&lt;li&gt;跑对应检查；&lt;/li&gt;
+&lt;li&gt;自己看一遍 diff。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;接下来再把确实需要反复遵守的项目约定写进 &lt;code&gt;.wcode/&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;源码在 GitHub&lt;/a&gt;，安装和接入说明放在&lt;a href="https://wcode.francis.run/zh/docs/"&gt;项目文档&lt;/a&gt;里。模型仍然由你正在使用的服务提供，wcode 负责连接和处理仓库这一侧的工作。&lt;/p&gt;</description></item><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：&lt;strong&gt;数字挺忙，任务不一定真快。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;我把执行链拆开看了一遍，问题就清楚了。&lt;/p&gt;
@@ -155,7 +164,15 @@
 &lt;p&gt;活动刷新也和慢项目刷新拆开。页面隐藏时停止轮询；共享进程资源和当前项目任务分开标记；“没有采样”不再画成“0”。&lt;/p&gt;
 &lt;p&gt;我主要想避免一件事：没有数据时别画成一个看起来很健康的数字。&lt;/p&gt;
 &lt;h2 id="做完以后我给自己留了几条检查项"&gt;做完以后，我给自己留了几条检查项&lt;a class="heading-anchor" href="#%e5%81%9a%e5%ae%8c%e4%bb%a5%e5%90%8e%e6%88%91%e7%bb%99%e8%87%aa%e5%b7%b1%e7%95%99%e4%ba%86%e5%87%a0%e6%9d%a1%e6%a3%80%e6%9f%a5%e9%a1%b9" aria-label="章节链接：做完以后，我给自己留了几条检查项"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;别再用 Slot 数代替吞吐；拿到文件和行号就先读那里；Verification mapped 和 executed 分开；Task completed 和 checks passed 分开；断线不自动重放；没有采样就显示 unknown。&lt;/p&gt;
+&lt;p&gt;我最后给自己留下几条明确的检查项：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Slot 数不等于吞吐；&lt;/li&gt;
+&lt;li&gt;拿到文件和行号，先读明确位置；&lt;/li&gt;
+&lt;li&gt;Verification mapped 和 executed 分开；&lt;/li&gt;
+&lt;li&gt;Task completed 和 checks passed 分开；&lt;/li&gt;
+&lt;li&gt;断线不自动重放；&lt;/li&gt;
+&lt;li&gt;没有采样就显示 unknown。&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item><item><title>wcode v0.6.1：把 parallel_tools 改成完成驱动调度</title><link>https://francis.run/blog/wcode-v0-6-1/</link><pubDate>Sat, 12 Sep 2026 05:31:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-1/</guid><description>&lt;p&gt;&lt;a href="https://francis.run/blog/wcode-v0-6/"&gt;v0.6&lt;/a&gt; 开始在 &lt;code&gt;agent_context&lt;/code&gt; 里标出可以并行的工作。接着我去看 Runtime 本身，发现 &lt;code&gt;parallel_tools&lt;/code&gt; 虽然已经有依赖图，执行时还保留着按层推进的做法。&lt;/p&gt;
 &lt;p&gt;例如：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;A ─→ C

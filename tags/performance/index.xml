@@ -84,7 +84,15 @@
 &lt;p&gt;活动刷新也和慢项目刷新拆开。页面隐藏时停止轮询；共享进程资源和当前项目任务分开标记；“没有采样”不再画成“0”。&lt;/p&gt;
 &lt;p&gt;我主要想避免一件事：没有数据时别画成一个看起来很健康的数字。&lt;/p&gt;
 &lt;h2 id="做完以后我给自己留了几条检查项"&gt;做完以后，我给自己留了几条检查项&lt;a class="heading-anchor" href="#%e5%81%9a%e5%ae%8c%e4%bb%a5%e5%90%8e%e6%88%91%e7%bb%99%e8%87%aa%e5%b7%b1%e7%95%99%e4%ba%86%e5%87%a0%e6%9d%a1%e6%a3%80%e6%9f%a5%e9%a1%b9" aria-label="章节链接：做完以后，我给自己留了几条检查项"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;别再用 Slot 数代替吞吐；拿到文件和行号就先读那里；Verification mapped 和 executed 分开；Task completed 和 checks passed 分开；断线不自动重放；没有采样就显示 unknown。&lt;/p&gt;
+&lt;p&gt;我最后给自己留下几条明确的检查项：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Slot 数不等于吞吐；&lt;/li&gt;
+&lt;li&gt;拿到文件和行号，先读明确位置；&lt;/li&gt;
+&lt;li&gt;Verification mapped 和 executed 分开；&lt;/li&gt;
+&lt;li&gt;Task completed 和 checks passed 分开；&lt;/li&gt;
+&lt;li&gt;断线不自动重放；&lt;/li&gt;
+&lt;li&gt;没有采样就显示 unknown。&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：&lt;strong&gt;还是不够快。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;这个“慢”很容易全甩给模型。&lt;/p&gt;
 &lt;p&gt;但我看了一轮调用链以后，发现里面有不少完全是 Runtime 自己造成的等待。&lt;/p&gt;
