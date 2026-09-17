@@ -167,7 +167,12 @@ The main rule for the UI is boring: if wcode did not sample something, it should
 
 ## What I kept from this release
 
-I now check a few distinctions explicitly when changing the runtime: slot count is not throughput, a mapped test is not an executed test, task completion is not a passing verification result, and a missing response is not proof that nothing happened.
+I now check a few distinctions explicitly when changing the runtime:
+
+- slot count is not throughput;
+- a mapped test is not an executed test;
+- task completion is not a passing verification result;
+- a missing response is not proof that nothing happened.
 
 0.6.2 is mostly a pile of fixes around those details. None of them is a headline feature, but they make the runtime easier to trust when a coding session gets long.
 

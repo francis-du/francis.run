@@ -49,9 +49,8 @@ What reaches the model is therefore not only a pile of source snippets. It can b
 
 A rough way to think about the two paths is:
 
-**Common text-discovery loop:** task → `grep/ripgrep` / file slices → matching text → model reconstructs the code relationships.
-
-**wcode repository-reading path:** task → cheap localization → syntax/semantic relationships when needed → task-ready evidence → model reasons over context with explicit provenance and precision.
+- **Common text-discovery loop:** task → `grep/ripgrep` / file slices → matching text → model reconstructs the code relationships.
+- **wcode repository-reading path:** task → cheap localization → syntax/semantic relationships when needed → task-ready evidence → model reasons over context with explicit provenance and precision.
 
 <figure class="content-image">
   <img src="/img/wcode/wcode-intro-intelligence-stack.svg" alt="Comparison between text-search code discovery and wcode's repository-reading path" width="1600" height="960" loading="lazy" decoding="async">
@@ -131,7 +130,7 @@ These are controls at the repository and tool layer. They are not equivalent to 
 
 I mainly use the interface to see where the work has got to.
 
-The terminal dashboard shows connections, the selected project, tasks, and authorization requests. **W** opens the Engineering Observatory; **O** opens Setup Hub. The Observatory contains architecture, current changes, requirements, project files, and verification records.
+The terminal dashboard shows connections, the selected project, tasks, and authorization requests. `W` opens the Engineering Observatory; `O` opens Setup Hub. The Observatory contains architecture, current changes, requirements, project files, and verification records.
 
 When a task slows down, **Task activity** is useful. It separates time spent waiting in a queue from time spent executing, and shows child processes and resource use. Waiting for capacity and running an expensive command are different problems.
 
@@ -157,6 +156,13 @@ wcode setup
 
 Choose global or project configuration and reconnect the agent. For local stdio use, the client starts the process. Run `wcode` when you want the terminal dashboard, web interface, or remote access. Remote clients use the current MCP address displayed by the program and complete OAuth; the [integration guide](https://wcode.francis.run/docs/code-agent-integrations/) has the steps.
 
-There is no need to configure every feature for the first task. Have the agent locate an implementation, change one behavior, and run the relevant checks. Read the diff yourself. Then add the project rules you find yourself repeating under `.wcode/`.
+There is no need to configure every feature for the first task. Start with the smallest useful loop:
+
+1. Have the agent locate one implementation.
+2. Change one behavior.
+3. Run the relevant checks.
+4. Read the diff yourself.
+
+Then add the project rules you find yourself repeating under `.wcode/`.
 
 The [source is on GitHub](https://github.com/francis-du/wcode), with installation and integration details in the [project documentation](https://wcode.francis.run/docs/). Your chosen service still provides the model. wcode handles the connection to the repository and the work on that side.

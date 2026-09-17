@@ -192,6 +192,13 @@ Observatory 这轮主要改首屏信息层级。
 
 ## 做完以后，我给自己留了几条检查项
 
-别再用 Slot 数代替吞吐；拿到文件和行号就先读那里；Verification mapped 和 executed 分开；Task completed 和 checks passed 分开；断线不自动重放；没有采样就显示 unknown。
+我最后给自己留下几条明确的检查项：
+
+- Slot 数不等于吞吐；
+- 拿到文件和行号，先读明确位置；
+- Verification mapped 和 executed 分开；
+- Task completed 和 checks passed 分开；
+- 断线不自动重放；
+- 没有采样就显示 unknown。
 
 0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。
