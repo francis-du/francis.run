@@ -25,15 +25,15 @@
 - schema_version: 1
   id: AC-A11Y-001
   title: Generated pages expose accessible structural navigation
-  statement: The production build contains a localized skip link targeting main-content, semantic header/main/footer landmarks on representative pages, an h1 page title on archive pages, a named pagination navigation landmark when pagination is present, a global native-dialog search surface with keyboard focus handling, a localized native-details table of contents on long blog articles but not short/non-blog pages, localized article-only copy-code enhancement assets without changing rendered code content, stable localized H2/H3 permalink anchors that reuse TOC fragment IDs, dark-mode overrides for every inline Chroma token color currently emitted by blog content, and localized root/English 404 pages using the shared shell with noindex metadata.
+  statement: The production build contains a localized skip link targeting main-content, semantic header/main/footer landmarks on representative pages, an h1 page title on archive pages, a named pagination navigation landmark when pagination is present, the official Cloudflare AI Search modal and chat components with keyboard entry points, a localized native-details table of contents on long blog articles but not short/non-blog pages, localized article-only copy-code enhancement assets without changing rendered code content, stable localized H2/H3 permalink anchors that reuse TOC fragment IDs, dark-mode overrides for every inline Chroma token color currently emitted by blog content, and localized root/English 404 pages using the shared shell with noindex metadata.
   verification:
     - kind: check
       id: make-check
 
 - schema_version: 1
   id: AC-SEARCH-001
-  title: Global static search stays language-local and keyboard-driven
-  statement: The production build generates /index.json and /en/index.json but no /search/ or /en/search/ pages; every normal page contains the accessible search dialog and fingerprinted search JavaScript, / and Cmd/Ctrl+K open it, Escape closes it, each language points to its own JSON index, and the indexes contain only visible blog pages for that language.
+  title: Domain-specific builds route official AI Search and SEO consistently
+  statement: Every normal page embeds Cloudflare's official search-modal-snippet and chat-bubble-snippet. A francis.run build emits https://ai.francis.run/ while a francisdu.com build emits https://ai.francisdu.com/; the same SITE_BASE_URL also drives canonical URLs, robots.txt, the root and language sitemaps, structured data, and social metadata. Cmd/Ctrl+K plus the / bridge remain available, and no /search/ or /en/search/ page is published.
   verification:
     - kind: check
       id: make-check

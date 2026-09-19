@@ -145,6 +145,54 @@ other = "results"
 [searchNoScript]
 other = "Enable JavaScript to use site search."
 
+[searchLocalSubmit]
+other = "Search"
+
+[searchAIPlaceholder]
+other = "Ask about wcode, Rust, agents…"
+
+[searchAISubmit]
+other = "Send"
+
+[searchAIReady]
+other = "Ask questions grounded in indexed blog content."
+
+[searchEmptyTitle]
+other = "Search the blog"
+
+[searchNoResultsTitle]
+other = "No results found"
+
+[searchNoResultsDescription]
+other = "No results found for \"{query}\""
+
+[searchResultCount]
+other = "Found {n} result"
+
+[searchResultCountPlural]
+other = "Found {n} results"
+
+[searchResultCountOverflow]
+other = "Showing {n} of {total} results"
+
+[searchErrorPrefix]
+other = "Error:"
+
+[searchAIChatTitle]
+other = "Ask the blog"
+
+[searchAIEmptyTitle]
+other = "Start a conversation"
+
+[searchNavigateHint]
+other = "Navigate"
+
+[searchSelectHint]
+other = "Open"
+
+[searchCloseHint]
+other = "Close"
+
 [articleToc]
 other = "On this page"
 

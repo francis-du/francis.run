@@ -72,15 +72,16 @@
 
 - schema_version: 1
   id: REQ-SEARCH-001
-  title: Keyboard-invoked language-isolated article search
-  intent: Readers can open a global search dialog from any page with / or Cmd/Ctrl+K and search blog titles, tags, descriptions, and full article text without an external service, while Chinese and English stay isolated to their own indexes and no dedicated Search page is published.
+  title: Shared Cloudflare AI Search across both public domains
+  intent: >-
+    Readers on francis.run and francisdu.com can use Cloudflare's official AI Search modal and chat bubble from any page. One repository produces domain-specific builds: francis.run uses https://ai.francis.run/ and francisdu.com uses https://ai.francisdu.com/, while each deployment emits matching canonical, sitemap, robots, and social metadata and keeps Cmd/Ctrl+K plus / search entry points.
   priority: high
   implemented_by:
     - component:content-discovery
   acceptance:
     - AC-SEARCH-001
   constraints:
-    - CONSTRAINT-LANGUAGE-ISOLATED-SEARCH
+    - CONSTRAINT-CLOUDFLARE-AI-SEARCH
   risk:
     compatibility: medium
 

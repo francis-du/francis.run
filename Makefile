@@ -2,8 +2,16 @@ BUILD_DIR ?= target-hugo-check
 HUGO_CACHE_DIR ?=
 CLOUDFLARE_FILE_LIMIT ?= 20000
 CLOUDFLARE_MAX_FILE_BYTES ?= 26214400
+PRIMARY_BASE_URL ?= https://francis.run/
+CLOUDFLARE_BASE_URL ?= https://francisdu.com/
+SITE_BASE_URL ?= $(PRIMARY_BASE_URL)
+SITE_ORIGIN := $(patsubst %/,%,$(SITE_BASE_URL))
+SITE_HOST := $(patsubst https://%,%,$(SITE_ORIGIN))
+SITE_URL_ENCODED := https%3A%2F%2F$(SITE_HOST)
+OTHER_SITE_ORIGIN := $(if $(findstring francisdu.com,$(SITE_HOST)),https://francis.run,https://francisdu.com)
+AI_SEARCH_URL := $(if $(findstring francisdu.com,$(SITE_HOST)),https://ai.francisdu.com/,https://ai.francis.run/)
 HUGO_CACHE_FLAG = $(if $(HUGO_CACHE_DIR),--cacheDir "$(HUGO_CACHE_DIR)",)
-HUGO_BUILD_FLAGS = --gc --minify $(HUGO_CACHE_FLAG)
+HUGO_BUILD_FLAGS = --gc --minify $(HUGO_CACHE_FLAG) --baseURL "$(SITE_BASE_URL)"
 
 .PHONY: check build cloudflare social-cards
 
@@ -44,24 +52,24 @@ check:
 	grep -q 'id=site-search-dialog' $(BUILD_DIR)/index.html
 	grep -q 'id=site-search-dialog' $(BUILD_DIR)/en/index.html
 	grep -q 'id=site-search-dialog' $(BUILD_DIR)/blog/what-is-wcode/index.html
-	grep -q 'class=search-overlay hidden role=dialog aria-modal=true' $(BUILD_DIR)/index.html
-	! grep -q '<dialog id=site-search-dialog' $(BUILD_DIR)/index.html
-	grep -Fq '.search-overlay[hidden]' assets/css/search.css
-	grep -Fq 'html.dark .search-overlay' assets/css/search.css
-	grep -Fq '.search-palette' assets/css/search.css
-	grep -q 'data-index-url=/index.json' $(BUILD_DIR)/index.html
-	grep -q 'data-index-url=/en/index.json' $(BUILD_DIR)/en/index.html
-	grep -q 'role=search' $(BUILD_DIR)/index.html
-	grep -q 'aria-live=polite' $(BUILD_DIR)/index.html
+	grep -q '<search-modal-snippet' $(BUILD_DIR)/index.html
+	grep -q '<chat-bubble-snippet' $(BUILD_DIR)/index.html
+	test "$$(grep -o 'api-url=$(AI_SEARCH_URL)' $(BUILD_DIR)/index.html | wc -l | tr -d ' ')" -eq "2"
+	grep -q 'shortcut=k' $(BUILD_DIR)/index.html
+	grep -q 'show-url=true' $(BUILD_DIR)/index.html
+	grep -q 'show-date=true' $(BUILD_DIR)/index.html
+	grep -Fq 'cdn.jsdelivr.net/npm/@cloudflare/ai-search-snippet@0.0.43/dist/search-snippet.es.js' $(BUILD_DIR)/index.html
+	grep -Fq -- '--search-snippet-primary-color' assets/css/search.css
+	grep -Fq 'chat-bubble-snippet' assets/css/search.css
 	grep -q '/js/search.' $(BUILD_DIR)/index.html
 	grep -q '/js/search.' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	! grep -q 'href=/search/' $(BUILD_DIR)/index.html
 	! grep -q 'href=/en/search/' $(BUILD_DIR)/en/index.html
 	grep -Fq 'event.key === "/"' assets/js/search.js
-	grep -Fq 'event.metaKey || event.ctrlKey' assets/js/search.js
-	grep -Fq 'event.key === "Escape"' assets/js/search.js
-	grep -Fq 'event.key === "ArrowDown"' assets/js/search.js
-	grep -Fq 'event.key === "ArrowUp"' assets/js/search.js
+	grep -Fq 'window.customElements.whenDefined("search-modal-snippet")' assets/js/search.js
+	grep -Fq 'MutationObserver' assets/js/search.js
+	! grep -Fq 'window.fetch' assets/js/search.js
+	! grep -Fq '/chat/completions' assets/js/search.js
 	grep -Fq '$$css = $$css | fingerprint' layouts/partials/header.html
 	grep -Fq '$$search = $$search | fingerprint' layouts/partials/header.html
 	grep -q '"url":"/blog/what-is-wcode/"' $(BUILD_DIR)/index.json
@@ -71,18 +79,27 @@ check:
 	! grep -q '"url":"/blog/' $(BUILD_DIR)/en/index.json
 	! grep -q '"url":"/gallery/' $(BUILD_DIR)/index.json
 	! grep -q '"url":"/about/' $(BUILD_DIR)/index.json
-	grep -q 'rel=canonical href=https://francis.run/' $(BUILD_DIR)/index.html
-	grep -q 'rel=canonical href=https://francis.run/en/' $(BUILD_DIR)/en/index.html
-	grep -q 'rel=canonical href=https://francis.run/blogs/page/2/' $(BUILD_DIR)/blogs/page/2/index.html
+	grep -q 'rel=canonical href=$(SITE_ORIGIN)/' $(BUILD_DIR)/index.html
+	grep -q 'rel=canonical href=$(SITE_ORIGIN)/en/' $(BUILD_DIR)/en/index.html
+	grep -q 'rel=canonical href=$(SITE_ORIGIN)/blogs/page/2/' $(BUILD_DIR)/blogs/page/2/index.html
 	! grep -q 'hreflang=' $(BUILD_DIR)/blogs/page/2/index.html
 	grep -q 'meta name=robots content="max-image-preview:large"' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	grep -q 'meta name=robots content="noindex,follow,max-image-preview:large"' $(BUILD_DIR)/gallery/index.html
 	grep -q '"@type":"BreadcrumbList"' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	grep -q '"@type":"BreadcrumbList"' $(BUILD_DIR)/tags/wcode/index.html
 	grep -q 'Francis Du 关于 Wcode 的技术文章、工程实践与项目笔记。' $(BUILD_DIR)/tags/wcode/index.html
-	! grep -q '<loc>https://francis.run/gallery/</loc>' $(BUILD_DIR)/zh-cn/sitemap.xml
+	test -s $(BUILD_DIR)/sitemap.xml
+	test -s $(BUILD_DIR)/zh-cn/sitemap.xml
+	test -s $(BUILD_DIR)/en/sitemap.xml
+	grep -q '<loc>$(SITE_ORIGIN)/zh-cn/sitemap.xml</loc>' $(BUILD_DIR)/sitemap.xml
+	grep -q '<loc>$(SITE_ORIGIN)/en/sitemap.xml</loc>' $(BUILD_DIR)/sitemap.xml
+	grep -q '<loc>$(SITE_ORIGIN)/blog/what-is-wcode/</loc>' $(BUILD_DIR)/zh-cn/sitemap.xml
+	grep -q '<loc>$(SITE_ORIGIN)/en/blog/what-is-wcode/</loc>' $(BUILD_DIR)/en/sitemap.xml
+	! grep -Rqs '$(OTHER_SITE_ORIGIN)/' $(BUILD_DIR)/sitemap.xml $(BUILD_DIR)/zh-cn/sitemap.xml $(BUILD_DIR)/en/sitemap.xml
+	! grep -q '<loc>$(SITE_ORIGIN)/gallery/</loc>' $(BUILD_DIR)/zh-cn/sitemap.xml
 	! grep -q '^Disallow: /gallery/$$' $(BUILD_DIR)/robots.txt
 	grep -q '^Disallow: /gallery/images/$$' $(BUILD_DIR)/robots.txt
+	grep -q '^Sitemap: $(SITE_ORIGIN)/sitemap.xml$$' $(BUILD_DIR)/robots.txt
 	grep -q 'meta name=description' $(BUILD_DIR)/index.html
 	grep -q 'Francis Du 的个人技术博客' $(BUILD_DIR)/index.html
 	grep -q "Francis Du's engineering notes" $(BUILD_DIR)/en/index.html
@@ -105,7 +122,7 @@ check:
 	grep -q '<html lang=en-US' $(BUILD_DIR)/en/404.html
 	grep -q '没有找到这个页面' $(BUILD_DIR)/404.html
 	grep -q 'Page not found' $(BUILD_DIR)/en/404.html
-	! grep -q '/search/' $(BUILD_DIR)/sitemap.xml
+	! grep -Rqs '/search/' $(BUILD_DIR)/sitemap.xml $(BUILD_DIR)/zh-cn/sitemap.xml $(BUILD_DIR)/en/sitemap.xml
 	grep -q 'meta name=robots content="noindex,follow"' $(BUILD_DIR)/404.html
 	grep -q '<main id=main-content' $(BUILD_DIR)/404.html
 	! grep -q 'background:#202020' $(BUILD_DIR)/404.html
@@ -128,8 +145,8 @@ check:
 	grep -q '"@type":"ProfilePage"' $(BUILD_DIR)/en/about/index.html
 	grep -q '"@type":"BlogPosting"' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	grep -q '"@type":"BlogPosting"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
-	grep -q '"url":"https://francis.run/about/"' $(BUILD_DIR)/blog/what-is-wcode/index.html
-	grep -q '"url":"https://francis.run/en/about/"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	grep -q '"url":"$(SITE_ORIGIN)/about/"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -q '"url":"$(SITE_ORIGIN)/en/about/"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
 	grep -q '"sameAs":\["https://github.com/francis-du"' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	grep -q 'class=article-toc' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	grep -q '本文目录' $(BUILD_DIR)/blog/what-is-wcode/index.html
@@ -154,35 +171,35 @@ check:
 	grep -q '<copyright>© Francis Du</copyright>' $(BUILD_DIR)/index.xml
 	! grep -q 'Source Themes Academic' $(BUILD_DIR)/index.xml
 	! grep -q 'Ink theme on Hugo' $(BUILD_DIR)/index.xml
-	grep -Eq 'property="og:image" content="https://francis.run/img/share/what-is-wcode\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
-	grep -Eq 'property="og:image" content="https://francis.run/img/share/what-is-wcode\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/what-is-wcode\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/what-is-wcode\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
 	test -f $(BUILD_DIR)/blog/wcode-v0-8/index.html
 	test -f $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
 	grep -q 'wcode v0.8：我开始把仓库当成一个 Engineering Digital Twin' $(BUILD_DIR)/blog/wcode-v0-8/index.html
 	grep -q 'wcode 0.8: I Started Treating the Repository as an Engineering Digital Twin' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
-	grep -Eq 'property="og:image" content="https://francis.run/img/share/wcode-v0-8\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wcode-v0-8/index.html
-	grep -Eq 'property="og:image" content="https://francis.run/img/share/wcode-v0-8\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
+	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/wcode-v0-8\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wcode-v0-8/index.html
+	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/wcode-v0-8\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
 	test -f $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	test -f $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:type" content="article"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:site_name" content="Francis Du"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:locale" content="en_US"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'property="og:image" content="https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'property="og:image:secure_url" content="https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'property="og:image:secure_url" content="$(SITE_ORIGIN)/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:image:type" content="image/png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:image:width" content="1200"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:image:height" content="630"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:image:alt" content="Using Jev in wcode and Scopwis"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:site content="@francis_run"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'name=twitter:image content="https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'name=twitter:image content="$(SITE_ORIGIN)/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:image:alt content="Using Jev in wcode and Scopwis"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq '"image":\["https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"\]' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'sharer/sharer\.php\?u=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'twitter\.com/intent/tweet\?text=.*url=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'linkedin\.com/sharing/share-offsite/\?url=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'itemprop=image content="https://francis.run/img/share/jev-wcode-scopwis\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
-	grep -Eq 'rel=image_src href=https://francis.run/img/share/jev-wcode-scopwis\.[0-9a-f]{64}\.png' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -Eq '"image":\["$(SITE_ORIGIN)/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"\]' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'sharer/sharer\.php\?u=$(SITE_URL_ENCODED)%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'twitter\.com/intent/tweet\?text=.*url=$(SITE_URL_ENCODED)%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'linkedin\.com/sharing/share-offsite/\?url=$(SITE_URL_ENCODED)%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'itemprop=image content="$(SITE_ORIGIN)/img/share/jev-wcode-scopwis\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'rel=image_src href=$(SITE_ORIGIN)/img/share/jev-wcode-scopwis\.[0-9a-f]{64}\.png' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	grep -q 'service.weibo.com/share/share.php?' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	grep -q 'aria-label=分享到微博' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	grep -q 'data-native-share' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
@@ -197,10 +214,10 @@ check:
 		cmp "static/img/share/$$card" "$(BUILD_DIR)/img/share/$$card" || exit 1; \
 	done
 	test -f $(BUILD_DIR)/blog/wiki-graph/index.html
-	grep -Eq 'property="og:image" content="https://francis.run/img/share-default\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share-default\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/blog/wiki-graph/index.html
-	grep -Eq 'name=twitter:image content="https://francis.run/img/share-default\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
-	grep -Eq '"image":\["https://francis.run/img/share-default\.[0-9a-f]{64}\.png"\]' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Eq 'name=twitter:image content="$(SITE_ORIGIN)/img/share-default\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Eq '"image":\["$(SITE_ORIGIN)/img/share-default\.[0-9a-f]{64}\.png"\]' $(BUILD_DIR)/blog/wiki-graph/index.html
 	grep -Fq '.markdown figure.content-image' assets/css/main.css
 	for image in architecture evidence access activity; do \
 		test ! -L "static/img/wcode/wcode-intro-$$image.png" && \
@@ -283,6 +300,6 @@ build:
 cloudflare:
 	@if [ "$$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then git fetch --unshallow; fi
 	git submodule update --init --recursive
-	$(MAKE) check BUILD_DIR=public HUGO_CACHE_DIR=$(CURDIR)/.cache/hugo
+	$(MAKE) check BUILD_DIR=public HUGO_CACHE_DIR=$(CURDIR)/.cache/hugo SITE_BASE_URL=$(CLOUDFLARE_BASE_URL)
 	cp deploy/cloudflare/_headers public/_headers
 	test -f public/_headers

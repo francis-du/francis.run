@@ -145,6 +145,54 @@ other = "篇结果"
 [searchNoScript]
 other = "请启用 JavaScript 使用站内搜索。"
 
+[searchLocalSubmit]
+other = "搜索"
+
+[searchAIPlaceholder]
+other = "例如：wcode 0.8 做了哪些变化？"
+
+[searchAISubmit]
+other = "发送"
+
+[searchAIReady]
+other = "基于博客已索引内容提问。"
+
+[searchEmptyTitle]
+other = "搜索博客"
+
+[searchNoResultsTitle]
+other = "没有找到结果"
+
+[searchNoResultsDescription]
+other = "没有找到与“{query}”匹配的内容"
+
+[searchResultCount]
+other = "找到 {n} 条结果"
+
+[searchResultCountPlural]
+other = "找到 {n} 条结果"
+
+[searchResultCountOverflow]
+other = "显示 {total} 条结果中的 {n} 条"
+
+[searchErrorPrefix]
+other = "错误："
+
+[searchAIChatTitle]
+other = "问博客"
+
+[searchAIEmptyTitle]
+other = "开始对话"
+
+[searchNavigateHint]
+other = "移动"
+
+[searchSelectHint]
+other = "打开"
+
+[searchCloseHint]
+other = "关闭"
+
 [articleToc]
 other = "本文目录"
 

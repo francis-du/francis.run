@@ -7,6 +7,7 @@
 /public/
 /resources/_gen/
 /target-hugo-check/
+/target-check-*/
 /.cache/
 /.idea
 /.vscode

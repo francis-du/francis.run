@@ -30,7 +30,7 @@ The default language stays at the site root. English content is published under 
 
 # Cloudflare
 
-The repository also supports a secondary Cloudflare static build without changing Hugo's canonical `baseURL`.
+The repository supports two public sites from the same Hugo source. The default/GitHub Pages build uses `https://francis.run/`; the Cloudflare build uses `https://francisdu.com/`. `SITE_BASE_URL` drives canonical URLs, sitemap/robots output, social metadata, share URLs, and Cloudflare AI Search. The matching endpoints are `https://ai.francis.run/` and `https://ai.francisdu.com/`. Configure each AI Search Public Endpoint's Authorized hosts for its browser origin.
 
 For Cloudflare Pages, use:
 
@@ -44,6 +44,4 @@ HUGO_VERSION:      0.166.0
 
 Set `HUGO_VERSION=0.166.0` in both **Production** and **Preview** environments, and enable Cloudflare **Build cache**. The `cloudflare` target restores full Git history when the checkout is shallow, initializes theme submodules recursively, reuses the same `make check` contract as GitHub Pages, writes Hugo's image cache below `.cache/hugo`, and copies Cloudflare-only `_headers` into the final output.
 
-`https://francis.run/` remains the canonical site even for Cloudflare preview/mirror builds. Do not add `-b $CF_PAGES_URL` unless Cloudflare becomes the canonical public host. The generated Cloudflare headers mark `*.pages.dev` deployment URLs as `noindex`. Custom-domain indexing is intentionally left unchanged; canonical URLs still point to `francis.run`.
-
-If Cloudflare becomes the primary public host, attach the custom domain in the Cloudflare dashboard and redirect the production `*.pages.dev` hostname to it with a Bulk Redirect.
+The default target remains `SITE_BASE_URL=https://francis.run/`; `make cloudflare` overrides it with `CLOUDFLARE_BASE_URL=https://francisdu.com/`. You can verify either target directly with `make check SITE_BASE_URL=https://francis.run/` or `make check SITE_BASE_URL=https://francisdu.com/`. Both builds emit a root sitemap index plus language sitemaps whose absolute URLs match the selected domain. Cloudflare's generated `*.pages.dev` hostnames remain `noindex`.

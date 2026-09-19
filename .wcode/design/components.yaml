@@ -96,21 +96,17 @@
 
 - schema_version: 1
   id: component:content-discovery
-  name: Static Content Discovery
+  name: Cloudflare AI Search Discovery
   responsibilities:
-    - generate one JSON blog-search index per language without external services
-    - keep search results isolated to the current language and exclude non-blog or hidden pages
-    - expose search as a global accessible dialog opened by / or Cmd/Ctrl+K instead of a navigation page
-    - load the full-text JSON index only after the user enters a query
+    - embed Cloudflare's official search modal and chat bubble Web Components on normal pages
+    - select ai.francis.run for the francis.run build and ai.francisdu.com for the francisdu.com build from the configured Hugo base URL
+    - preserve Cmd/Ctrl+K from the official modal and the site's / shortcut without reimplementing AI Search requests
+    - keep the widgets aligned with the site's bilingual strings, light/dark theme, and visual tokens
   constraints:
-    - CONSTRAINT-LANGUAGE-ISOLATED-SEARCH
+    - CONSTRAINT-CLOUDFLARE-AI-SEARCH
     - CONSTRAINT-ACCESSIBLE-SHELL
     - CONSTRAINT-DESIGN-SYNC
   implementation:
-    - kind: file
-      path: hugo.toml
-    - kind: file
-      path: layouts/index.json.json
     - kind: file
       path: layouts/partials/search-overlay.html
     - kind: file

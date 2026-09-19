@@ -44,15 +44,15 @@
   id: CONSTRAINT-ACCESSIBLE-SHELL
   title: Shared templates preserve keyboard and landmark navigation
   statement: >-
-    Generated pages and localized 404 output must provide a visible-on-focus skip link targeting a unique main-content landmark, semantic header and footer landmarks, and a semantic main landmark around primary page content. The global search dialog must use native dialog semantics, move focus to its search field when opened, close with Escape, and restore focus when dismissed. Inner pages must use the page title as their primary h1 while the site-brand heading remains h1 only on the home page. Multi-page archives must expose pagination as a named navigation landmark. Blog articles with at least four Markdown headings must expose a compact keyboard-native details/summary table of contents limited to heading levels 2 and 3; shorter articles and non-blog pages must not gain an empty navigation block. Highlighted blog code blocks may gain localized keyboard-accessible copy buttons, but copy enhancement must load only on blog articles, preserve the rendered code text, and fail gracefully without affecting code readability. Blog H2/H3 headings may expose hover/focus permalink anchors, but these links must reuse Hugo's existing heading Anchor value so built-in table-of-contents fragments and public section URLs cannot diverge. Dark mode must override the light-oriented inline Chroma token colors used by current articles with readable dark-background equivalents without changing the light-mode highlight output. Root and English 404 pages must use the shared shell and be marked noindex rather than falling back to the legacy static error page. These structural improvements must not rewrite user-owned identity labels or introduce a normal-state visual redesign.
+    Generated pages and localized 404 output must provide a visible-on-focus skip link targeting a unique main-content landmark, semantic header and footer landmarks, and a semantic main landmark around primary page content. The global Cloudflare AI Search surface must remain keyboard accessible, keep Cmd/Ctrl+K and / entry points, and preserve the official component's focus and dismissal behavior instead of wrapping it in a second custom dialog. Inner pages must use the page title as their primary h1 while the site-brand heading remains h1 only on the home page. Multi-page archives must expose pagination as a named navigation landmark. Blog articles with at least four Markdown headings must expose a compact keyboard-native details/summary table of contents limited to heading levels 2 and 3; shorter articles and non-blog pages must not gain an empty navigation block. Highlighted blog code blocks may gain localized keyboard-accessible copy buttons, but copy enhancement must load only on blog articles, preserve the rendered code text, and fail gracefully without affecting code readability. Blog H2/H3 headings may expose hover/focus permalink anchors, but these links must reuse Hugo's existing heading Anchor value so built-in table-of-contents fragments and public section URLs cannot diverge. Dark mode must override the light-oriented inline Chroma token colors used by current articles with readable dark-background equivalents without changing the light-mode highlight output. Root and English 404 pages must use the shared shell and be marked noindex rather than falling back to the legacy static error page. These structural improvements must not rewrite user-owned identity labels or introduce a normal-state visual redesign.
   applies_to:
     - component:site-shell
 
 - schema_version: 1
-  id: CONSTRAINT-LANGUAGE-ISOLATED-SEARCH
-  title: Static search never crosses language or content boundaries
+  id: CONSTRAINT-CLOUDFLARE-AI-SEARCH
+  title: Each domain build selects the matching Cloudflare AI Search endpoint
   statement: >-
-    Search is a global keyboard-invoked dialog rather than a public navigation page. Pressing / outside editable controls or Cmd/Ctrl+K from any page opens the dialog; Escape closes it. Chinese pages query only /index.json and English pages query only /en/index.json. Indexes include visible blog pages only, exclude Gallery, About and hidden/non-blog content, and contain title, stable URL, description, tags, date, and plain searchable article text. Search uses no external service, does not publish /search/ or /en/search/ routes, and does not fetch the JSON index until the user enters a query.
+    Public search and chat use Cloudflare's official AI Search Web Components rather than a site-specific chat implementation. The francis.run build uses https://ai.francis.run/ and the francisdu.com build uses https://ai.francisdu.com/, selected from the Hugo base URL before rendering. The official search modal owns Cmd/Ctrl+K, the site bridge preserves / outside editable controls through the component open() method, and each endpoint must authorize the browser origin that calls it. The widgets follow the site's light/dark theme and localized strings, and no /search/ or /en/search/ page is published.
   applies_to:
     - component:content-discovery
     - component:multilingual-site
@@ -75,22 +75,9 @@
 
 - schema_version: 1
   id: CONSTRAINT-DUAL-STATIC-DEPLOYMENT
-  title: GitHub and Cloudflare builds share one canonical Hugo output
+  title: GitHub and Cloudflare share one Hugo source with domain-specific outputs
   statement: >-
-    GitHub Pages and Cloudflare must build from the same hugo.toml and verification path, keep https://francis.run/ as the canonical base URL, initialize Git submodules, and preserve full Git history when enableGitInfo is active. Cloudflare builds must pin Hugo 0.166.0 in both production and preview environments, persist Hugo image caches under .cache, emit Cloudflare-only security/cache headers, and prevent generated pages.dev deployment URLs from competing with the canonical domain in search results. Hugo-generated WebP derivatives may use year-long immutable browser caching only while static/ and content/ contain no source .webp files, so every published WebP filename remains content-derived. Custom-domain indexing policy must not be changed without an explicit user decision.
+    GitHub Pages and Cloudflare must build from the same hugo.toml and verification path while supplying a target-specific SITE_BASE_URL. GitHub Pages defaults to https://francis.run/ and Cloudflare defaults to https://francisdu.com/; canonical URLs, sitemap indexes and entries, robots Sitemap directives, structured data, social metadata, share URLs, and AI Search endpoint selection must all match that target origin. Both builds initialize Git submodules and preserve full Git history when enableGitInfo is active. Cloudflare builds pin Hugo 0.166.0, persist Hugo image caches under .cache, emit Cloudflare-only security/cache headers, and keep generated pages.dev deployment URLs noindex. Hugo-generated WebP derivatives may use year-long immutable browser caching only while static/ and content/ contain no source .webp files, so every published WebP filename remains content-derived.
   applies_to:
     - component:build-verification
     - component:multilingual-site
-
-- schema_version: 1
-  id: CONSTRAINT-DESIGN-SYNC
-  title: Design State changes with site behavior
-  statement: >-
-    Changes that alter public routing, multilingual behavior, content discovery/search, shared accessibility structure, gallery rendering, editorial policy, or build verification must update the matching .wcode Design State in the same change.
-  applies_to:
-    - component:multilingual-site
-    - component:site-shell
-    - component:content-discovery
-    - component:gallery
-    - component:editorial-content
-    - component:build-verification
