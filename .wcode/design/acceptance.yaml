@@ -49,7 +49,7 @@
 - schema_version: 1
   id: AC-BUILD-001
   title: Repository check performs the shared production Hugo build
-  statement: The make-check verification target enforces the declared Hugo 0.165.0 minimum, completes a minified Hugo build and route assertions successfully from hugo.toml, checks Cloudflare free-tier asset limits, rejects mutable source WebP files before applying immutable WebP cache headers, and verifies generated ProfilePage/BlogPosting structured data, while the Cloudflare target reuses that check with persistent cache, Git/submodule preparation, and Cloudflare-only response headers.
+  statement: The make-check verification target enforces the declared Hugo 0.165.0 minimum, completes a minified Hugo build and route assertions successfully from hugo.toml, checks Cloudflare free-tier asset limits, rejects mutable source WebP files before applying immutable WebP cache headers, verifies generated ProfilePage/BlogPosting structured data, and verifies cross-platform Open Graph and X/Twitter Card metadata with fingerprinted 1200x630 preview images, while the Cloudflare target reuses that check with persistent cache, Git/submodule preparation, and Cloudflare-only response headers.
   verification:
     - kind: check
       id: make-check

@@ -64,14 +64,6 @@
 		<title>{{ $title }} - {{ $siteTitle }}</title>
 	{{- end -}}
 
-	{{/* Hugo's internal Open Graph template owns the primary OG metadata.
-	     Only emit locale alternates here to avoid duplicate/conflicting tags. */}}
-	{{- if eq .Kind "page" }}
-		{{- range .Translations }}
-	<meta property="og:locale:alternate" content="{{ replace .Language.Locale "-" "_" }}" />
-		{{- end }}
-	{{- end }}
-
 	{{- $canonicalURL := .Permalink -}}
 	{{- with .Store.Get "seoCanonicalURL" }}{{ $canonicalURL = . }}{{ end -}}
 	<link rel="canonical" href="{{ $canonicalURL }}" />
@@ -105,8 +97,7 @@
 		{{- $breadcrumb := dict "@context" "https://schema.org" "@type" "BreadcrumbList" "itemListElement" $crumbs -}}
 	<script type="application/ld+json">{{ $breadcrumb | jsonify | safeJS }}</script>
 	{{- end -}}
-	{{- template "_internal/opengraph.html" . -}}
-	{{- template "_internal/twitter_cards.html" . -}}
+	{{- partial "social-meta.html" . -}}
 	{{- $needsDisplayFont := or .IsHome (in (slice "section" "term") .Kind) -}}
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

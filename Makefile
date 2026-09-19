@@ -154,16 +154,27 @@ check:
 	grep -q '<copyright>© Francis Du</copyright>' $(BUILD_DIR)/index.xml
 	! grep -q 'Source Themes Academic' $(BUILD_DIR)/index.xml
 	! grep -q 'Ink theme on Hugo' $(BUILD_DIR)/index.xml
-	grep -q 'property="og:image" content="https://francis.run/img/share/what-is-wcode.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/share/what-is-wcode.en.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	grep -Eq 'property="og:image" content="https://francis.run/img/share/what-is-wcode\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -Eq 'property="og:image" content="https://francis.run/img/share/what-is-wcode\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
 	test -f $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	test -f $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/share/jev-wcode-scopwis.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/share/jev-wcode-scopwis.en.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
-	grep -q 'name=twitter:image content="https://francis.run/img/share/jev-wcode-scopwis.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:type" content="article"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:site_name" content="Francis Du"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:locale" content="en_US"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'property="og:image" content="https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'property="og:image:secure_url" content="https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:image:type" content="image/png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:image:width" content="1200"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:image:height" content="630"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:image:alt" content="Using Jev in wcode and Scopwis"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -q 'name=twitter:image content="https://francis.run/img/share/jev-wcode-scopwis.en.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'name=twitter:site content="@francis_run"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'name=twitter:image content="https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'name=twitter:image:alt content="Using Jev in wcode and Scopwis"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq '"image":\["https://francis.run/img/share/jev-wcode-scopwis\.en\.[0-9a-f]{64}\.png"\]' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'sharer/sharer\.php\?u=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'twitter\.com/intent/tweet\?text=.*url=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'linkedin\.com/sharing/share-offsite/\?url=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	test -f $(BUILD_DIR)/img/share-default.png
 	for source in content/blogs/*wcode*.md; do \
 		card="$$(basename "$$source" .md).png"; \
@@ -171,10 +182,10 @@ check:
 		cmp "static/img/share/$$card" "$(BUILD_DIR)/img/share/$$card" || exit 1; \
 	done
 	test -f $(BUILD_DIR)/blog/wiki-graph/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/share-default.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Eq 'property="og:image" content="https://francis.run/img/share-default\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/blog/wiki-graph/index.html
-	grep -q 'name=twitter:image content="https://francis.run/img/share-default.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
-	grep -q '"image":\["https://francis.run/img/share-default.png"\]' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Eq 'name=twitter:image content="https://francis.run/img/share-default\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Eq '"image":\["https://francis.run/img/share-default\.[0-9a-f]{64}\.png"\]' $(BUILD_DIR)/blog/wiki-graph/index.html
 	grep -Fq '.markdown figure.content-image' assets/css/main.css
 	for image in architecture evidence access activity; do \
 		test ! -L "static/img/wcode/wcode-intro-$$image.png" && \

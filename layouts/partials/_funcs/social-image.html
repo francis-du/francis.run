@@ -1,0 +1,34 @@
+{{- $images := .Params.images | default .Site.Params.images -}}
+{{- $path := "" -}}
+{{- with $images -}}
+  {{- with index . 0 -}}
+    {{- $path = . -}}
+  {{- end -}}
+{{- end -}}
+
+{{- $url := "" -}}
+{{- $mime := "" -}}
+{{- $width := 0 -}}
+{{- $height := 0 -}}
+{{- if $path -}}
+  {{- $assetPath := strings.TrimPrefix "/" $path -}}
+  {{- with resources.Get $assetPath -}}
+    {{- $resource := . | fingerprint "sha256" -}}
+    {{- $url = $resource.Permalink -}}
+    {{- $mime = $resource.MediaType.Type -}}
+    {{- if eq $resource.ResourceType "image" -}}
+      {{- $width = $resource.Width -}}
+      {{- $height = $resource.Height -}}
+    {{- end -}}
+  {{- else -}}
+    {{- $url = $path | absURL -}}
+  {{- end -}}
+{{- end -}}
+
+{{- return (dict
+  "url" $url
+  "mime" $mime
+  "width" $width
+  "height" $height
+  "alt" (.Params.socialImageAlt | default .Title | default .Site.Title)
+) -}}

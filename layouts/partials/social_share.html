@@ -1,9 +1,11 @@
 {{ $pageurl := .Page.Permalink }}
 {{ $summary := .Summary | plainify | chomp }}
 {{ $title := .Title }}
-{{ $facebookHref := printf "https://www.facebook.com/sharer/sharer.php?%s" (querify "u" $pageurl) }}
-{{ $twitterHref := printf "https://twitter.com/intent/tweet?%s" (querify "url" $pageurl "text" $title) }}
-{{ $linkedInHref := printf "https://www.linkedin.com/sharing/share-offsite/?%s" (querify "url" $pageurl) }}
+{{ $revision := .Page.Lastmod.Unix }}
+{{ $socialPageURL := printf "%s?share=%d" $pageurl $revision }}
+{{ $facebookHref := printf "https://www.facebook.com/sharer/sharer.php?%s" (querify "u" $socialPageURL) }}
+{{ $twitterHref := printf "https://twitter.com/intent/tweet?%s" (querify "url" $socialPageURL "text" $title) }}
+{{ $linkedInHref := printf "https://www.linkedin.com/sharing/share-offsite/?%s" (querify "url" $socialPageURL) }}
 {{ $mailHref := printf "mailto:?%s" (querify "subject" $title "body" (printf "%s\n\n%s" $summary $pageurl)) }}
 
 <div class="inline" id="share-buttons" role="group" aria-label="{{ i18n "shareArticle" }}">

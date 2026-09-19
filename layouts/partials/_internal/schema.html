@@ -60,24 +60,9 @@
     {{- if gt (len $keywords) 0 -}}
         {{- $data = merge $data (dict "keywords" $keywords) -}}
     {{- end -}}
-    {{- $imageURLs := slice -}}
-    {{- with .Params.images -}}
-        {{- range . -}}
-            {{- $imageURLs = $imageURLs | append (. | absURL) -}}
-        {{- end -}}
-    {{- else -}}
-        {{- with .Params.image -}}
-            {{- $imageURLs = $imageURLs | append (. | absURL) -}}
-        {{- else -}}
-            {{- with .Site.Params.images -}}
-                {{- range . -}}
-                    {{- $imageURLs = $imageURLs | append (. | absURL) -}}
-                {{- end -}}
-            {{- end -}}
-        {{- end -}}
-    {{- end -}}
-    {{- if gt (len $imageURLs) 0 -}}
-        {{- $data = merge $data (dict "image" $imageURLs) -}}
+    {{- $socialImage := partial "_funcs/social-image.html" . -}}
+    {{- with $socialImage.url -}}
+        {{- $data = merge $data (dict "image" (slice .)) -}}
     {{- end -}}
 <script type="application/ld+json">{{ $data | jsonify | safeJS }}</script>
 {{- else -}}

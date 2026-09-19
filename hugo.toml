@@ -88,6 +88,7 @@ wrapStandAloneImageWithinParagraph = false
     title = "Francis Blog"
     mode = "dark"
     images = ["/img/share-default.png"]
+    twitterSite = "@francis_run"
     social_share = true
     comment = true
     # Keep hugo-shortcode-gallery's Swipebox + JustifiedGallery lifecycle.
