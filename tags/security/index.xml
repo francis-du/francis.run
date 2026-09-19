@@ -1,14 +1,10 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Security | Francis Du</title><link>https://francis.run/tags/security/</link><atom:link href="https://francis.run/tags/security/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Wed, 26 Aug 2026 23:35:00 +0800</lastBuildDate><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Security | Francis Du</title><link>https://francis.run/tags/security/</link><atom:link href="https://francis.run/tags/security/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Wed, 26 Aug 2026 23:35:00 +0800</lastBuildDate><item><title>wcode 的授权现在怎么做</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
 &lt;p&gt;但实际用久了以后，我也越来越不喜欢另一个极端：只要一个工具不在默认列表里，就永久拒绝；真要用的时候，只能重启进程加一个很宽的 Trust Flag。&lt;/p&gt;
 &lt;p&gt;这两个选择都太粗：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;完全不许
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 或
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;整个进程都信任
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最近我把 wcode 的授权做成了真正的 Pending Authorization Queue。&lt;/p&gt;
-&lt;p&gt;核心原则很简单：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;模型可以提出权限请求，但决定权必须留在用户手里。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最近我把这些情况统一收进了 Pending Authorization Queue。模型可以把请求挂出来，最后还是我自己选哪一条批、哪一条拒绝。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp" alt="wcode 授权与访问控制界面"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp 960w, https://francis.run/img/wcode/wcode-access-management_hu_e5f2de5679dfbc7e.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;a class="heading-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88-yn-%e4%bb%a5%e5%89%8d%e7%9c%8b%e8%b5%b7%e6%9d%a5%e6%b2%a1%e7%94%a8" aria-label="章节链接：为什么 Y/N 以前看起来没用"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;TUI 其实早就有 &lt;code&gt;Y/N&lt;/code&gt; 的 Key Handler。&lt;/p&gt;
 &lt;p&gt;问题是 UI 只在 Footer 里塞了一个 Pending 数字。&lt;/p&gt;
@@ -276,7 +272,7 @@
 &lt;p&gt;同文件 &lt;code&gt;apply_edits&lt;/code&gt; 只有 SHA 一样、Edit Range 不冲突时才会合并成一次原子提交。&lt;/p&gt;
 &lt;p&gt;我不想让“支持并发”最后变成“把 race condition 交给文件锁处理”。&lt;/p&gt;
 &lt;p&gt;能不能并发应该在执行前就尽量说清楚。&lt;/p&gt;
-&lt;h2 id="security-不能写在-prompt-里"&gt;Security 不能写在 Prompt 里&lt;a class="heading-anchor" href="#security-%e4%b8%8d%e8%83%bd%e5%86%99%e5%9c%a8-prompt-%e9%87%8c" aria-label="章节链接：Security 不能写在 Prompt 里"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="安全边界不能只写在-prompt-里"&gt;安全边界不能只写在 Prompt 里&lt;a class="heading-anchor" href="#%e5%ae%89%e5%85%a8%e8%be%b9%e7%95%8c%e4%b8%8d%e8%83%bd%e5%8f%aa%e5%86%99%e5%9c%a8-prompt-%e9%87%8c" aria-label="章节链接：安全边界不能只写在 Prompt 里"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我还是会在 Skill 和 Agent Instructions 里写：不要逃出 Workspace，不要绕过授权，不要自己扩大 risky execution。&lt;/p&gt;
 &lt;p&gt;但这些只能算工作习惯。&lt;/p&gt;
 &lt;p&gt;真正的安全边界必须在 Tool Runtime。&lt;/p&gt;

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>LSP | Francis Du</title><link>https://francis.run/tags/lsp/</link><atom:link href="https://francis.run/tags/lsp/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Sun, 30 Aug 2026 17:30:00 +0800</lastBuildDate><item><title>wcode v0.5：我把 LSP 从一个工具，变成了 Agent 的常驻语义层</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>LSP | Francis Du</title><link>https://francis.run/tags/lsp/</link><atom:link href="https://francis.run/tags/lsp/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Sun, 30 Aug 2026 17:30:00 +0800</lastBuildDate><item><title>wcode v0.5：LSP 不再每次现启</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
 &lt;p&gt;那一版主要解决 Context 成本：&lt;code&gt;agent_context&lt;/code&gt; 变成 Coding Entry，Repo Map 有了 Cache 和 Scope，简单任务不需要每次把整个项目重新理解一遍。&lt;/p&gt;
 &lt;p&gt;但真的继续拿它写代码，很快又遇到另一个问题。&lt;/p&gt;
 &lt;p&gt;不是“找不到函数”。&lt;/p&gt;
@@ -9,8 +9,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;改这个 Symbol 会影响哪些跨文件 Reference？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个调用关系是同名文本，还是类型系统真正解析出来的？
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种时候，grep 能找到很多东西，但不一定完整；Tree-sitter 能告诉我语法结构，但它也不应该假装自己知道类型系统。&lt;/p&gt;
-&lt;p&gt;所以 v0.5 我做的不是“再加几个 LSP API”。&lt;/p&gt;
-&lt;p&gt;我最后把它做成了一层 &lt;strong&gt;Warm Semantic Runtime&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;所以 v0.5 没继续堆零散的 LSP API，我直接把 Language Server 的生命周期重新做了一遍，让它可以受限地常驻和复用。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp" alt="wcode Architecture"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp 960w, https://francis.run/img/wcode/wcode-architecture_hu_3f3f08e508cea449.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3232" height="1932"&gt;&lt;/figure&gt;&lt;h2 id="我为什么没有把所有查询都切到-lsp"&gt;我为什么没有把所有查询都切到 LSP&lt;a class="heading-anchor" href="#%e6%88%91%e4%b8%ba%e4%bb%80%e4%b9%88%e6%b2%a1%e6%9c%89%e6%8a%8a%e6%89%80%e6%9c%89%e6%9f%a5%e8%af%a2%e9%83%bd%e5%88%87%e5%88%b0-lsp" aria-label="章节链接：我为什么没有把所有查询都切到 LSP"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最直接的做法其实很诱人：&lt;/p&gt;
 &lt;blockquote&gt;
@@ -525,5 +524,5 @@
 &lt;p&gt;所以现在主 UI 已经改成 Project Observatory，按 Requirement 往下看 Feature、Component、Implementation、Verification 和 Git Change。&lt;/p&gt;
 &lt;p&gt;低层 Graph 没消失。&lt;/p&gt;
 &lt;p&gt;它仍然是 Context、Impact、历史 Diff 的数据来源，只是不再承担“解释整个项目”的视觉任务。&lt;/p&gt;
-&lt;p&gt;这可能是我做这块以后最大的一个认识：&lt;strong&gt;有 Graph，不代表产品就应该长成 Graph。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;做到这里我才确定一件事：底层有 Graph，不代表 UI 也应该是一团 Graph。&lt;/p&gt;
 &lt;p&gt;Graph 到这里还只是底层事实。真正拿它去做 Review 时，问题会变成另一句：Diff 之外，这次到底动了什么。那部分我放在 &lt;a href="https://francis.run/blog/wcode-traceability/"&gt;Git Diff 之外，我还想知道什么&lt;/a&gt; 里。&lt;/p&gt;</description></item></channel></rss>

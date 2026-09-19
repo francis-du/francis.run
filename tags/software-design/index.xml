@@ -28,7 +28,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Plan 不是一句“修好这个问题”。&lt;/p&gt;
 &lt;p&gt;它会带上这次 Design Change、发现的 Drift、Impact、Risk、Change Intent 和 Verification Requirement，然后再拆成有依赖的 Task。&lt;/p&gt;
-&lt;p&gt;这听起来有点重，但我做它的原因其实很现实：&lt;strong&gt;聊天记录不是工作状态。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这听起来有点重，但原因其实很现实：聊天记录不适合拿来当长期工作状态。&lt;/p&gt;
 &lt;h2 id="session-断掉比想象中常见"&gt;Session 断掉比想象中常见&lt;a class="heading-anchor" href="#session-%e6%96%ad%e6%8e%89%e6%af%94%e6%83%b3%e8%b1%a1%e4%b8%ad%e5%b8%b8%e8%a7%81" aria-label="章节链接：Session 断掉比想象中常见"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;模型会换，工具会重连，Web Session 会过期，有时我自己也会中途停下来改别的东西。&lt;/p&gt;
 &lt;p&gt;如果任务做到一半，所有进度都只存在上一段 Conversation 里，下一次基本又得从头解释。&lt;/p&gt;
@@ -171,7 +171,7 @@
 &lt;p&gt;所以确定性信号负责发现值得看一眼的地方，Reviewer 再判断是不是问题。&lt;/p&gt;
 &lt;p&gt;现在 Project Observatory 也会把 Requirement、实现、Verification、Git Change 和依赖关系放在一起。我平时打开它，基本就是为了回答这篇文章标题那个问题：&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;Diff 之外，这次到底动了什么。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Impact 算出来只是知道该看哪里，最后还是要落到“怎么证明这次改动真的可以”。Verification 和 Evidence 我放在 &lt;a href="https://francis.run/blog/wcode-verification/"&gt;测试通过以后，我还想留下什么&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>wcode 的 Design State：我为什么把需求写进仓库</title><link>https://francis.run/blog/wcode-design-state/</link><pubDate>Wed, 26 Aug 2026 03:11:00 +0800</pubDate><guid>https://francis.run/blog/wcode-design-state/</guid><description>&lt;p&gt;做 wcode 一段时间以后，我越来越不喜欢一种状态：代码里明明有很多约束，但这些约束只活在人脑里。&lt;/p&gt;
+&lt;p&gt;Impact 算出来只是知道该看哪里，最后还是要落到“怎么证明这次改动真的可以”。Verification 和 Evidence 我放在 &lt;a href="https://francis.run/blog/wcode-verification/"&gt;测试通过以后，我还想留下什么&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>我为什么把 wcode 的需求写进仓库</title><link>https://francis.run/blog/wcode-design-state/</link><pubDate>Wed, 26 Aug 2026 03:11:00 +0800</pubDate><guid>https://francis.run/blog/wcode-design-state/</guid><description>&lt;p&gt;做 wcode 一段时间以后，我越来越不喜欢一种状态：代码里明明有很多约束，但这些约束只活在人脑里。&lt;/p&gt;
 &lt;p&gt;比如 Workspace Root 为什么不能随便放宽，为什么 Symlink 要单独挡，为什么一个旧 SHA 不能继续写文件。代码看得出来“怎么做”，但不一定看得出来“为什么不能改成别的样子”。&lt;/p&gt;
 &lt;p&gt;人长期待在项目里还好，换一个 Agent 进来，它看到的通常只有当前源码。&lt;/p&gt;
 &lt;p&gt;于是我开始把一部分“为什么”写进仓库。&lt;/p&gt;

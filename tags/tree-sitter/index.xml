@@ -67,5 +67,5 @@
 &lt;p&gt;所以现在主 UI 已经改成 Project Observatory，按 Requirement 往下看 Feature、Component、Implementation、Verification 和 Git Change。&lt;/p&gt;
 &lt;p&gt;低层 Graph 没消失。&lt;/p&gt;
 &lt;p&gt;它仍然是 Context、Impact、历史 Diff 的数据来源，只是不再承担“解释整个项目”的视觉任务。&lt;/p&gt;
-&lt;p&gt;这可能是我做这块以后最大的一个认识：&lt;strong&gt;有 Graph，不代表产品就应该长成 Graph。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;做到这里我才确定一件事：底层有 Graph，不代表 UI 也应该是一团 Graph。&lt;/p&gt;
 &lt;p&gt;Graph 到这里还只是底层事实。真正拿它去做 Review 时，问题会变成另一句：Diff 之外，这次到底动了什么。那部分我放在 &lt;a href="https://francis.run/blog/wcode-traceability/"&gt;Git Diff 之外，我还想知道什么&lt;/a&gt; 里。&lt;/p&gt;</description></item></channel></rss>

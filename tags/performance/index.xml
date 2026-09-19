@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Performance | Francis Du</title><link>https://francis.run/tags/performance/</link><atom:link href="https://francis.run/tags/performance/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 12 Sep 2026 05:32:00 +0800</lastBuildDate><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：&lt;strong&gt;数字挺忙，任务不一定真快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是有一种很奇怪的感觉：数字挺忙，任务不一定真快。&lt;/p&gt;
 &lt;p&gt;我把执行链拆开看了一遍，问题就清楚了。&lt;/p&gt;
 &lt;p&gt;外层 Tool Slot 只表示请求已经准入。CPU、文件 I/O、&lt;code&gt;cargo&lt;/code&gt;、&lt;code&gt;git&lt;/code&gt;、Language Server 还有各自的线程池或队列，外面 32 个槽位全亮，并不代表里面 32 份工作都在向前跑。&lt;/p&gt;
 &lt;p&gt;0.6.2 先把这些资源分开计量和限制。&lt;/p&gt;
@@ -93,7 +93,7 @@
 &lt;li&gt;断线不自动重放；&lt;/li&gt;
 &lt;li&gt;没有采样就显示 unknown。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：&lt;strong&gt;还是不够快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是还不够快。&lt;/p&gt;
 &lt;p&gt;这个“慢”很容易全甩给模型。&lt;/p&gt;
 &lt;p&gt;但我看了一轮调用链以后，发现里面有不少完全是 Runtime 自己造成的等待。&lt;/p&gt;
 &lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
@@ -203,7 +203,7 @@
 &lt;p&gt;小结果没什么感觉，但 &lt;code&gt;parallel_tools&lt;/code&gt;、Graph、Project Context 这类 &lt;code&gt;structuredContent&lt;/code&gt; 大时，这就是纯粹的额外内存和 CPU。&lt;/p&gt;
 &lt;p&gt;现在改成一个只实现 &lt;code&gt;Write&lt;/code&gt; 的 Byte Counter，让 &lt;code&gt;serde_json::to_writer&lt;/code&gt; 流过去，只累加字节数，不保存第二份 Buffer。&lt;/p&gt;
 &lt;p&gt;协议内容完全不变，Monitor 指标也不变，但每个 Tool Call 少一次只为计数存在的临时分配。&lt;/p&gt;
-&lt;h2 id="更重要的是让模型少发-tool-call"&gt;更重要的是：让模型少发 Tool Call&lt;a class="heading-anchor" href="#%e6%9b%b4%e9%87%8d%e8%a6%81%e7%9a%84%e6%98%af%e8%ae%a9%e6%a8%a1%e5%9e%8b%e5%b0%91%e5%8f%91-tool-call" aria-label="章节链接：更重要的是：让模型少发 Tool Call"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="单个函数快了还不够"&gt;单个函数快了还不够&lt;a class="heading-anchor" href="#%e5%8d%95%e4%b8%aa%e5%87%bd%e6%95%b0%e5%bf%ab%e4%ba%86%e8%bf%98%e4%b8%8d%e5%a4%9f" aria-label="章节链接：单个函数快了还不够"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Runtime 再快，如果 Agent 还是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read A
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit A
@@ -253,6 +253,6 @@
 &lt;li&gt;多 Workspace 同时工作时，需要继续观察 Rayon、Tokio &lt;code&gt;spawn_blocking&lt;/code&gt; 和全局 Semaphore 三层调度会不会互相争资源。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;我不准备为了追一个漂亮 Benchmark 把这些全部一次性复杂化。&lt;/p&gt;
-&lt;p&gt;更实际的标准还是：&lt;strong&gt;拿它去真实项目写代码，哪一步明显在等，就把那一步拆出来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我现在还是拿真实项目当标准：哪一步明显在等，就把那一步拆出来。&lt;/p&gt;
 &lt;p&gt;这也是我现在优化 wcode 的方式。&lt;/p&gt;
 &lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>

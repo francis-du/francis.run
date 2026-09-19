@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Observability | Francis Du</title><link>https://francis.run/tags/observability/</link><atom:link href="https://francis.run/tags/observability/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 12 Sep 2026 05:32:00 +0800</lastBuildDate><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：&lt;strong&gt;数字挺忙，任务不一定真快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是有一种很奇怪的感觉：数字挺忙，任务不一定真快。&lt;/p&gt;
 &lt;p&gt;我把执行链拆开看了一遍，问题就清楚了。&lt;/p&gt;
 &lt;p&gt;外层 Tool Slot 只表示请求已经准入。CPU、文件 I/O、&lt;code&gt;cargo&lt;/code&gt;、&lt;code&gt;git&lt;/code&gt;、Language Server 还有各自的线程池或队列，外面 32 个槽位全亮，并不代表里面 32 份工作都在向前跑。&lt;/p&gt;
 &lt;p&gt;0.6.2 先把这些资源分开计量和限制。&lt;/p&gt;

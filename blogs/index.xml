@@ -1,35 +1,33 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Francis 的技术文章、项目记录与随笔。</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><item><title>我把 Jev 接进 wcode 和 Scopwis：从判断实验到工程落地</title><link>https://francis.run/blog/jev-wcode-scopwis/</link><pubDate>Sat, 19 Sep 2026 12:30:00 +0800</pubDate><guid>https://francis.run/blog/jev-wcode-scopwis/</guid><description>&lt;p&gt;我一开始对 Jev 的预期很简单：如果一次判断比 GPT、Claude 这类推理模型便宜得多，那就让它先看一眼，能少调一次大模型就赚了。&lt;/p&gt;
-&lt;p&gt;真正接进 wcode、再连续做了几轮测试以后，我发现这个理解还是太粗。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Jev 最有价值的地方，不是“用一个小模型替代一个大模型”，而是把 Agent 里原本很模糊的判断，拆成一组便宜、可测、可校准的语义条件。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Coding Agent 经常会遇到这些问题：&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Francis 的技术文章、项目记录与随笔。</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><item><title>Jev 在 wcode 和 Scopwis 里的实践</title><link>https://francis.run/blog/jev-wcode-scopwis/</link><pubDate>Sat, 19 Sep 2026 12:30:00 +0800</pubDate><guid>https://francis.run/blog/jev-wcode-scopwis/</guid><description>&lt;p&gt;我最开始接 Jev，想法其实很功利：它便宜。一个判断如果能先让 Jev 做，少叫一次 GPT、Claude 这类 reasoning model，就能省一点成本和时间。&lt;/p&gt;
+&lt;p&gt;真接进 wcode 和 Scopwis 以后，最先暴露的问题却不是模型够不够强，而是我自己问得太宽。&lt;/p&gt;
+&lt;p&gt;Agent 平时会反复碰到这种判断：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;上下文够不够了？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;还要不要继续搜？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;现在是不是必须看 callers / references / implementations？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个任务能直接改，还是应该先看 worktree？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这里值得再跑一轮大模型推理吗？
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些问题都不像“把这个函数重写一遍”那样需要生成能力。它们更接近程序里的 if，只是条件不是一个整数或布尔值，而是要读懂代码任务的语义。&lt;/p&gt;
-&lt;p&gt;这正好是我后来给 Jev 找到的位置：它不是另一套 Agent，而是一组可以嵌进普通控制流里的语义判断。&lt;/p&gt;
-&lt;p&gt;Jev 官方文档强调把窄而结构化的判断嵌进普通软件：&lt;strong&gt;控制流、确定性规则和副作用继续留在代码里，模型只回答边界清楚的问题。&lt;/strong&gt; 文档里反复强调 atomic、typed、parallel：问题要小、答案要有类型，同一个 state 上互相独立的问题一次并行问完。可以看 &lt;a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one"&gt;How to build with Jev&lt;/a&gt;、&lt;a href="https://docs.typesafe.ai/primitives/noul"&gt;Noul&lt;/a&gt;、&lt;a href="https://docs.typesafe.ai/primitives/choice"&gt;Choice&lt;/a&gt; 和 &lt;a href="https://docs.typesafe.ai/primitives/score"&gt;Score&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;我后来发现，wcode 的 Decision Plane 和这个思路非常合。&lt;/p&gt;
-&lt;h2 id="先说清楚我测的不是jev-写代码比-gpt-好多少"&gt;先说清楚：我测的不是“Jev 写代码比 GPT 好多少”&lt;a class="heading-anchor" href="#%e5%85%88%e8%af%b4%e6%b8%85%e6%a5%9a%e6%88%91%e6%b5%8b%e7%9a%84%e4%b8%8d%e6%98%afjev-%e5%86%99%e4%bb%a3%e7%a0%81%e6%af%94-gpt-%e5%a5%bd%e5%a4%9a%e5%b0%91" aria-label="章节链接：先说清楚：我测的不是“Jev 写代码比 GPT 好多少”"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;这篇里的数据，都是 &lt;strong&gt;Decision Layer 的真实 API 测试&lt;/strong&gt;，不是完整 Coding Benchmark。&lt;/p&gt;
-&lt;p&gt;我没有拿 100 个 GitHub Issue 分别让“纯 GPT Agent”和“GPT + Jev Agent”各做一遍，然后宣称成功率提升多少。那种实验更接近最终产品效果，但变量也更多：模型版本、上下文、工具调用、仓库大小、测试环境都会影响结果。&lt;/p&gt;
-&lt;p&gt;我先做的是更基础的一层：&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它们不像“把这个函数重写一遍”，更像程序里的几个 if，只是条件需要读懂当前任务。&lt;/p&gt;
+&lt;p&gt;Jev 的位置也就慢慢清楚了：不让它接管 Agent，只让它回答这些边界比较窄的语义问题。控制流、权限、副作用和能直接计算出来的事实继续留在代码里。&lt;/p&gt;
+&lt;p&gt;这和 Jev 文档里 atomic、typed、parallel 的做法基本一致：问题拆小，答案有类型，同一个 state 上互不依赖的问题一起问。相关说明可以看 &lt;a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one"&gt;How to build with Jev&lt;/a&gt;、&lt;a href="https://docs.typesafe.ai/primitives/noul"&gt;Noul&lt;/a&gt;、&lt;a href="https://docs.typesafe.ai/primitives/choice"&gt;Choice&lt;/a&gt; 和 &lt;a href="https://docs.typesafe.ai/primitives/score"&gt;Score&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;wcode 原来就有 Decision Plane，所以我先从这里开始接。&lt;/p&gt;
+&lt;h2 id="我先测了什么"&gt;我先测了什么&lt;a class="heading-anchor" href="#%e6%88%91%e5%85%88%e6%b5%8b%e4%ba%86%e4%bb%80%e4%b9%88" aria-label="章节链接：我先测了什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这篇里的数字都来自 &lt;strong&gt;Decision Layer 的真实 API 测试&lt;/strong&gt;，不是完整 Coding Benchmark。&lt;/p&gt;
+&lt;p&gt;我没有拿一批 GitHub Issue 去做“纯 GPT Agent”和“GPT + Jev Agent”的端到端对照。那样更接近最终产品效果，但模型、上下文、工具、仓库和测试环境全混在一起，不太适合先看 Decision Plane 本身。&lt;/p&gt;
+&lt;p&gt;所以我先只测一层：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;给 Jev 两组实际会出现在项目里的状态：一组来自 wcode 的代码分析/编辑决策，一组来自 Scopwis 这条 Data Agent 的数据分析决策。看它能不能稳定回答“下一步需要什么证据”“是否必须继续推理”“是否需要语义导航”这类问题。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;2026 年 9 月 19 日，我用本机已经配置好的 Jev Key，直接请求生产 API。&lt;code&gt;jev-latest&lt;/code&gt; 实际返回的版本是 &lt;code&gt;jev-1.13.0&lt;/code&gt;。这一轮深入测试一共完成了 &lt;strong&gt;104 次成功的真实 API 请求&lt;/strong&gt;，不写入 wcode 或 Scopwis 项目，也没有把 Key 打出来。&lt;/p&gt;
 &lt;p&gt;当前 Jev 的模型页显示 &lt;code&gt;jev-1.13.0&lt;/code&gt; 输入价格是 &lt;strong&gt;$0.042 / 1M tokens，输出免费&lt;/strong&gt;；&lt;code&gt;jev-latest&lt;/code&gt; 当前指向这个版本。官方还特别提醒：alias 后面会移动，如果阈值是按某个版本校准的，生产环境应该 pin 版本。见 &lt;a href="https://docs.typesafe.ai/models"&gt;Models&lt;/a&gt;。&lt;/p&gt;
-&lt;p&gt;后面所有准确率都只代表这批测试，不代表一个通用 benchmark。&lt;/p&gt;
-&lt;h2 id="第一轮就踩坑问有没有价值jev-会真的回答有没有价值"&gt;第一轮就踩坑：问“有没有价值”，Jev 会真的回答“有没有价值”&lt;a class="heading-anchor" href="#%e7%ac%ac%e4%b8%80%e8%bd%ae%e5%b0%b1%e8%b8%a9%e5%9d%91%e9%97%ae%e6%9c%89%e6%b2%a1%e6%9c%89%e4%bb%b7%e5%80%bcjev-%e4%bc%9a%e7%9c%9f%e7%9a%84%e5%9b%9e%e7%ad%94%e6%9c%89%e6%b2%a1%e6%9c%89%e4%bb%b7%e5%80%bc" aria-label="章节链接：第一轮就踩坑：问“有没有价值”，Jev 会真的回答“有没有价值”"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;一开始我先测 Scopwis。这里的 Data Agent 就是 Scopwis，不是一个泛化的假想产品。我拿的是它 ReAct / Decision Plane 里会遇到的数据分析状态：&lt;/p&gt;
+&lt;p&gt;后面的准确率都只代表这批样本。&lt;/p&gt;
+&lt;h2 id="scopwis-第一轮问题问宽了"&gt;Scopwis 第一轮：问题问宽了&lt;a class="heading-anchor" href="#scopwis-%e7%ac%ac%e4%b8%80%e8%bd%ae%e9%97%ae%e9%a2%98%e9%97%ae%e5%ae%bd%e4%ba%86" aria-label="章节链接：Scopwis 第一轮：问题问宽了"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我先拿 Scopwis 开刀。这里的 Data Agent 就是 Scopwis，我直接用了它 ReAct / Decision Plane 会遇到的数据分析状态：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Would another full reasoning-model step likely add meaningful analytical value before finalization?
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;翻成中文大概就是：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;再跑一次完整推理模型，会不会给最终分析带来有意义的价值？&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;听起来没问题。&lt;/p&gt;
-&lt;p&gt;实际效果并不好。&lt;/p&gt;
+&lt;p&gt;看起来挺合理，跑出来却不太行。&lt;/p&gt;
 &lt;p&gt;12 个更严格的分析 case 里，这个宽问题的准确率是 &lt;strong&gt;75%&lt;/strong&gt;，Brier Score 是 &lt;strong&gt;0.1789&lt;/strong&gt;。Brier 越低越好，0 代表概率和真值完全一致。&lt;/p&gt;
 &lt;p&gt;最大的错误很有代表性：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;缺 historical baseline
@@ -86,16 +84,15 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;这组结果对我影响很大。&lt;/p&gt;
-&lt;p&gt;我原来会把这类问题叫“模型能力”。现在更愿意把它叫 &lt;strong&gt;judgment design&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;问题写得宽，模型就稳定地在一个宽边界里工作；问题写成真正需要的程序条件，它才像一个可以组合的 primitive。&lt;/p&gt;
-&lt;h2 id="wcode-里同样明显不要问语义导航有没有帮助"&gt;wcode 里同样明显：不要问“语义导航有没有帮助”&lt;a class="heading-anchor" href="#wcode-%e9%87%8c%e5%90%8c%e6%a0%b7%e6%98%8e%e6%98%be%e4%b8%8d%e8%a6%81%e9%97%ae%e8%af%ad%e4%b9%89%e5%af%bc%e8%88%aa%e6%9c%89%e6%b2%a1%e6%9c%89%e5%b8%ae%e5%8a%a9" aria-label="章节链接：wcode 里同样明显：不要问“语义导航有没有帮助”"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这轮以后，我不太愿意把这类问题只归成“模型能力”了。问题本身怎么定义，就是实现的一部分。&lt;/p&gt;
+&lt;p&gt;问“有没有价值”，模型就按“有没有价值”回答；程序真正需要的是更窄的条件，就得把那个条件写出来。&lt;/p&gt;
+&lt;h2 id="wcode-里也踩了同一个坑"&gt;wcode 里也踩了同一个坑&lt;a class="heading-anchor" href="#wcode-%e9%87%8c%e4%b9%9f%e8%b8%a9%e4%ba%86%e5%90%8c%e4%b8%80%e4%b8%aa%e5%9d%91" aria-label="章节链接：wcode 里也踩了同一个坑"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;wcode 里有一个很自然的判断：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;现在要不要看 callers / callees / references / implementations？
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第一版我问的是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Would semantic navigation likely add material value before editing?
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是“语义导航会不会有实际帮助”。&lt;/p&gt;
-&lt;p&gt;这个问法表现很差。&lt;/p&gt;
+&lt;p&gt;这个问法也不行。&lt;/p&gt;
 &lt;p&gt;14 个代码场景里，Accuracy 只有 &lt;strong&gt;57.1%&lt;/strong&gt;，Brier &lt;strong&gt;0.2114&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;原因很好理解。对一个写代码任务来说，多看一点 callers 通常都“有帮助”。于是 Jev 会把很多不需要语义导航的 case 也推过去：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;目标文件有未提交修改
@@ -147,9 +144,8 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;我不会因为 14 个样本就说“生产环境 100%”。&lt;/p&gt;
-&lt;p&gt;真正值得记住的是：&lt;strong&gt;同一个模型、同一批状态，仅仅改 judgment 的定义，结果就从接近抛硬币变成了非常可用。&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="choice-也一样相邻选项一定要把边界写出来"&gt;Choice 也一样：相邻选项一定要把边界写出来&lt;a class="heading-anchor" href="#choice-%e4%b9%9f%e4%b8%80%e6%a0%b7%e7%9b%b8%e9%82%bb%e9%80%89%e9%a1%b9%e4%b8%80%e5%ae%9a%e8%a6%81%e6%8a%8a%e8%be%b9%e7%95%8c%e5%86%99%e5%87%ba%e6%9d%a5" aria-label="章节链接：Choice 也一样：相邻选项一定要把边界写出来"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;14 个样本当然不能拿来宣称“生产环境 100%”。但至少这轮很清楚：模型没换，state 没换，只把问题从“有帮助吗”改成“是不是必要证据”，结果就完全不一样。&lt;/p&gt;
+&lt;h2 id="choice-的问题在相邻选项"&gt;Choice 的问题在相邻选项&lt;a class="heading-anchor" href="#choice-%e7%9a%84%e9%97%ae%e9%a2%98%e5%9c%a8%e7%9b%b8%e9%82%bb%e9%80%89%e9%a1%b9" aria-label="章节链接：Choice 的问题在相邻选项"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Noul 是 yes/no。Choice 用来选一个有限动作，比如 wcode 里：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;retrieve
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation
@@ -168,7 +164,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; &amp;#34;do_not_use_when&amp;#34;: &lt;span style="color:#a31515"&gt;&amp;#34;真正缺的是 caller/reference 关系&amp;#34;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; }
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;结果也很明显：&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;结果如下：&lt;/p&gt;
 &lt;table&gt;
 &lt;thead&gt;
 &lt;tr&gt;
@@ -213,15 +209,15 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;confidence = 0.96
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jev 对 confidence 的定义本来就不是“这次工作流决策正确的概率”。它是 Choice/Score 概率分布有多集中。官方 &lt;a href="https://docs.typesafe.ai/confidence"&gt;Confidence&lt;/a&gt; 页面也明确说了这一点。&lt;/p&gt;
-&lt;p&gt;所以我的结论不是：&lt;/p&gt;
+&lt;p&gt;所以我不会写这种规则：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;confidence &amp;gt; 0.9
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;=&amp;gt; 绝对相信
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而是：&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我现在会这样处理：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;先用带真值的数据校准
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;再决定每一种动作能接受什么阈值
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;高风险动作和低风险动作应该不同
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这和数据库查询优化器、风控规则没什么神秘区别：阈值是业务策略，不是模型常数。&lt;/p&gt;
-&lt;h2 id="稳定性反而不是我现在最担心的问题"&gt;稳定性反而不是我现在最担心的问题&lt;a class="heading-anchor" href="#%e7%a8%b3%e5%ae%9a%e6%80%a7%e5%8f%8d%e8%80%8c%e4%b8%8d%e6%98%af%e6%88%91%e7%8e%b0%e5%9c%a8%e6%9c%80%e6%8b%85%e5%bf%83%e7%9a%84%e9%97%ae%e9%a2%98" aria-label="章节链接：稳定性反而不是我现在最担心的问题"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="我又把同一批问题重复跑了-15-次"&gt;我又把同一批问题重复跑了 15 次&lt;a class="heading-anchor" href="#%e6%88%91%e5%8f%88%e6%8a%8a%e5%90%8c%e4%b8%80%e6%89%b9%e9%97%ae%e9%a2%98%e9%87%8d%e5%a4%8d%e8%b7%91%e4%ba%86-15-%e6%ac%a1" aria-label="章节链接：我又把同一批问题重复跑了 15 次"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我还专门做了 15 次重复采样。&lt;/p&gt;
 &lt;p&gt;测试里每次都给同一个语义状态加一个无关的 fresh uid，让请求本身不完全相同，减少“完全相同请求被复用”对结果的干扰，然后看概率会不会来回跳。这个做法也有代价：它不能把模型本身的随机波动和模型对这个无关 uid 的敏感性完全分开，所以这里只把它当一致性压力测试。&lt;/p&gt;
 &lt;p&gt;四个边界 Noul 的结果：&lt;/p&gt;
@@ -265,14 +261,10 @@
 &lt;p&gt;四个 Choice 在 15 次重复里也都是 &lt;strong&gt;15/15 选择同一个 label&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;Jev 自己的 &lt;a href="https://docs.typesafe.ai/cookbooks/consistency_noul_cookbook"&gt;Noul self-consistency cookbook&lt;/a&gt; 里，Jev 的平均 per-question probability standard deviation 是 0.0102。我的这批结果在同一个量级。&lt;/p&gt;
 &lt;p&gt;不过这不能外推成“Choice 天生不会抖”。Jev 的 &lt;a href="https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook"&gt;Choice self-consistency cookbook&lt;/a&gt; 故意选了更模糊的 moderation case；那组实验里 Jev 的原始 label agreement 是 90.8%，8 个 Choice 里有 2 个发生过 label flip。加上 top probability 至少 0.60 的 abstain 以后，agreement 升到 99.2%，但自动处理覆盖率是 74.2%。这更接近我想要的用法：边界 case 不硬猜，交给 fallback。&lt;/p&gt;
-&lt;p&gt;所以在&lt;strong&gt;我这组 wcode / Scopwis 样本里&lt;/strong&gt;，目前更危险的不是“今天 0.8，明天随机变 0.2”。&lt;/p&gt;
-&lt;p&gt;而是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;把一个错误的判断边界写进系统，然后让 Jev 很稳定地执行这个错误边界。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这也是为什么我现在更重视 question review，而不是只看 model benchmark。&lt;/p&gt;
-&lt;h2 id="同一个-state问题一定要一次问完"&gt;同一个 state，问题一定要一次问完&lt;a class="heading-anchor" href="#%e5%90%8c%e4%b8%80%e4%b8%aa-state%e9%97%ae%e9%a2%98%e4%b8%80%e5%ae%9a%e8%a6%81%e4%b8%80%e6%ac%a1%e9%97%ae%e5%ae%8c" aria-label="章节链接：同一个 state，问题一定要一次问完"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;这部分是 Jev 对 Agent 架构最直接的性能价值。&lt;/p&gt;
+&lt;p&gt;这批样本里，我暂时没看到“今天 0.8，明天突然 0.2”这种乱跳。反而更值得防的是另一件事：问题边界写错了，Jev 还很稳定地照着错边界执行。&lt;/p&gt;
+&lt;p&gt;所以后面我花在 question review 上的时间，已经比盯着单个 benchmark 分数更多。&lt;/p&gt;
+&lt;h2 id="8-个问题一次发"&gt;8 个问题，一次发&lt;a class="heading-anchor" href="#8-%e4%b8%aa%e9%97%ae%e9%a2%98%e4%b8%80%e6%ac%a1%e5%8f%91" aria-label="章节链接：8 个问题，一次发"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这块是我测下来最直接的性能收益。&lt;/p&gt;
 &lt;p&gt;我做了一个同时包含 &lt;strong&gt;Scopwis 数据分析状态&lt;/strong&gt;和 &lt;strong&gt;wcode 代码分析状态&lt;/strong&gt;的请求，一共 8 个问题：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;2 × Data Noul
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;1 × Data Choice
@@ -294,7 +286,7 @@
 &lt;p&gt;8 个答案的数值平均绝对差只有 &lt;strong&gt;0.0116&lt;/strong&gt;，最大差 &lt;strong&gt;0.04&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;Jev 官方文档也有专门的 &lt;a href="https://docs.typesafe.ai/cookbooks/parallel_questions"&gt;Parallel questions cookbook&lt;/a&gt;。他们在一个约 54k 字符的 GDPR 文档上一次问 13 个问题，batch 比单问 &lt;strong&gt;12.2× 便宜、10.0× 快&lt;/strong&gt;，而答案没有因为 batching 发生系统偏移。&lt;/p&gt;
 &lt;p&gt;我们本机的倍数没那么夸张，因为我的 state 短得多。&lt;/p&gt;
-&lt;p&gt;但架构结论一样：&lt;/p&gt;
+&lt;p&gt;所以我最后把调用方式改成这样：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;错误做法：
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;state → Jev → 等
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;state → Jev → 等
@@ -309,7 +301,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后代码只读当前路径需要的答案。&lt;/p&gt;
 &lt;p&gt;这点对 wcode 很重要，因为 Agent 本身已经有模型和工具往返。如果 Jev 再被做成一条串行小 Agent，收益很快就被网络时间吃掉了。&lt;/p&gt;
 &lt;p&gt;顺便说一句，Jev 的架构文档写“most queries complete in about 100 ms”。我从本机走生产公开 API 测到的端到端 P50，大部分轮次在 &lt;strong&gt;1.2～1.4 秒&lt;/strong&gt;附近，8-question batch 是 1.77 秒。两者不一定是同一个口径，网络和服务路径都会算进我的数字。做产品延迟预算时，我会以自己部署位置的真实端到端数据为准，而不是只看模型侧数字。&lt;/p&gt;
-&lt;h2 id="state-也不能什么都塞"&gt;State 也不能什么都塞&lt;a class="heading-anchor" href="#state-%e4%b9%9f%e4%b8%8d%e8%83%bd%e4%bb%80%e4%b9%88%e9%83%bd%e5%a1%9e" aria-label="章节链接：State 也不能什么都塞"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="state-不能直接塞聊天记录"&gt;State 不能直接塞聊天记录&lt;a class="heading-anchor" href="#state-%e4%b8%8d%e8%83%bd%e7%9b%b4%e6%8e%a5%e5%a1%9e%e8%81%8a%e5%a4%a9%e8%ae%b0%e5%bd%95" aria-label="章节链接：State 不能直接塞聊天记录"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Jev 1.13 的官方 jaggedness 页面还列了两个和 Agent 特别相关的问题：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;大量无关内容会拉低准确率；&lt;/li&gt;
@@ -378,11 +370,10 @@
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
-&lt;p&gt;样本不大，但这个方向和官方建议完全一致：&lt;strong&gt;先在代码里做 retrieval/filtering，再给 Jev 一个结构清楚的 state。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;这也是为什么我不打算把整个 MCP transcript、终端日志、网页内容、用户 Prompt 全部直接丢给 Decision Plane。&lt;/p&gt;
-&lt;p&gt;Jev 看到的应该是“已经整理好的程序状态”，不是聊天垃圾场。&lt;/p&gt;
-&lt;h2 id="它在-wcode-里到底应该负责什么"&gt;它在 wcode 里到底应该负责什么&lt;a class="heading-anchor" href="#%e5%ae%83%e5%9c%a8-wcode-%e9%87%8c%e5%88%b0%e5%ba%95%e5%ba%94%e8%af%a5%e8%b4%9f%e8%b4%a3%e4%bb%80%e4%b9%88" aria-label="章节链接：它在 wcode 里到底应该负责什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;做完这些测试后，我对 wcode 里的分工反而更保守了。&lt;/p&gt;
+&lt;p&gt;样本不大，但够提醒我一件事：先在代码里做 retrieval / filtering，再把整理过的 state 交给 Jev。&lt;/p&gt;
+&lt;p&gt;所以整个 MCP transcript、终端日志、网页内容、用户 Prompt 我都不会原样往 Decision Plane 里灌。Jev 看到的是程序状态，不是聊天记录拼盘。&lt;/p&gt;
+&lt;h2 id="我最后只给-jev-很小的权限"&gt;我最后只给 Jev 很小的权限&lt;a class="heading-anchor" href="#%e6%88%91%e6%9c%80%e5%90%8e%e5%8f%aa%e7%bb%99-jev-%e5%be%88%e5%b0%8f%e7%9a%84%e6%9d%83%e9%99%90" aria-label="章节链接：我最后只给 Jev 很小的权限"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;测完以后，我在 wcode 里反而把 Jev 的权限收得更小。&lt;/p&gt;
 &lt;p&gt;有些事情绝对不需要 Jev：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;target file dirty?
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;unmerged?
@@ -426,10 +417,10 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Calibrated savings
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;只在经过验证的 judgment 上允许少跑一次昂贵步骤
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个过程比“接上 API 看起来能跑”麻烦，但 Decision Plane 一旦真的能减少错误探索和无意义推理，收益会比单纯换一个模型稳定得多。&lt;/p&gt;
-&lt;h2 id="jev-在-wcode-和-scopwis-里是怎么落地的"&gt;Jev 在 wcode 和 Scopwis 里是怎么落地的&lt;a class="heading-anchor" href="#jev-%e5%9c%a8-wcode-%e5%92%8c-scopwis-%e9%87%8c%e6%98%af%e6%80%8e%e4%b9%88%e8%90%bd%e5%9c%b0%e7%9a%84" aria-label="章节链接：Jev 在 wcode 和 Scopwis 里是怎么落地的"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;前面讲的是 judgment 怎么设计。真正做进产品以后，我更在意的是：&lt;strong&gt;Jev 判断错了，不能把原来确定性的工程边界一起带错。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;wcode 和 Scopwis 都接了 Jev，但两边没有硬套同一个实现。它们共享的是原则，不是代码形状。&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这比“API 接通就算完成”麻烦不少，但至少每一步为什么放权、放到哪里，都能解释。&lt;/p&gt;
+&lt;h2 id="现在两边怎么接"&gt;现在两边怎么接&lt;a class="heading-anchor" href="#%e7%8e%b0%e5%9c%a8%e4%b8%a4%e8%be%b9%e6%80%8e%e4%b9%88%e6%8e%a5" aria-label="章节链接：现在两边怎么接"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;真正进产品以后，我只守一个底线：Jev 可以判断错，但不能因为它判断错，就把原来确定性的工程边界一起放松。&lt;/p&gt;
+&lt;p&gt;wcode 和 Scopwis 都接了 Jev，不过两边运行方式不一样。我只复用了边界，没有硬套同一份实现。&lt;/p&gt;
 &lt;h3 id="wcodejev-是-agent-context-里的第二意见"&gt;wcode：Jev 是 Agent Context 里的第二意见&lt;a class="heading-anchor" href="#wcodejev-%e6%98%af-agent-context-%e9%87%8c%e7%9a%84%e7%ac%ac%e4%ba%8c%e6%84%8f%e8%a7%81" aria-label="章节链接：wcode：Jev 是 Agent Context 里的第二意见"&gt;#&lt;/a&gt;&lt;/h3&gt;
 &lt;p&gt;wcode 的主链是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;agent_context
@@ -500,8 +491,8 @@
 &lt;p&gt;环境变量统一用 &lt;code&gt;JEV_API_KEY&lt;/code&gt;、&lt;code&gt;JEV_BASE_URL&lt;/code&gt;、&lt;code&gt;JEV_DEFAULT_MODEL&lt;/code&gt;。Key 也可以从 UI 加密保存；GET 永远只暴露“已配置”，不会回传 credential。配置 API 已经统一成 &lt;code&gt;/api/v1/jev-configuration&lt;/code&gt;，本地加密状态文件是 &lt;code&gt;jev_configuration.enc.json&lt;/code&gt;；没有保留旧命名 alias。&lt;/p&gt;
 &lt;p&gt;Credential 和 endpoint 绑定：base URL 改掉以后，旧 Key 不会偷偷复用到新 endpoint，必须显式 replace / clear。HTTP redirect 默认关闭，非 loopback endpoint 要求 HTTPS，response 也有大小上限。&lt;/p&gt;
 &lt;p&gt;配置不要求重启。打开 Jev 设置时会重新发现环境；每个新的 Agent run 开始前也会刷新 provider。Jev 不可用时，Scopwis 继续使用本地 Decision Plane 和原来的 reasoning-model 路径。&lt;/p&gt;
-&lt;h2 id="我后来怎么验证这套东西"&gt;我后来怎么验证这套东西&lt;a class="heading-anchor" href="#%e6%88%91%e5%90%8e%e6%9d%a5%e6%80%8e%e4%b9%88%e9%aa%8c%e8%af%81%e8%bf%99%e5%a5%97%e4%b8%9c%e8%a5%bf" aria-label="章节链接：我后来怎么验证这套东西"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;接通 API 只是第一步。真正有用的是让 Jev 在不掌权的情况下参与 review。&lt;/p&gt;
+&lt;h2 id="接上以后我又拿-wcode-跑了-500-个-case"&gt;接上以后，我又拿 wcode 跑了 500 个 case&lt;a class="heading-anchor" href="#%e6%8e%a5%e4%b8%8a%e4%bb%a5%e5%90%8e%e6%88%91%e5%8f%88%e6%8b%bf-wcode-%e8%b7%91%e4%ba%86-500-%e4%b8%aa-case" aria-label="章节链接：接上以后，我又拿 wcode 跑了 500 个 case"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;API 能通没什么好说的。我更想知道它在不掌权的前提下，能不能帮我把值得继续查的地方挑出来。&lt;/p&gt;
 &lt;p&gt;我在 wcode 上又跑过一轮 500-case adversarial validation。这里是我自己的工程测试，不是 Jev 官方文档 benchmark：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;500 adversarial cases
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;100 次真实 Jev API 调用
@@ -532,11 +523,8 @@
 &lt;p&gt;另一个是 Access 页：它同时依赖 workspaces、commands、authorizations 三路响应。原来某一路 shape 坏掉时，已经成功的部分可能先进入 UI，最后出现一个“半真半假”的状态。后来改成三份响应全部通过 shape + atomic validation 才一起发布；任何一路不成立，整组保持 Unknown。对应检查修完后 10/10 通过。&lt;/p&gt;
 &lt;p&gt;这两个 bug 都不是 Jev 自己“修出来”的。&lt;/p&gt;
 &lt;p&gt;Jev 更像一个独立 semantic reviewer：它不断给 typed judgment、confidence 和 risk surface；低置信或和 deterministic evidence 不协调的地方，变成继续往请求绑定、状态发布和 UI truthfulness 下钻的线索。最终是不是 bug、改哪里、修复是否成立，仍然由源码 contract 和测试决定。&lt;/p&gt;
-&lt;p&gt;所以我现在更认可这种工程方式：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;把 Jev 当语义异常探测器，不要当最终裁判。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;wcode 和 Scopwis 最后留下来的共同模式也很简单：&lt;/p&gt;
+&lt;p&gt;这轮以后，我对它的定位基本定了：拿来找语义上“不太对劲”的地方，最后是不是 bug 仍然让源码和测试说话。&lt;/p&gt;
+&lt;p&gt;wcode 和 Scopwis 最后留下来的共同模式是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;1. deterministic baseline / gate 先存在
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;2. Jev 对同一状态做独立 typed judgment
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;3. 保留 distribution、model 和 question-set version
@@ -545,8 +533,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;6. provider 失败必须自然 fallback
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;7. 真问题补成 deterministic contract + regression test
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;8. 有足够 replay 数据以后，才考虑让 Jev 真正省工作
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对我来说，这才是“把 Jev 落进 Agent”最重要的部分。&lt;/p&gt;
-&lt;h2 id="一个-scopwis-data-agent-例子为什么结账转化率掉了"&gt;一个 Scopwis Data Agent 例子：为什么结账转化率掉了？&lt;a class="heading-anchor" href="#%e4%b8%80%e4%b8%aa-scopwis-data-agent-%e4%be%8b%e5%ad%90%e4%b8%ba%e4%bb%80%e4%b9%88%e7%bb%93%e8%b4%a6%e8%bd%ac%e5%8c%96%e7%8e%87%e6%8e%89%e4%ba%86" aria-label="章节链接：一个 Scopwis Data Agent 例子：为什么结账转化率掉了？"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我现在说“把 Jev 接进 Agent”，主要指的就是这层边界。&lt;/p&gt;
+&lt;h2 id="scopwis-里一个具体例子checkout-conversion-为什么掉了"&gt;Scopwis 里一个具体例子：checkout conversion 为什么掉了&lt;a class="heading-anchor" href="#scopwis-%e9%87%8c%e4%b8%80%e4%b8%aa%e5%85%b7%e4%bd%93%e4%be%8b%e5%ad%90checkout-conversion-%e4%b8%ba%e4%bb%80%e4%b9%88%e6%8e%89%e4%ba%86" aria-label="章节链接：Scopwis 里一个具体例子：checkout conversion 为什么掉了"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Coding Agent 之外，Scopwis 这条 Data Agent 更能说明这个设计。下面这个例子沿用前面测试 Scopwis Decision Plane 时的思路，把数据质量、证据是否完整、是否需要 reasoning model、报告是否完成拆开判断。&lt;/p&gt;
 &lt;p&gt;假设问题是：&lt;/p&gt;
 &lt;blockquote&gt;
@@ -611,11 +599,11 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;else:
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; finalize
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这个结构有一个很实际的好处：&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这么拆以后，出错比较好查。&lt;/p&gt;
 &lt;p&gt;如果今天 Agent 把“缺 baseline”误当成“需要思考”，我们能看到究竟是哪一个 primitive 错了，单独改它的 criteria、阈值和测试集。&lt;/p&gt;
 &lt;p&gt;如果只有一个“下一步怎么办”的自由文本 Prompt，出错以后很难知道到底是哪一步推理边界有问题。&lt;/p&gt;
-&lt;p&gt;这也是我认为 Decision Plane 对 Scopwis 这类 Data Agent 最有价值的地方：&lt;strong&gt;它把 Agent 内部的模糊决策变成可以逐个测量的接口。&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="我现在会遵守的实现规则"&gt;我现在会遵守的实现规则&lt;a class="heading-anchor" href="#%e6%88%91%e7%8e%b0%e5%9c%a8%e4%bc%9a%e9%81%b5%e5%ae%88%e7%9a%84%e5%ae%9e%e7%8e%b0%e8%a7%84%e5%88%99" aria-label="章节链接：我现在会遵守的实现规则"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;对 Scopwis 来说，我最看重的就是这一点：原来藏在 Agent 里的判断，现在至少能单独看、单独测、单独改。&lt;/p&gt;
+&lt;h2 id="这些规则我现在还在用"&gt;这些规则我现在还在用&lt;a class="heading-anchor" href="#%e8%bf%99%e4%ba%9b%e8%a7%84%e5%88%99%e6%88%91%e7%8e%b0%e5%9c%a8%e8%bf%98%e5%9c%a8%e7%94%a8" aria-label="章节链接：这些规则我现在还在用"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;经过这几轮，我大概会把 Jev 的工程实践收成下面这些规则：&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;strong&gt;代码拥有工作流。&lt;/strong&gt; 权限、计算、日期比较、计数、SHA、数据质量硬规则、验证和副作用不要交给 Jev。&lt;/li&gt;
@@ -628,34 +616,17 @@
 &lt;li&gt;&lt;strong&gt;模型版本要可追踪。&lt;/strong&gt; 调试时可以用 &lt;code&gt;jev-latest&lt;/code&gt;；一旦阈值和策略围绕一个版本调好，生产应考虑 pin &lt;code&gt;jev-1.13.0&lt;/code&gt; 这类版本 ID。&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;先 shadow，再放权。&lt;/strong&gt; 先记录“如果听 Jev 的会怎么走”，用最终测试、Verification、人工标签或业务结果做 truth，再决定哪些 judgment 可以真正节省工作。&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;Jev 官方文档实际上也一直在讲这套思想：用软件组合很多小判断，而不是让模型接管程序。只是只有自己做过几轮错题以后，才会真正理解“问题要窄”到底有多重要。&lt;/p&gt;
-&lt;h2 id="那-jev-到底给-wcode-和-scopwis-带来了什么"&gt;那 Jev 到底给 wcode 和 Scopwis 带来了什么？&lt;a class="heading-anchor" href="#%e9%82%a3-jev-%e5%88%b0%e5%ba%95%e7%bb%99-wcode-%e5%92%8c-scopwis-%e5%b8%a6%e6%9d%a5%e4%ba%86%e4%bb%80%e4%b9%88" aria-label="章节链接：那 Jev 到底给 wcode 和 Scopwis 带来了什么？"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;现在可以谈的是&lt;strong&gt;已经测到的 Decision Plane 收益和工程边界&lt;/strong&gt;，还不能把它写成端到端 Agent 提升数字。&lt;/p&gt;
-&lt;p&gt;对 wcode，这批数据支持：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Jev 很适合做低成本 semantic decision primitive，尤其是“还要不要继续取证”“语义关系是不是安全修改前的必要证据”这类窄判断；&lt;/li&gt;
-&lt;li&gt;deterministic baseline + same-request shadow comparison + increase-only authority，让外部判断可以参与路由和调查，但不能降低 SHA、Worktree、Authorization 或 Verification 的下限；&lt;/li&gt;
-&lt;li&gt;500-case adversarial validation 说明它适合作为 semantic anomaly detector：低 confidence / disagreement 用来决定“往哪里继续查”，真实 bug 最后仍由 deterministic contract 和 regression test 定案。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;对 Scopwis，这批数据支持：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Jev 适合做 ReAct 旁边的独立 Decision Plane，而不是另一个聊天模型；&lt;/li&gt;
-&lt;li&gt;“现有证据是否足够”“还值不值得进入一轮 reasoning model”“分析进度到哪”这类拆开的判断，比一个大的“下一步怎么办”更容易测、调和回放；&lt;/li&gt;
-&lt;li&gt;increase-only 的边界同样重要：Jev 可以阻止 fast-finalize、要求更多 reasoning，但不能自己触发 finalize，最终交付仍由 deterministic deliverable / report / evidence gate 决定。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;两边共同观察到的还有：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;question/criteria 设计能让同一个模型在某个受控判断集上从约 57% 提升到 100%，说明 judgment design 本身就是工程工作；&lt;/li&gt;
-&lt;li&gt;同 state 批量问问题，在我的实测里把输入成本降到单问方式的约 1/3.9，把顺序 wall-clock 降到约 1/6.4；&lt;/li&gt;
-&lt;li&gt;15 次重复测试里的随机漂移很小，但官方 Choice consistency 实验也证明边界 case 会 flip，所以 abstain / fallback 不能省；&lt;/li&gt;
-&lt;li&gt;对抗性 state 会影响普通 Choice，context filtering、trust boundary 和 deterministic invariants 都必须在模型外面；&lt;/li&gt;
-&lt;li&gt;confidence 可以帮助路由，但不能代替目标域 calibration。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;现在还不能支持的是：&lt;/p&gt;
+&lt;p&gt;文档里“问题要小”这句话看着很普通，自己踩过几轮坑以后才知道它不是写作建议，而是接口设计。&lt;/p&gt;
+&lt;h2 id="做到这里我会把-jev-放在哪"&gt;做到这里，我会把 Jev 放在哪&lt;a class="heading-anchor" href="#%e5%81%9a%e5%88%b0%e8%bf%99%e9%87%8c%e6%88%91%e4%bc%9a%e6%8a%8a-jev-%e6%94%be%e5%9c%a8%e5%93%aa" aria-label="章节链接：做到这里，我会把 Jev 放在哪"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;如果现在让我概括 Jev 给这两个项目加了什么，我不会写“整体提效 X%”。我还没有那组数据。&lt;/p&gt;
+&lt;p&gt;wcode 这边，我现在主要拿它做低成本的语义判断和第二意见。它可以说“这里还该继续查”“这里最好看 caller/reference”，也可以在 500-case 那轮里把低 confidence、disagreement 和 risk surface 暴露出来。但 SHA、Worktree、Authorization、Verification 这些门还是原来的代码说了算。&lt;/p&gt;
+&lt;p&gt;Scopwis 里它的位置更窄：本地 Decision Plane 已经准备 fast-finalize 时，Jev 再看一次有没有证据或语义上的缺口。它可以把任务打回去，不能自己宣布完成。&lt;/p&gt;
+&lt;p&gt;几轮测试里，我觉得最有用的不是某个最高准确率。更实在的是这些变化：同一个模型，只改问题定义，某组判断从 57.1% 做到 100%；8 个问题合成一个 batch 后，输入成本约少 3.9 倍，顺序 wall-clock 约少 6.4 倍；重复采样本身很稳，但边界 Choice 仍然需要 abstain / fallback；state 里混进对抗性文本时，普通 Choice 会明显受影响。&lt;/p&gt;
+&lt;p&gt;这些数字足够指导现在的实现，但还不能支持这种话：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;“wcode 或 Scopwis 接 Jev 以后，真实端到端任务成功率提升 X%，总体成本下降 Y%。”&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;这个要靠下一阶段的 paired replay：&lt;/p&gt;
+&lt;p&gt;这个要靠真实任务 paired replay：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;同一个真实 task state
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├─ baseline Decision Plane
@@ -669,12 +640,9 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;用了多少 reasoning model 调用
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;总 latency / tokens / cost 是多少
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;等 wcode 和 Scopwis 都积累了足够的真实 task replay，才能分别算清楚它们的端到端 Agent ROI。&lt;/p&gt;
-&lt;p&gt;不过做到这里，我已经很确定一件事：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Jev 最好的位置，不是替 wcode 写代码，也不是替 Scopwis 做完整分析，而是让程序更早知道“现在缺的到底是什么”。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;reasoning model 继续负责复杂推理和生成。&lt;/p&gt;
-&lt;p&gt;wcode 继续负责仓库边界、源码证据和验证；Scopwis 继续负责数据边界、分析流程和最终交付 gate。&lt;/p&gt;
-&lt;p&gt;Jev 留在两者中间，做一批便宜、可测、可以被代码组合的语义 if。&lt;/p&gt;
-&lt;p&gt;这个位置，比“再加一个 Agent”有意思得多。&lt;/p&gt;
+&lt;p&gt;所以目前我不会让 Jev 替 wcode 写代码，也不会让它替 Scopwis 做完整分析。&lt;/p&gt;
+&lt;p&gt;reasoning model 继续做复杂推理和生成；wcode 管仓库边界、源码证据和验证；Scopwis 管数据边界、分析流程和最终交付。Jev 夹在中间，回答几类很窄的问题：还缺什么、要不要继续查、现有证据够不够。&lt;/p&gt;
+&lt;p&gt;至少现在，这个位置对我比“再加一个 Agent”实用。&lt;/p&gt;
 &lt;h2 id="资料"&gt;资料&lt;a class="heading-anchor" href="#%e8%b5%84%e6%96%99" aria-label="章节链接：资料"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;Jev 文档：&lt;a href="https://docs.typesafe.ai/concepts/how-to-build-with-system-one"&gt;How to build with Jev&lt;/a&gt;&lt;/li&gt;
@@ -691,18 +659,18 @@
 &lt;li&gt;Jev 文档：&lt;a href="https://docs.typesafe.ai/models"&gt;Models&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;wcode：&lt;a href="https://github.com/francis-du/wcode"&gt;GitHub&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;Scopwis：&lt;a href="https://github.com/scopwis/scopwis"&gt;GitHub&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>wcode 是怎么来的，以及它真正解决什么问题</title><link>https://francis.run/blog/what-is-wcode/</link><pubDate>Sat, 12 Sep 2026 05:40:00 +0800</pubDate><guid>https://francis.run/blog/what-is-wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode 文档"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/ul&gt;</description></item><item><title>wcode 是怎么从一个 MCP Bridge 变成现在这样的</title><link>https://francis.run/blog/what-is-wcode/</link><pubDate>Sat, 12 Sep 2026 05:40:00 +0800</pubDate><guid>https://francis.run/blog/what-is-wcode/</guid><description>&lt;p class="project-logo"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode 文档"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;p class="project-links"&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;a href="https://wcode.francis.run/zh/docs/" target="_blank" rel="noopener"&gt;文档 ↗&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;我做 wcode 的起点，其实不是想再做一个 Coding Agent。&lt;/p&gt;
-&lt;p&gt;最开始的想法很简单：&lt;strong&gt;把各家模型厂商网页里能直接使用的模型拿来写代码，同时让它们能读到我电脑上的真实仓库。&lt;/strong&gt; 模型已经在浏览器里了，代码却在本地。为了问一个稍微复杂的问题，我得复制文件、上传压缩包、解释目录结构；代码一改，前面传进去的内容马上又旧了。&lt;/p&gt;
+&lt;p&gt;最开始的想法很简单：把网页里已经能直接用的模型拿来写代码，同时让它们能读到我电脑上的真实仓库。模型在浏览器里，代码却在本地。稍微复杂一点的问题，我就得复制文件、上传压缩包、解释目录结构；代码一改，前面传进去的内容马上又旧了。&lt;/p&gt;
 &lt;p&gt;所以第一版 wcode 更像一座桥。它把本地仓库通过工具接给网页端模型，让模型可以自己搜索文件、读代码、做修改、跑检查。后来 MCP 出现，这件事有了更标准的连接方式，但真正让我继续往下做的，并不是“终于能连上了”。&lt;/p&gt;
-&lt;p&gt;连接打通以后，我反而更明显地看到了另一个问题：&lt;strong&gt;Agent 到底是怎么读代码的？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;连接打通以后，另一个问题反而越来越明显：Agent 到底是怎么读代码的？&lt;/p&gt;
 &lt;p&gt;不少 Code CLI 在仓库发现阶段会大量使用 &lt;code&gt;grep&lt;/code&gt;、&lt;code&gt;ripgrep&lt;/code&gt;、文件列表和各种 shell 命令。这个做法本身没问题，我自己也一直在用。它很快，找一个字符串、文件名或者明显的符号时甚至就是最合适的办法。&lt;/p&gt;
 &lt;p&gt;问题在下一步。&lt;/p&gt;
 &lt;p&gt;搜索返回的是“这里命中了几段文本”。模型还得自己从这些片段里重新拼出：哪个才是真正的定义、两个同名符号是不是一回事、谁在调用谁、改这一处会波及哪里、对应测试在哪、某条关系到底只是文本上看起来像，还是语言服务器真的确认过。&lt;/p&gt;
 &lt;p&gt;模型越强，这种做法当然越能工作，但本质上还是把大量仓库理解工作重新丢回了 Context Window。仓库一大、同名符号一多、跨模块调用一复杂，误判就很容易从这里开始。&lt;/p&gt;
-&lt;p&gt;这也是 wcode 后来真正改变方向的地方：&lt;strong&gt;不只是给模型更多命令，而是把“怎么读一个代码仓库”本身做成一层工程能力。&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="我更在意的区别是模型怎么读仓库"&gt;我更在意的区别，是模型怎么读仓库&lt;a class="heading-anchor" href="#%e6%88%91%e6%9b%b4%e5%9c%a8%e6%84%8f%e7%9a%84%e5%8c%ba%e5%88%ab%e6%98%af%e6%a8%a1%e5%9e%8b%e6%80%8e%e4%b9%88%e8%af%bb%e4%bb%93%e5%ba%93" aria-label="章节链接：我更在意的区别，是模型怎么读仓库"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode 后来就是从这里开始变的。我不再只加命令，而是开始单独处理“模型怎么读一个仓库”这件事。&lt;/p&gt;
+&lt;h2 id="后来我开始管-agent-怎么读仓库"&gt;后来我开始管 Agent 怎么读仓库&lt;a class="heading-anchor" href="#%e5%90%8e%e6%9d%a5%e6%88%91%e5%bc%80%e5%a7%8b%e7%ae%a1-agent-%e6%80%8e%e4%b9%88%e8%af%bb%e4%bb%93%e5%ba%93" aria-label="章节链接：后来我开始管 Agent 怎么读仓库"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;现在的 wcode 仍然会用文本搜索，而且普通定位默认就应该走便宜的路径。问“&lt;code&gt;FooConfig&lt;/code&gt; 在哪”，没必要为了显得高级就启动一整套语义分析。&lt;/p&gt;
 &lt;p&gt;但问题一旦变成“谁调用它”“这个实现有哪些引用”“改这里会影响什么”“哪个测试真正覆盖这条行为”，纯文本命中就不够了。wcode 会先用 Tree-sitter 建立稳定的语法结构，需要跨文件语义关系时再使用可用的 Warm LSP；同时把 Git 当前状态、Design State、测试入口和已经知道的软件图关系一起带进来。&lt;/p&gt;
 &lt;p&gt;最后交给模型的，不只是几段搜出来的源码，而是一份有边界的任务上下文：相关符号和精确范围、引用或调用关系、关联测试、当前修改、项目约束，以及这些信息来自哪里、是什么精度、对应哪个版本。&lt;/p&gt;
@@ -772,7 +740,7 @@
 &lt;/ol&gt;
 &lt;p&gt;接下来再把确实需要反复遵守的项目约定写进 &lt;code&gt;.wcode/&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;源码在 GitHub&lt;/a&gt;，安装和接入说明放在&lt;a href="https://wcode.francis.run/zh/docs/"&gt;项目文档&lt;/a&gt;里。模型仍然由你正在使用的服务提供，wcode 负责连接和处理仓库这一侧的工作。&lt;/p&gt;</description></item><item><title>wcode v0.6.2：我不再拿 SLOTS 当性能了</title><link>https://francis.run/blog/wcode-v0-6-2/</link><pubDate>Sat, 12 Sep 2026 05:32:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-2/</guid><description>&lt;p&gt;前几天我一直盯着 wcode 的并发面板看。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：&lt;strong&gt;数字挺忙，任务不一定真快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;SLOTS&lt;/code&gt; 32，&lt;code&gt;PEAK&lt;/code&gt; 看起来也不低，但实际跑起来还是有一种很奇怪的感觉：数字挺忙，任务不一定真快。&lt;/p&gt;
 &lt;p&gt;我把执行链拆开看了一遍，问题就清楚了。&lt;/p&gt;
 &lt;p&gt;外层 Tool Slot 只表示请求已经准入。CPU、文件 I/O、&lt;code&gt;cargo&lt;/code&gt;、&lt;code&gt;git&lt;/code&gt;、Language Server 还有各自的线程池或队列，外面 32 个槽位全亮，并不代表里面 32 份工作都在向前跑。&lt;/p&gt;
 &lt;p&gt;0.6.2 先把这些资源分开计量和限制。&lt;/p&gt;
@@ -866,7 +834,7 @@
 &lt;li&gt;断线不自动重放；&lt;/li&gt;
 &lt;li&gt;没有采样就显示 unknown。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item><item><title>wcode v0.6.1：把 parallel_tools 改成完成驱动调度</title><link>https://francis.run/blog/wcode-v0-6-1/</link><pubDate>Sat, 12 Sep 2026 05:31:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-1/</guid><description>&lt;p&gt;&lt;a href="https://francis.run/blog/wcode-v0-6/"&gt;v0.6&lt;/a&gt; 开始在 &lt;code&gt;agent_context&lt;/code&gt; 里标出可以并行的工作。接着我去看 Runtime 本身，发现 &lt;code&gt;parallel_tools&lt;/code&gt; 虽然已经有依赖图，执行时还保留着按层推进的做法。&lt;/p&gt;
+&lt;p&gt;0.6.2 没有一个单独的大功能，更多是在把这些边界钉死。对我来说，这比再加一批 Tool 更实际。&lt;/p&gt;</description></item><item><title>wcode v0.6.1：`parallel_tools` 不再按层等</title><link>https://francis.run/blog/wcode-v0-6-1/</link><pubDate>Sat, 12 Sep 2026 05:31:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6-1/</guid><description>&lt;p&gt;&lt;a href="https://francis.run/blog/wcode-v0-6/"&gt;v0.6&lt;/a&gt; 开始在 &lt;code&gt;agent_context&lt;/code&gt; 里标出可以并行的工作。接着我去看 Runtime 本身，发现 &lt;code&gt;parallel_tools&lt;/code&gt; 虽然已经有依赖图，执行时还保留着按层推进的做法。&lt;/p&gt;
 &lt;p&gt;例如：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;A ─→ C
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
@@ -877,7 +845,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓ 等两者都结束
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;第二层：C + D
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;C 明明在 100ms 时已经 Ready，却因为一个和自己无关的 B，被迫多等几秒。&lt;/p&gt;
-&lt;p&gt;所以 v0.6.1 我把调度器改成了 &lt;strong&gt;completion-driven&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;所以 v0.6.1 我把调度器改成了 completion-driven。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp" alt="wcode TUI"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp 960w, https://francis.run/img/wcode/wcode-tui_hu_6437a17a51f06ca3.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2146"&gt;&lt;/figure&gt;&lt;h2 id="ready-的任务不应该等同层慢分支"&gt;Ready 的任务不应该等同层慢分支&lt;a class="heading-anchor" href="#ready-%e7%9a%84%e4%bb%bb%e5%8a%a1%e4%b8%8d%e5%ba%94%e8%af%a5%e7%ad%89%e5%90%8c%e5%b1%82%e6%85%a2%e5%88%86%e6%94%af" aria-label="章节链接：Ready 的任务不应该等同层慢分支"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;现在 Scheduler 只看一个问题：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个任务自己的前置依赖是不是已经完成？
@@ -930,7 +898,7 @@
 &lt;h2 id="这版主要把无意义等待拿掉"&gt;这版主要把无意义等待拿掉&lt;a class="heading-anchor" href="#%e8%bf%99%e7%89%88%e4%b8%bb%e8%a6%81%e6%8a%8a%e6%97%a0%e6%84%8f%e4%b9%89%e7%ad%89%e5%be%85%e6%8b%bf%e6%8e%89" aria-label="章节链接：这版主要把无意义等待拿掉"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;v0.6.1 基本都在修执行语义：Ready 就进队列，失败只截断依赖分支，Partial 明确报告 Partial，Cancel 继续往子任务传，许可跟着真实工作释放。&lt;/p&gt;
 &lt;p&gt;它不会把本来串行的任务凭空变快，但长任务里少掉几次无关等待，体感很明显。&lt;/p&gt;
-&lt;p&gt;再往后到 v0.6.2，我又继续拆了一个误区：&lt;strong&gt;外层 &lt;code&gt;SLOTS&lt;/code&gt; 很高，不代表真实吞吐就高。&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>wcode v0.6：我开始让 Agent 先决定什么能并行</title><link>https://francis.run/blog/wcode-v0-6/</link><pubDate>Sat, 12 Sep 2026 05:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6/</guid><description>&lt;p&gt;&lt;a href="https://francis.run/blog/wcode-v0-5/"&gt;v0.5&lt;/a&gt; 做完 Warm LSP Runtime 以后，我原本打算继续补 Semantic。&lt;/p&gt;
+&lt;p&gt;再往后到 v0.6.2，我又继续拆了一个误区：&lt;strong&gt;外层 &lt;code&gt;SLOTS&lt;/code&gt; 很高，不代表真实吞吐就高。&lt;/strong&gt;&lt;/p&gt;</description></item><item><title>wcode v0.6：哪些工具调用可以一起跑</title><link>https://francis.run/blog/wcode-v0-6/</link><pubDate>Sat, 12 Sep 2026 05:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-6/</guid><description>&lt;p&gt;&lt;a href="https://francis.run/blog/wcode-v0-5/"&gt;v0.5&lt;/a&gt; 做完 Warm LSP Runtime 以后，我原本打算继续补 Semantic。&lt;/p&gt;
 &lt;p&gt;实际拿 wcode 连续写了几轮代码，先暴露出来的却是执行节奏：模型已经知道几件事互不依赖，还是经常按顺序一个个调用工具。&lt;/p&gt;
 &lt;p&gt;例如一个普通修改，前面经常同时存在几条工作：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;读目标文件
@@ -943,8 +911,7 @@
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp" alt="wcode Architecture"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp 960w, https://francis.run/img/wcode/wcode-architecture_hu_3f3f08e508cea449.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3232" height="1932"&gt;&lt;/figure&gt;&lt;h2 id="agent_context-不再只是一包上下文"&gt;&lt;code&gt;agent_context&lt;/code&gt; 不再只是一包上下文&lt;a class="heading-anchor" href="#agent_context-%e4%b8%8d%e5%86%8d%e5%8f%aa%e6%98%af%e4%b8%80%e5%8c%85%e4%b8%8a%e4%b8%8b%e6%96%87" aria-label="章节链接：agent_context 不再只是一包上下文"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最早的 &lt;code&gt;agent_context&lt;/code&gt; 主要解决 Context 成本。&lt;/p&gt;
 &lt;p&gt;它把 Design State、Repo Map、目标源码、SHA、验证入口和项目约束压进一个有界包里，让模型不用每次从根目录重新理解一遍。&lt;/p&gt;
-&lt;p&gt;到了 v0.6，我开始把它往 &lt;strong&gt;Task-ready Context&lt;/strong&gt; 推。&lt;/p&gt;
-&lt;p&gt;到了 v0.6，我给这份 Context 多加了一层执行信息：&lt;/p&gt;
+&lt;p&gt;到了 v0.6，我给这份 Context 又加了一层执行信息：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;你现在应该做什么？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;哪些动作可以一起做？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;哪些动作有真实依赖？
@@ -1169,19 +1136,19 @@
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;这张表故意没有“代码能力 9.7 分”一栏。模型版本、推理档位、提示词、仓库类型、网络与测试环境都能让这种数字迅速失真。对日常开发更有用的问题是：&lt;strong&gt;它能不能在你的项目里稳定完成闭环。&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="codex现在最像一套完整的工程执行面"&gt;Codex：现在最像一套完整的工程执行面&lt;a class="heading-anchor" href="#codex%e7%8e%b0%e5%9c%a8%e6%9c%80%e5%83%8f%e4%b8%80%e5%a5%97%e5%ae%8c%e6%95%b4%e7%9a%84%e5%b7%a5%e7%a8%8b%e6%89%a7%e8%a1%8c%e9%9d%a2" aria-label="章节链接：Codex：现在最像一套完整的工程执行面"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="我怎么用-codex"&gt;我怎么用 Codex&lt;a class="heading-anchor" href="#%e6%88%91%e6%80%8e%e4%b9%88%e7%94%a8-codex" aria-label="章节链接：我怎么用 Codex"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://learn.chatgpt.com/zh-Hans/docs/codex/cli"&gt;Codex CLI 官方文档&lt;/a&gt;展示的已经不是一个单纯聊天终端：它能检查和编辑仓库、运行本地工具、做只读代码审查、调用 MCP、使用 Skills 与插件、拆分子 Agent，并通过权限与沙盒限定可写目录和命令。需要离开本机时，&lt;a href="https://learn.chatgpt.com/zh-Hans/docs/cloud"&gt;Codex 云端&lt;/a&gt;还能为多个任务创建隔离环境，并行执行后再把 diff 或 PR 带回来。&lt;/p&gt;
-&lt;p&gt;我认为 Codex 最强的地方，是“同一个工作对象可以在多个执行面之间移动”。短修复留在终端，界面问题带图片处理，大范围调查交给子 Agent，耗时任务放到云端。它不只是在回答得好，而是在逐渐把代码审查、执行、协作和异步委派放进同一套体验。&lt;/p&gt;
+&lt;p&gt;我用 Codex 时最顺手的一点，是同一个工作对象可以在多个执行面之间移动。短修复留在终端，界面问题带图片处理，大范围调查交给子 Agent，耗时任务放到云端。它不只是在回答得好，而是在逐渐把代码审查、执行、协作和异步委派放进同一套体验。&lt;/p&gt;
 &lt;p&gt;它的缺点也来自这种广度。CLI、桌面、IDE、云环境、插件、权限、账户能力同时演进，今天的最佳用法未必是半年前的最佳用法。团队如果只凭默认值一路点过去，很容易拥有很多能力，却没有形成稳定的项目规则。Codex 能跑完整闭环，不等于每个仓库天然就有清楚的验收标准。&lt;/p&gt;
-&lt;h2 id="claude-code终端生态仍然是它最深的护城河"&gt;Claude Code：终端生态仍然是它最深的护城河&lt;a class="heading-anchor" href="#claude-code%e7%bb%88%e7%ab%af%e7%94%9f%e6%80%81%e4%bb%8d%e7%84%b6%e6%98%af%e5%ae%83%e6%9c%80%e6%b7%b1%e7%9a%84%e6%8a%a4%e5%9f%8e%e6%b2%b3" aria-label="章节链接：Claude Code：终端生态仍然是它最深的护城河"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="我怎么用-claude-code"&gt;我怎么用 Claude Code&lt;a class="heading-anchor" href="#%e6%88%91%e6%80%8e%e4%b9%88%e7%94%a8-claude-code" aria-label="章节链接：我怎么用 Claude Code"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://code.claude.com/docs/en/overview"&gt;Claude Code 官方概览&lt;/a&gt;把它定义为可在终端、IDE、桌面和 Web 使用的 Agent 编码工具。它对成熟开发者工作流的理解很具体：读整个代码库、跨文件修改、运行命令、处理 Git、接入 MCP，并通过 &lt;code&gt;CLAUDE.md&lt;/code&gt;、Skills 和 Hooks 固化项目习惯。CLI 又天然适合 pipe、脚本和 CI，这使它很容易嵌进已有工程链路。&lt;/p&gt;
-&lt;p&gt;Claude Code 的优势不是某一个开关，而是这些机制组合起来之后的可编程性。你可以让 Hook 在编辑后格式化，让 Skill 固化发布流程，让 MCP 接设计稿和工单，再把独立任务分给 Agent Teams。对于愿意维护工程约定的团队，它很容易从“个人助手”长成“团队工具”。&lt;/p&gt;
+&lt;p&gt;我用 Claude Code 时更看重这些机制组合起来之后的可编程性。你可以让 Hook 在编辑后格式化，让 Skill 固化发布流程，让 MCP 接设计稿和工单，再把独立任务分给 Agent Teams。对于愿意维护工程约定的团队，它很容易从“个人助手”长成“团队工具”。&lt;/p&gt;
 &lt;p&gt;代价是配置复杂度和运行成本都可能随自治程度上涨。权限规则、Hooks、MCP、记忆、子 Agent 都需要治理；配置得越自由，越不能把“模型说完成了”当成完成。Claude Code 很强，但强工具不会自动替团队定义什么叫正确。&lt;/p&gt;
-&lt;h2 id="zcode把-agent-当开发环境中心而不是-ide-侧栏"&gt;ZCode：把 Agent 当开发环境中心，而不是 IDE 侧栏&lt;a class="heading-anchor" href="#zcode%e6%8a%8a-agent-%e5%bd%93%e5%bc%80%e5%8f%91%e7%8e%af%e5%a2%83%e4%b8%ad%e5%bf%83%e8%80%8c%e4%b8%8d%e6%98%af-ide-%e4%be%a7%e6%a0%8f" aria-label="章节链接：ZCode：把 Agent 当开发环境中心，而不是 IDE 侧栏"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="我怎么用-zcode"&gt;我怎么用 ZCode&lt;a class="heading-anchor" href="#%e6%88%91%e6%80%8e%e4%b9%88%e7%94%a8-zcode" aria-label="章节链接：我怎么用 ZCode"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://zcode.z.ai/cn/docs/agents"&gt;ZCode Agent 官方文档&lt;/a&gt;强调的是工作区入口：文件与目录引用、历史对话、命令、Skills、模型、执行模式和 Git 分支都围绕任务组织。它还把浏览器控制放进产品里，前端改完可以直接打开页面、点击、截图和验证；Goal Mode 则面向长任务提供目标管理、完成校验和状态恢复。&lt;/p&gt;
 &lt;p&gt;这套思路对不喜欢终端堆配置的人很友好。尤其是中文用户和 GLM Coding Plan 用户，模型、界面、浏览器与长任务被打包在一起，第一天就能得到相对完整的 Agent 工作台。&lt;/p&gt;
 &lt;p&gt;但它也是四者中“环境感”最强的一款。如果你已经深度依赖自己的终端、编辑器和脚本体系，就要衡量是否愿意把任务管理和上下文组织迁进另一个桌面产品。它针对 GLM 系列的深度适配是优势，也意味着最佳体验与自家模型路线绑定得更紧。&lt;/p&gt;
-&lt;h2 id="kimi-code轻快开放而且不是只有长上下文"&gt;Kimi Code：轻、快、开放，而且不是只有长上下文&lt;a class="heading-anchor" href="#kimi-code%e8%bd%bb%e5%bf%ab%e5%bc%80%e6%94%be%e8%80%8c%e4%b8%94%e4%b8%8d%e6%98%af%e5%8f%aa%e6%9c%89%e9%95%bf%e4%b8%8a%e4%b8%8b%e6%96%87" aria-label="章节链接：Kimi Code：轻、快、开放，而且不是只有长上下文"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="我怎么用-kimi-code"&gt;我怎么用 Kimi Code&lt;a class="heading-anchor" href="#%e6%88%91%e6%80%8e%e4%b9%88%e7%94%a8-kimi-code" aria-label="章节链接：我怎么用 Kimi Code"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;&lt;a href="https://www.kimi.ai/help/kimi-code/cli-getting-started"&gt;Kimi Code CLI 入门&lt;/a&gt;覆盖 macOS、Linux 与 Windows，既能交互运行，也能用单条指令执行；读操作默认直接进行，修改文件或执行命令则请求确认。它支持生成 &lt;code&gt;AGENTS.md&lt;/code&gt;，还能配置 Kimi 之外的 Anthropic、OpenAI、Google 等模型来源。&lt;/p&gt;
 &lt;p&gt;更值得注意的是它的工程扩展面。&lt;a href="https://moonshotai.github.io/kimi-code/en/"&gt;Kimi Code 文档&lt;/a&gt;列出了 Skills、Hooks、子 Agent 和 MCP，并提供单文件安装与 TUI。也就是说，它不只是“中文模型加一个命令行壳”，而是在认真做可扩展 Agent。&lt;/p&gt;
 &lt;p&gt;它的优势很实际：中文交互自然，安装轻，终端体验舒服，会员与 API 两条路径清楚，多模型配置给了用户选择权。短板则是生态仍在高速生长。个人使用可以很快，到了多人协作、审计、跨客户端一致性和长期证据保存，仍要靠团队自己补齐工程制度。&lt;/p&gt;
@@ -1218,7 +1185,7 @@
 &lt;p&gt;如果是一个会持续半年以上、会被多人和多个 Agent 反复修改的仓库，我不会只选其中一个。我会选一两个主力 Agent，再把 &lt;a href="https://wcode.francis.run/"&gt;wcode&lt;/a&gt; 放在下面。&lt;/p&gt;
 &lt;p&gt;如果你已经有顺手的 Coding Agent，不需要为了试 wcode 迁移模型。拿一个熟悉的仓库跑 &lt;code&gt;wcode setup&lt;/code&gt;，继续用原来的 Codex、Claude Code 或其他 MCP Host，然后看三件事：它能不能找到需求对应的实现，能不能说明当前 diff 影响了什么，验证结果是不是还匹配现在的 revision。&lt;/p&gt;
 &lt;p&gt;这三件事对我有用，我才一直把 wcode 留在长期项目里。&lt;/p&gt;
-&lt;p class="project-links"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;wcode 官网与文档 ↗&lt;/a&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode v0.5：我把 LSP 从一个工具，变成了 Agent 的常驻语义层</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
+&lt;p class="project-links"&gt;&lt;a href="https://wcode.francis.run/" target="_blank" rel="noopener"&gt;wcode 官网与文档 ↗&lt;/a&gt;&lt;a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener"&gt;GitHub ↗&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode v0.5：LSP 不再每次现启</title><link>https://francis.run/blog/wcode-v0-5/</link><pubDate>Sun, 30 Aug 2026 17:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-5/</guid><description>&lt;p&gt;v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。&lt;/p&gt;
 &lt;p&gt;那一版主要解决 Context 成本：&lt;code&gt;agent_context&lt;/code&gt; 变成 Coding Entry，Repo Map 有了 Cache 和 Scope，简单任务不需要每次把整个项目重新理解一遍。&lt;/p&gt;
 &lt;p&gt;但真的继续拿它写代码，很快又遇到另一个问题。&lt;/p&gt;
 &lt;p&gt;不是“找不到函数”。&lt;/p&gt;
@@ -1229,8 +1196,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;改这个 Symbol 会影响哪些跨文件 Reference？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个调用关系是同名文本，还是类型系统真正解析出来的？
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种时候，grep 能找到很多东西，但不一定完整；Tree-sitter 能告诉我语法结构，但它也不应该假装自己知道类型系统。&lt;/p&gt;
-&lt;p&gt;所以 v0.5 我做的不是“再加几个 LSP API”。&lt;/p&gt;
-&lt;p&gt;我最后把它做成了一层 &lt;strong&gt;Warm Semantic Runtime&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;所以 v0.5 没继续堆零散的 LSP API，我直接把 Language Server 的生命周期重新做了一遍，让它可以受限地常驻和复用。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp" alt="wcode Architecture"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-architecture_hu_92a8fd07f12ae64a.webp 960w, https://francis.run/img/wcode/wcode-architecture_hu_3f3f08e508cea449.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3232" height="1932"&gt;&lt;/figure&gt;&lt;h2 id="我为什么没有把所有查询都切到-lsp"&gt;我为什么没有把所有查询都切到 LSP&lt;a class="heading-anchor" href="#%e6%88%91%e4%b8%ba%e4%bb%80%e4%b9%88%e6%b2%a1%e6%9c%89%e6%8a%8a%e6%89%80%e6%9c%89%e6%9f%a5%e8%af%a2%e9%83%bd%e5%88%87%e5%88%b0-lsp" aria-label="章节链接：我为什么没有把所有查询都切到 LSP"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;最直接的做法其实很诱人：&lt;/p&gt;
 &lt;blockquote&gt;
@@ -1676,15 +1642,11 @@
 &lt;p&gt;这应该会是后面 wcode Semantic Runtime 继续扩展其他语言时最重要的一条原则。&lt;/p&gt;
 &lt;p&gt;代码：&lt;a href="https://github.com/francis-du/wcode"&gt;https://github.com/francis-du/wcode&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;文档：&lt;a href="https://wcode.francis.run/"&gt;https://wcode.francis.run/&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;v0.5.0 Release Notes：&lt;a href="https://wcode.francis.run/docs/releases/v0.5.0/"&gt;https://wcode.francis.run/docs/releases/v0.5.0/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode v0.4：开始为 Agent 的上下文成本负责</title><link>https://francis.run/blog/wcode-v0-4/</link><pubDate>Thu, 27 Aug 2026 23:55:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-4/</guid><description>&lt;p&gt;v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。&lt;/p&gt;
+&lt;p&gt;v0.5.0 Release Notes：&lt;a href="https://wcode.francis.run/docs/releases/v0.5.0/"&gt;https://wcode.francis.run/docs/releases/v0.5.0/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>wcode v0.4：我开始压 Context 和 Tool Call</title><link>https://francis.run/blog/wcode-v0-4/</link><pubDate>Thu, 27 Aug 2026 23:55:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-4/</guid><description>&lt;p&gt;v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。&lt;/p&gt;
 &lt;p&gt;从“能力列表”看，其实已经很多了。&lt;/p&gt;
-&lt;p&gt;但我拿它真的去写几个项目以后，最明显的问题反而变得很朴素：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Agent 明明已经能做这件事了，为什么还要花这么多 Context 和 Tool Call 才开始改代码？&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;所以 v0.4 没有再把重点放在“再加一个 Intelligence Tool”。&lt;/p&gt;
-&lt;p&gt;这一版主要做的是另一件事：&lt;strong&gt;把 Agent 真正写代码的主路径重新压一遍。&lt;/strong&gt;&lt;/p&gt;
-&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp" alt="wcode 最新终端实时面板"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp 960w, https://francis.run/img/wcode/wcode-tui_hu_6437a17a51f06ca3.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2146"&gt;&lt;/figure&gt;&lt;h2 id="v03-和-v04-的差别不是能力多少"&gt;v0.3 和 v0.4 的差别，不是能力多少&lt;a class="heading-anchor" href="#v03-%e5%92%8c-v04-%e7%9a%84%e5%b7%ae%e5%88%ab%e4%b8%8d%e6%98%af%e8%83%bd%e5%8a%9b%e5%a4%9a%e5%b0%91" aria-label="章节链接：v0.3 和 v0.4 的差别，不是能力多少"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;但我拿它真的去写几个项目以后，最明显的问题反而很朴素：Agent 已经知道怎么做了，前面还是花了太多 Context 和 Tool Call。&lt;/p&gt;
+&lt;p&gt;所以 v0.4 我先没加新的大能力，主要把写代码这条默认路径重新压了一遍。&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp" alt="wcode 最新终端实时面板"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp 960w, https://francis.run/img/wcode/wcode-tui_hu_6437a17a51f06ca3.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2146"&gt;&lt;/figure&gt;&lt;h2 id="v04-先不加大功能"&gt;v0.4 先不加大功能&lt;a class="heading-anchor" href="#v04-%e5%85%88%e4%b8%8d%e5%8a%a0%e5%a4%a7%e5%8a%9f%e8%83%bd" aria-label="章节链接：v0.4 先不加大功能"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;v0.3 我最关心的是“软件状态能不能留下来”。&lt;/p&gt;
 &lt;p&gt;所以那一版的主线是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
@@ -1951,7 +1913,7 @@
 &lt;p&gt;复杂任务再把 Graph、Risk、Reconciliation 拉进来。&lt;/p&gt;
 &lt;p&gt;不是让 Agent 每次都理解整个软件世界，而是让它&lt;strong&gt;在需要的时候，拿到刚好足够可靠的那部分。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;代码：&lt;a href="https://github.com/francis-du/wcode"&gt;https://github.com/francis-du/wcode&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;文档：&lt;a href="https://wcode.francis.run/"&gt;https://wcode.francis.run/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是：&lt;strong&gt;还是不够快。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;文档：&lt;a href="https://wcode.francis.run/"&gt;https://wcode.francis.run/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>我把 wcode 写代码这条链又压快了一轮</title><link>https://francis.run/blog/wcode-performance/</link><pubDate>Wed, 26 Aug 2026 23:40:00 +0800</pubDate><guid>https://francis.run/blog/wcode-performance/</guid><description>&lt;p&gt;最近我拿 wcode 去几个别的项目里实际写代码，最明显的感受不是“功能还缺什么”，而是还不够快。&lt;/p&gt;
 &lt;p&gt;这个“慢”很容易全甩给模型。&lt;/p&gt;
 &lt;p&gt;但我看了一轮调用链以后，发现里面有不少完全是 Runtime 自己造成的等待。&lt;/p&gt;
 &lt;p&gt;模型可能已经知道要改哪几个文件了，结果后面还在重复遍历、重复强制落盘、串行扫描，或者一个一个发 Tool Call。&lt;/p&gt;
@@ -2061,7 +2023,7 @@
 &lt;p&gt;小结果没什么感觉，但 &lt;code&gt;parallel_tools&lt;/code&gt;、Graph、Project Context 这类 &lt;code&gt;structuredContent&lt;/code&gt; 大时，这就是纯粹的额外内存和 CPU。&lt;/p&gt;
 &lt;p&gt;现在改成一个只实现 &lt;code&gt;Write&lt;/code&gt; 的 Byte Counter，让 &lt;code&gt;serde_json::to_writer&lt;/code&gt; 流过去，只累加字节数，不保存第二份 Buffer。&lt;/p&gt;
 &lt;p&gt;协议内容完全不变，Monitor 指标也不变，但每个 Tool Call 少一次只为计数存在的临时分配。&lt;/p&gt;
-&lt;h2 id="更重要的是让模型少发-tool-call"&gt;更重要的是：让模型少发 Tool Call&lt;a class="heading-anchor" href="#%e6%9b%b4%e9%87%8d%e8%a6%81%e7%9a%84%e6%98%af%e8%ae%a9%e6%a8%a1%e5%9e%8b%e5%b0%91%e5%8f%91-tool-call" aria-label="章节链接：更重要的是：让模型少发 Tool Call"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="单个函数快了还不够"&gt;单个函数快了还不够&lt;a class="heading-anchor" href="#%e5%8d%95%e4%b8%aa%e5%87%bd%e6%95%b0%e5%bf%ab%e4%ba%86%e8%bf%98%e4%b8%8d%e5%a4%9f" aria-label="章节链接：单个函数快了还不够"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;Runtime 再快，如果 Agent 还是：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read A
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;edit A
@@ -2111,19 +2073,15 @@
 &lt;li&gt;多 Workspace 同时工作时，需要继续观察 Rayon、Tokio &lt;code&gt;spawn_blocking&lt;/code&gt; 和全局 Semaphore 三层调度会不会互相争资源。&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;我不准备为了追一个漂亮 Benchmark 把这些全部一次性复杂化。&lt;/p&gt;
-&lt;p&gt;更实际的标准还是：&lt;strong&gt;拿它去真实项目写代码，哪一步明显在等，就把那一步拆出来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;我现在还是拿真实项目当标准：哪一步明显在等，就把那一步拆出来。&lt;/p&gt;
 &lt;p&gt;这也是我现在优化 wcode 的方式。&lt;/p&gt;
-&lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode 的授权中心：模型可以提权限，但不能替我批准</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
+&lt;p&gt;v0.3 的整体变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode 的授权现在怎么做</title><link>https://francis.run/blog/wcode-authorization/</link><pubDate>Wed, 26 Aug 2026 23:35:00 +0800</pubDate><guid>https://francis.run/blog/wcode-authorization/</guid><description>&lt;p&gt;我一直不想给 Agent 一个 Shell。&lt;/p&gt;
 &lt;p&gt;但实际用久了以后，我也越来越不喜欢另一个极端：只要一个工具不在默认列表里，就永久拒绝；真要用的时候，只能重启进程加一个很宽的 Trust Flag。&lt;/p&gt;
 &lt;p&gt;这两个选择都太粗：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;完全不许
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 或
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;整个进程都信任
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最近我把 wcode 的授权做成了真正的 Pending Authorization Queue。&lt;/p&gt;
-&lt;p&gt;核心原则很简单：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;模型可以提出权限请求，但决定权必须留在用户手里。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最近我把这些情况统一收进了 Pending Authorization Queue。模型可以把请求挂出来，最后还是我自己选哪一条批、哪一条拒绝。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp" alt="wcode 授权与访问控制界面"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-access-management_hu_ac447683faaa24eb.webp 960w, https://francis.run/img/wcode/wcode-access-management_hu_e5f2de5679dfbc7e.webp 1600w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1600" height="1000"&gt;&lt;/figure&gt;&lt;h2 id="为什么-yn-以前看起来没用"&gt;为什么 &lt;code&gt;Y/N&lt;/code&gt; 以前看起来没用&lt;a class="heading-anchor" href="#%e4%b8%ba%e4%bb%80%e4%b9%88-yn-%e4%bb%a5%e5%89%8d%e7%9c%8b%e8%b5%b7%e6%9d%a5%e6%b2%a1%e7%94%a8" aria-label="章节链接：为什么 Y/N 以前看起来没用"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;TUI 其实早就有 &lt;code&gt;Y/N&lt;/code&gt; 的 Key Handler。&lt;/p&gt;
 &lt;p&gt;问题是 UI 只在 Footer 里塞了一个 Pending 数字。&lt;/p&gt;
@@ -2317,15 +2275,11 @@
 &lt;p&gt;我知道模型为什么需要它，我愿意把这一层权限交给当前 Workspace。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;这个语义对我来说更诚实。&lt;/p&gt;
-&lt;p&gt;v0.3 的完整变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;，底层安全边界继续看 &lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode v0.3：从本地代码桥到 Software Intelligence Runtime</title><link>https://francis.run/blog/wcode-v0-3/</link><pubDate>Wed, 26 Aug 2026 23:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-3/</guid><description>&lt;p&gt;wcode 的 v0.3 是一次比较明显的方向变化。&lt;/p&gt;
-&lt;p&gt;v0.2 发布时，我给它的定位还很简单：&lt;strong&gt;一个轻量的 Code Agent plugin，把你已经在用的 AI Client 接到本地仓库。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;v0.3 的完整变化见 &lt;a href="https://francis.run/blog/wcode-v0-3/"&gt;wcode v0.3：从本地代码桥到 Software Intelligence Runtime&lt;/a&gt;，底层安全边界继续看 &lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode v0.3：它已经不只是一个 MCP Bridge 了</title><link>https://francis.run/blog/wcode-v0-3/</link><pubDate>Wed, 26 Aug 2026 23:30:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-3/</guid><description>&lt;p&gt;wcode 的 v0.3 是一次比较明显的方向变化。&lt;/p&gt;
+&lt;p&gt;v0.2 发布时，我给它的定位还很简单：一个轻量的 Code Agent plugin，把已经在用的 AI Client 接到本地仓库。&lt;/p&gt;
 &lt;p&gt;这个定位没有消失。Remote MCP、OAuth、Workspace、Tree-sitter、代码读写、Git Review 和 Verification 这些底层能力都还在。&lt;/p&gt;
 &lt;p&gt;但如果只看 v0.3 的代码和界面，它已经不太像一个“桥”了。&lt;/p&gt;
-&lt;p&gt;我现在更愿意把它叫做：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;Software Intelligence Runtime for AI-native development.&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;模型仍然负责写代码，wcode 开始负责另一件更难长期维护的事：软件到底应该是什么、现在是什么、哪里变了、风险在哪里、什么证据说明这次修改真的完成了。&lt;/p&gt;
+&lt;p&gt;到 v0.3，我已经不太把它当成一个单纯的“桥”了。模型还是写代码，wcode 开始额外保存设计、变化、风险和验证这些仓库状态。&lt;/p&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp" alt="wcode 最新终端实时面板"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-tui_hu_13e59e78ee0ce797.webp 960w, https://francis.run/img/wcode/wcode-tui_hu_6437a17a51f06ca3.webp 1800w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="3420" height="2146"&gt;&lt;/figure&gt;&lt;h2 id="v02-当时解决了什么"&gt;v0.2 当时解决了什么&lt;a class="heading-anchor" href="#v02-%e5%bd%93%e6%97%b6%e8%a7%a3%e5%86%b3%e4%ba%86%e4%bb%80%e4%b9%88" aria-label="章节链接：v0.2 当时解决了什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我重新看了一遍 &lt;code&gt;v0.2&lt;/code&gt; Tag 里的 README。&lt;/p&gt;
 &lt;p&gt;当时的主线非常明确：&lt;/p&gt;
@@ -2365,7 +2319,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;多个模型、人和工具不断修改一个项目以后，怎么还知道这个软件为什么是现在这样？&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id="最大变化design-state-进入了开发闭环"&gt;最大变化：Design State 进入了开发闭环&lt;a class="heading-anchor" href="#%e6%9c%80%e5%a4%a7%e5%8f%98%e5%8c%96design-state-%e8%bf%9b%e5%85%a5%e4%ba%86%e5%bc%80%e5%8f%91%e9%97%ad%e7%8e%af" aria-label="章节链接：最大变化：Design State 进入了开发闭环"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="这版我先把-design-state-接进来了"&gt;这版我先把 Design State 接进来了&lt;a class="heading-anchor" href="#%e8%bf%99%e7%89%88%e6%88%91%e5%85%88%e6%8a%8a-design-state-%e6%8e%a5%e8%bf%9b%e6%9d%a5%e4%ba%86" aria-label="章节链接：这版我先把 Design State 接进来了"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;v0.3 里最重要的东西不是某个新 Tool，而是 &lt;code&gt;.wcode&lt;/code&gt; Design State。&lt;/p&gt;
 &lt;p&gt;它把长期应该稳定存在的意图放进仓库：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement
@@ -2642,7 +2596,7 @@
 &lt;p&gt;同文件 &lt;code&gt;apply_edits&lt;/code&gt; 只有 SHA 一样、Edit Range 不冲突时才会合并成一次原子提交。&lt;/p&gt;
 &lt;p&gt;我不想让“支持并发”最后变成“把 race condition 交给文件锁处理”。&lt;/p&gt;
 &lt;p&gt;能不能并发应该在执行前就尽量说清楚。&lt;/p&gt;
-&lt;h2 id="security-不能写在-prompt-里"&gt;Security 不能写在 Prompt 里&lt;a class="heading-anchor" href="#security-%e4%b8%8d%e8%83%bd%e5%86%99%e5%9c%a8-prompt-%e9%87%8c" aria-label="章节链接：Security 不能写在 Prompt 里"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="安全边界不能只写在-prompt-里"&gt;安全边界不能只写在 Prompt 里&lt;a class="heading-anchor" href="#%e5%ae%89%e5%85%a8%e8%be%b9%e7%95%8c%e4%b8%8d%e8%83%bd%e5%8f%aa%e5%86%99%e5%9c%a8-prompt-%e9%87%8c" aria-label="章节链接：安全边界不能只写在 Prompt 里"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;我还是会在 Skill 和 Agent Instructions 里写：不要逃出 Workspace，不要绕过授权，不要自己扩大 risky execution。&lt;/p&gt;
 &lt;p&gt;但这些只能算工作习惯。&lt;/p&gt;
 &lt;p&gt;真正的安全边界必须在 Tool Runtime。&lt;/p&gt;
@@ -2653,7 +2607,7 @@
 &lt;/blockquote&gt;
 &lt;p&gt;上层功能越多，我越觉得这一点重要。&lt;/p&gt;
 &lt;p&gt;Agent 可以很聪明，也可以犯很离谱的错。底层权限最好对这两种情况都一样冷淡。&lt;/p&gt;
-&lt;p&gt;这一组文章从 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;最新版总览&lt;/a&gt; 开始。授权队列、&lt;code&gt;CommandAccess&lt;/code&gt; 和 TUI/WebUI 的交互细节单独写在 &lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心：模型可以提权限，但不能替我批准&lt;/a&gt;。第一版关于 OAuth、Tunnel、MCP 请求链路和早期 Workspace 实现的记录还在 &lt;a href="https://francis.run/blog/wcode/"&gt;这里&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：MCP 负责能力，Skill 只负责工作习惯</title><link>https://francis.run/blog/wcode-mcp-agent/</link><pubDate>Wed, 26 Aug 2026 03:16:00 +0800</pubDate><guid>https://francis.run/blog/wcode-mcp-agent/</guid><description>&lt;p&gt;第一版 wcode 基本是围着 MCP 写的。&lt;/p&gt;
+&lt;p&gt;这一组文章从 &lt;a href="https://francis.run/blog/wcode-2026/"&gt;最新版总览&lt;/a&gt; 开始。授权队列、&lt;code&gt;CommandAccess&lt;/code&gt; 和 TUI/WebUI 的交互细节单独写在 &lt;a href="https://francis.run/blog/wcode-authorization/"&gt;授权中心：模型可以提权限，但不能替我批准&lt;/a&gt;。第一版关于 OAuth、Tunnel、MCP 请求链路和早期 Workspace 实现的记录还在 &lt;a href="https://francis.run/blog/wcode/"&gt;这里&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode 里，我把 MCP 和 Skill 分开了</title><link>https://francis.run/blog/wcode-mcp-agent/</link><pubDate>Wed, 26 Aug 2026 03:16:00 +0800</pubDate><guid>https://francis.run/blog/wcode-mcp-agent/</guid><description>&lt;p&gt;第一版 wcode 基本是围着 MCP 写的。&lt;/p&gt;
 &lt;p&gt;那时候最核心的问题是：Web 端模型怎么安全访问本地代码。&lt;/p&gt;
 &lt;p&gt;现在 Software Intelligence、Verification、Reconciliation 都长出来以后，MCP 在项目里的位置反而更简单了。&lt;/p&gt;
 &lt;p&gt;它就是能力接口。&lt;/p&gt;
@@ -2735,7 +2689,7 @@
 &lt;p&gt;Verification Plan、Evidence、Reconciliation、Graph History、Semantic Registry 这些长期状态都留在 wcode。&lt;/p&gt;
 &lt;p&gt;一个 Agent 只要能调用 MCP，就能接同一个 Workspace；安装同一份 Skill，只是更容易遵循同一套工作习惯。&lt;/p&gt;
 &lt;p&gt;从 Claude 换到 Codex，或者 Web 端换成本地 Agent，模型上下文会变，但项目本身不应该跟着清零。&lt;/p&gt;
-&lt;p&gt;这也是我现在比较满意的一点：MCP 没有越做越大，反而被压回了它最合适的位置。&lt;/p&gt;
+&lt;p&gt;这样换模型时轻松很多，MCP 也没有继续膨胀成一套自己的 Agent。&lt;/p&gt;
 &lt;p&gt;最后还是会回到最底层的问题：这些 Agent 到底能在我的机器上做什么。Workspace、命令执行和授权的边界，我单独写在 &lt;a href="https://francis.run/blog/wcode-security/"&gt;我还是不想给 Agent 一个 Shell&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>wcode：我为什么开始把 edit file 往后放</title><link>https://francis.run/blog/wcode-reconciliation/</link><pubDate>Wed, 26 Aug 2026 03:15:00 +0800</pubDate><guid>https://francis.run/blog/wcode-reconciliation/</guid><description>&lt;p&gt;写 Coding Agent 很容易最后都收敛到几个工具：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read_file
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;search
@@ -2766,7 +2720,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Plan 不是一句“修好这个问题”。&lt;/p&gt;
 &lt;p&gt;它会带上这次 Design Change、发现的 Drift、Impact、Risk、Change Intent 和 Verification Requirement，然后再拆成有依赖的 Task。&lt;/p&gt;
-&lt;p&gt;这听起来有点重，但我做它的原因其实很现实：&lt;strong&gt;聊天记录不是工作状态。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这听起来有点重，但原因其实很现实：聊天记录不适合拿来当长期工作状态。&lt;/p&gt;
 &lt;h2 id="session-断掉比想象中常见"&gt;Session 断掉比想象中常见&lt;a class="heading-anchor" href="#session-%e6%96%ad%e6%8e%89%e6%af%94%e6%83%b3%e8%b1%a1%e4%b8%ad%e5%b8%b8%e8%a7%81" aria-label="章节链接：Session 断掉比想象中常见"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;模型会换，工具会重连，Web Session 会过期，有时我自己也会中途停下来改别的东西。&lt;/p&gt;
 &lt;p&gt;如果任务做到一半，所有进度都只存在上一段 Conversation 里，下一次基本又得从头解释。&lt;/p&gt;
@@ -3080,8 +3034,8 @@
 &lt;p&gt;所以现在主 UI 已经改成 Project Observatory，按 Requirement 往下看 Feature、Component、Implementation、Verification 和 Git Change。&lt;/p&gt;
 &lt;p&gt;低层 Graph 没消失。&lt;/p&gt;
 &lt;p&gt;它仍然是 Context、Impact、历史 Diff 的数据来源，只是不再承担“解释整个项目”的视觉任务。&lt;/p&gt;
-&lt;p&gt;这可能是我做这块以后最大的一个认识：&lt;strong&gt;有 Graph，不代表产品就应该长成 Graph。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Graph 到这里还只是底层事实。真正拿它去做 Review 时，问题会变成另一句：Diff 之外，这次到底动了什么。那部分我放在 &lt;a href="https://francis.run/blog/wcode-traceability/"&gt;Git Diff 之外，我还想知道什么&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>wcode 的 Design State：我为什么把需求写进仓库</title><link>https://francis.run/blog/wcode-design-state/</link><pubDate>Wed, 26 Aug 2026 03:11:00 +0800</pubDate><guid>https://francis.run/blog/wcode-design-state/</guid><description>&lt;p&gt;做 wcode 一段时间以后，我越来越不喜欢一种状态：代码里明明有很多约束，但这些约束只活在人脑里。&lt;/p&gt;
+&lt;p&gt;做到这里我才确定一件事：底层有 Graph，不代表 UI 也应该是一团 Graph。&lt;/p&gt;
+&lt;p&gt;Graph 到这里还只是底层事实。真正拿它去做 Review 时，问题会变成另一句：Diff 之外，这次到底动了什么。那部分我放在 &lt;a href="https://francis.run/blog/wcode-traceability/"&gt;Git Diff 之外，我还想知道什么&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>我为什么把 wcode 的需求写进仓库</title><link>https://francis.run/blog/wcode-design-state/</link><pubDate>Wed, 26 Aug 2026 03:11:00 +0800</pubDate><guid>https://francis.run/blog/wcode-design-state/</guid><description>&lt;p&gt;做 wcode 一段时间以后，我越来越不喜欢一种状态：代码里明明有很多约束，但这些约束只活在人脑里。&lt;/p&gt;
 &lt;p&gt;比如 Workspace Root 为什么不能随便放宽，为什么 Symlink 要单独挡，为什么一个旧 SHA 不能继续写文件。代码看得出来“怎么做”，但不一定看得出来“为什么不能改成别的样子”。&lt;/p&gt;
 &lt;p&gt;人长期待在项目里还好，换一个 Agent 进来，它看到的通常只有当前源码。&lt;/p&gt;
 &lt;p&gt;于是我开始把一部分“为什么”写进仓库。&lt;/p&gt;
@@ -3186,7 +3140,7 @@
 &lt;p&gt;那篇写的是最早的 wcode：我想在 Web 端继续用自己喜欢的模型，又想让它们安全地碰到本地代码，所以做了 Remote MCP、OAuth、Workspace、Tree-sitter、文件修改和命令执行。&lt;/p&gt;
 &lt;p&gt;这些东西现在都还在。&lt;/p&gt;
 &lt;p&gt;但写完第一版没多久，我发现项目已经不是那篇文章里的样子了。&lt;/p&gt;
-&lt;p&gt;不是底层推翻了。恰恰相反，底层越来越像基础设施，平时不太需要想它。真正让我反复改的是另一件事：&lt;strong&gt;一次代码修改结束以后，到底留下了什么。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;底层没有推翻，反而越来越像基础设施。后来我反复改的其实是另一件事：一次代码修改结束以后，到底留下了什么。&lt;/p&gt;
 &lt;p&gt;模型把代码改出来已经不算很难。难的是一个仓库被我、不同模型、不同工具来回改几十次以后，我还能不能回答这些问题：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这段代码为什么必须这样？
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;它对应哪个需求？
@@ -3256,7 +3210,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;设计依赖和代码依赖有没有对上
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以现在主界面已经换成 requirement-first 的 &lt;strong&gt;Project Observatory&lt;/strong&gt;。低层 Software Graph 还在，而且仍然参与 Impact、Context 和历史 Diff，只是不再被当成“产品首页”。&lt;/p&gt;
 &lt;p&gt;这个改动我自己很喜欢。图是手段，不是目的。&lt;/p&gt;
-&lt;h2 id="risk-终于不用靠一句这里比较重要"&gt;Risk 终于不用靠一句“这里比较重要”&lt;a class="heading-anchor" href="#risk-%e7%bb%88%e4%ba%8e%e4%b8%8d%e7%94%a8%e9%9d%a0%e4%b8%80%e5%8f%a5%e8%bf%99%e9%87%8c%e6%af%94%e8%be%83%e9%87%8d%e8%a6%81" aria-label="章节链接：Risk 终于不用靠一句“这里比较重要”"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;h2 id="risk-不再只靠-prompt-提醒"&gt;Risk 不再只靠 Prompt 提醒&lt;a class="heading-anchor" href="#risk-%e4%b8%8d%e5%86%8d%e5%8f%aa%e9%9d%a0-prompt-%e6%8f%90%e9%86%92" aria-label="章节链接：Risk 不再只靠 Prompt 提醒"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;以前让 Agent 改安全相关代码时，我经常会顺手补一句：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;这个地方比较重要，多检查一下。&lt;/p&gt;
