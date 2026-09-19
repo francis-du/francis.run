@@ -1,4 +1,5 @@
-baseURL = "https://francis.run/"
+# Raw Hugo/Cloudflare fallback; Makefile overrides GitHub Pages to https://francis.run/.
+baseURL = "https://francisdu.com/"
 title = "Francis Du"
 defaultContentLanguage = "zh-cn"
 defaultContentLanguageInSubdir = false
