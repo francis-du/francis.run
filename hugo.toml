@@ -87,6 +87,7 @@ wrapStandAloneImageWithinParagraph = false
     favicon = "img/icon.png"
     title = "Francis Blog"
     mode = "dark"
+    images = ["/img/share-default.png"]
     social_share = true
     comment = true
     # Keep hugo-shortcode-gallery's Swipebox + JustifiedGallery lifecycle.

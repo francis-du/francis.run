@@ -68,6 +68,12 @@
     {{- else -}}
         {{- with .Params.image -}}
             {{- $imageURLs = $imageURLs | append (. | absURL) -}}
+        {{- else -}}
+            {{- with .Site.Params.images -}}
+                {{- range . -}}
+                    {{- $imageURLs = $imageURLs | append (. | absURL) -}}
+                {{- end -}}
+            {{- end -}}
         {{- end -}}
     {{- end -}}
     {{- if gt (len $imageURLs) 0 -}}

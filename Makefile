@@ -159,6 +159,13 @@ check:
 	grep -q 'name=twitter:image content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:image content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	test -f $(BUILD_DIR)/img/share-default.png
+	test -f $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/share-default.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -q 'name=twitter:image content="https://francis.run/img/share-default.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -q '"image":\["https://francis.run/img/share-default.png"\]' $(BUILD_DIR)/blog/wiki-graph/index.html
+	grep -Fq '.markdown figure.content-image' assets/css/main.css
 	for image in architecture evidence access activity; do \
 		test ! -L "static/img/wcode/wcode-intro-$$image.png" && \
 		cmp "static/img/wcode/wcode-intro-$$image.png" "$(BUILD_DIR)/img/wcode/wcode-intro-$$image.png" || exit 1; \

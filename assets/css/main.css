@@ -108,6 +108,18 @@ a img { border: none; }
 
 figure { margin: 0; text-align: center; }
 figure figcaption { color: var(--text-faint); font-size: 0.85em; margin-top: 6px; }
+.markdown figure.content-image { margin: 1.75rem 0; }
+.markdown figure.content-image img {
+    margin: 0 auto;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    box-shadow: var(--shadow);
+}
+.markdown figure.content-image figcaption {
+    margin-top: 0.55rem;
+    padding: 0 0.75rem;
+    line-height: 1.5;
+}
 
 fieldset { border: 0; margin: 0; padding: 0; }
 
