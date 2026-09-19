@@ -76,6 +76,15 @@ other = "Share on X"
 [shareLinkedIn]
 other = "Share on LinkedIn"
 
+[shareWeibo]
+other = "Share on Weibo"
+
+[shareNative]
+other = "Share to WeChat, QQ, Xiaohongshu, and more"
+
+[shareCopied]
+other = "Link copied"
+
 [shareEmail]
 other = "Share by email"
 

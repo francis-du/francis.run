@@ -18,12 +18,14 @@
 {{- $locale := replace (.Site.Language.Locale | default "en-US") "-" "_" -}}
 
 <meta property="og:title" content="{{ $title }}">
+<meta itemprop="name" content="{{ $title }}">
 <meta property="og:type" content="{{ $type }}">
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:site_name" content="{{ .Site.Title }}">
 <meta property="og:locale" content="{{ $locale }}">
 {{- with $description }}
 <meta property="og:description" content="{{ . }}">
+<meta itemprop="description" content="{{ . }}">
 {{- end }}
 {{- range .Translations }}
 <meta property="og:locale:alternate" content="{{ replace (.Language.Locale | default .Language.Lang) "-" "_" }}">
@@ -32,6 +34,8 @@
 {{- with $image.url }}
 <meta property="og:image" content="{{ . }}">
 <meta property="og:image:secure_url" content="{{ . }}">
+<meta itemprop="image" content="{{ . }}">
+<link rel="image_src" href="{{ . }}">
 {{- with $image.mime }}
 <meta property="og:image:type" content="{{ . }}">
 {{- end }}

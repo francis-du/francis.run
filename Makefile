@@ -175,6 +175,15 @@ check:
 	grep -Eq 'sharer/sharer\.php\?u=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -Eq 'twitter\.com/intent/tweet\?text=.*url=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -Eq 'linkedin\.com/sharing/share-offsite/\?url=https%3A%2F%2Ffrancis\.run%2Fen%2Fblog%2Fjev-wcode-scopwis%2F%3Fshare%3D[0-9]+' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'itemprop=image content="https://francis.run/img/share/jev-wcode-scopwis\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -Eq 'rel=image_src href=https://francis.run/img/share/jev-wcode-scopwis\.[0-9a-f]{64}\.png' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'service.weibo.com/share/share.php?' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'aria-label=分享到微博' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'data-native-share' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'aria-label=分享到微信、QQ、小红书等' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q '/js/social-share.' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	! grep -q '/js/social-share.' $(BUILD_DIR)/about/index.html
+	test -n "$$(find $(BUILD_DIR)/js -type f -name 'social-share.*.js' -print -quit)"
 	test -f $(BUILD_DIR)/img/share-default.png
 	for source in content/blogs/*wcode*.md; do \
 		card="$$(basename "$$source" .md).png"; \

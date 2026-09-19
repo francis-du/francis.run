@@ -76,6 +76,15 @@ other = "分享到 X"
 [shareLinkedIn]
 other = "分享到 LinkedIn"
 
+[shareWeibo]
+other = "分享到微博"
+
+[shareNative]
+other = "分享到微信、QQ、小红书等"
+
+[shareCopied]
+other = "链接已复制"
+
 [shareEmail]
 other = "通过邮件分享"
 
