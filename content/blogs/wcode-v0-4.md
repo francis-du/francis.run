@@ -3,7 +3,7 @@ title: "wcode v0.4：我开始压 Context 和 Tool Call"
 date: 2026-08-27T23:55:00+08:00
 draft: false
 url: /blog/wcode-v0-4/
-image: /img/wcode/wcode-workspace-intelligence.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "v0.4 没继续堆大功能，我主要压了 Agent 写代码时的 Context、Tool Round-trip 和默认执行路径。"
 tags:
   - wcode
@@ -12,7 +12,7 @@ tags:
   - AI Agent
   - Release
 images:
-  - /img/wcode/wcode-workspace-intelligence.png
+  - /img/share/wcode-v0-4.png
 ---
 
 v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability、Risk、Verification、Evidence、Reconciliation 和 Project Observatory。

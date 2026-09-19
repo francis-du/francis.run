@@ -3,7 +3,7 @@ title: "wcode 里，我把 MCP 和 Skill 分开了"
 date: 2026-08-26T03:16:00+08:00
 draft: false
 url: /blog/wcode-mcp-agent/
-image: /img/wcode/wcode-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "MCP 负责 Agent 真正能调用的能力，Skill 只保留工作顺序和习惯。我后来把这两层彻底拆开了。"
 tags:
   - MCP
@@ -11,7 +11,7 @@ tags:
   - wcode
   - Rust
 images:
-  - /img/wcode/wcode-architecture.png
+  - /img/share/wcode-mcp-agent.png
 ---
 
 第一版 wcode 基本是围着 MCP 写的。

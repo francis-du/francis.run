@@ -3,7 +3,7 @@ title: "wcode v0.6：哪些工具调用可以一起跑"
 date: 2026-09-12T05:30:00+08:00
 draft: false
 url: /blog/wcode-v0-6/
-image: /img/wcode/wcode-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "v0.6 让 agent_context 除了给上下文，也直接给依赖和并行信息，尽量少让模型自己猜哪些工具调用能一起跑。"
 tags:
   - wcode
@@ -13,7 +13,7 @@ tags:
   - Parallelism
   - Release
 images:
-  - /img/wcode/wcode-architecture.png
+  - /img/share/wcode-v0-6.png
 ---
 
 [v0.5](/blog/wcode-v0-5/) 做完 Warm LSP Runtime 以后，我原本打算继续补 Semantic。

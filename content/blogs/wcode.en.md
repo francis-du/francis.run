@@ -3,7 +3,7 @@ title: "wcode: How I Connected Web AI to a Local Repository"
 date: 2026-09-12T05:33:00+08:00
 draft: false
 url: blog/wcode/
-image: /img/wcode/wcode-tui.png
+image: /img/wcode/wcode-intro-intelligence-stack.svg
 description: "I built wcode so browser-based models could work on a repository on my machine without turning the machine into an open remote shell."
 tags:
   - wcode
@@ -12,7 +12,7 @@ tags:
   - Coding Agents
   - Developer Tools
 images:
-  - /img/wcode/wcode-tui.png
+  - /img/share/wcode.en.png
 ---
 
 <p class="project-logo"><a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="Open the wcode documentation"><img src="/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"></a></p>

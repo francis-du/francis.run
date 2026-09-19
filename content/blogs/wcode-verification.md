@@ -3,7 +3,7 @@ title: "wcode：测试通过以后，我还想留下什么"
 date: 2026-08-26T03:14:00+08:00
 draft: false
 url: /blog/wcode-verification/
-image: /img/wcode/wcode-verification-detail.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "我后来不太接受一句 tests passed 就结束任务了。wcode 会把跑了什么、对应哪个 revision、谁 review 过和还缺什么一起留下来。"
 tags:
   - Rust
@@ -11,7 +11,7 @@ tags:
   - wcode
   - AI Agent
 images:
-  - /img/wcode/wcode-verification-detail.png
+  - /img/share/wcode-verification.png
 ---
 
 Coding Agent 很喜欢用一句话结束工作：

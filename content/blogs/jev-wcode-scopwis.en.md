@@ -3,8 +3,8 @@ title: "Using Jev in wcode and Scopwis"
 date: 2026-09-19T12:31:00+08:00
 draft: false
 url: blog/jev-wcode-scopwis/
+image: /img/wcode/wcode-intro-intelligence-stack.svg
 translationKey: jev-wcode-scopwis
-image: /img/wcode/wcode-architecture.png
 description: "I wired Jev into wcode and Scopwis and ran several rounds of live API tests. This is what changed when I narrowed the questions, where the numbers held up, and where I finally gave Jev authority in each system."
 tags:
   - wcode
@@ -14,7 +14,7 @@ tags:
   - Data Agents
   - Scopwis
 images:
-  - /img/wcode/wcode-architecture.png
+  - /img/share/jev-wcode-scopwis.en.png
 ---
 
 My first reason for trying Jev was pretty practical: it is cheap. If it could make a small decision before I called a GPT- or Claude-class reasoning model, I might save a model call.

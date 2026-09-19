@@ -5,7 +5,7 @@ lastmod: 2026-09-17
 draft: false
 url: /blog/what-is-wcode/
 translationKey: what-is-wcode
-image: /img/wcode/wcode-intro-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "wcode 最早只是想让网页里的模型碰到本地代码。后来我越用越觉得，真正麻烦的是模型怎么读仓库、怎么改、以及怎么证明改完了。"
 tags:
   - wcode
@@ -14,7 +14,7 @@ tags:
   - Coding Agent
   - Developer Tools
 images:
-  - /img/wcode/wcode-intro-architecture.png
+  - /img/share/what-is-wcode.png
 ---
 
 <p class="project-logo"><a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode 文档"><img src="/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"></a></p>

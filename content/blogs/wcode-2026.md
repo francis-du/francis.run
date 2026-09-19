@@ -3,7 +3,7 @@ title: "wcode 最近做成什么样了"
 date: 2026-08-26T03:10:00+08:00
 draft: false
 url: /blog/wcode-2026/
-image: /img/wcode/wcode-observatory-full.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "第一版 wcode 主要是把 Web AI 接到本地代码。后来项目越写越大，我开始把需求、代码关系、验证结果和未完成工作也留在仓库里。"
 tags:
   - Rust
@@ -11,7 +11,7 @@ tags:
   - AI Agent
   - wcode
 images:
-  - /img/wcode/wcode-observatory-full.png
+  - /img/share/wcode-2026.png
 ---
 
 我前几天写过一篇 [wcode 的第一版介绍](/blog/wcode/)。

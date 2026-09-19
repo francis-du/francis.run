@@ -3,7 +3,7 @@ title: "wcode：Git Diff 之外，我还想知道什么"
 date: 2026-08-26T03:13:00+08:00
 draft: false
 url: /blog/wcode-traceability/
-image: /img/wcode/wcode-verification-detail.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "Code Review 时我很少只看 Diff。我还会继续查调用方、测试、约束，以及这次改动有没有让设计和代码开始分叉。"
 tags:
   - Rust
@@ -11,7 +11,7 @@ tags:
   - Software Design
   - Code Review
 images:
-  - /img/wcode/wcode-verification-detail.png
+  - /img/share/wcode-traceability.png
 ---
 
 我做 Code Review 时很少只看 Diff。

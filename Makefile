@@ -5,7 +5,12 @@ CLOUDFLARE_MAX_FILE_BYTES ?= 26214400
 HUGO_CACHE_FLAG = $(if $(HUGO_CACHE_DIR),--cacheDir "$(HUGO_CACHE_DIR)",)
 HUGO_BUILD_FLAGS = --gc --minify $(HUGO_CACHE_FLAG)
 
-.PHONY: check build cloudflare
+.PHONY: check build cloudflare social-cards
+
+# Authoring helper for the committed social preview cards. Uses macOS system
+# fonts so Chinese and English titles render without bundling font binaries.
+social-cards:
+	swift tools/generate-social-cards.swift
 
 check:
 	test -f hugo.toml
@@ -149,17 +154,22 @@ check:
 	grep -q '<copyright>© Francis Du</copyright>' $(BUILD_DIR)/index.xml
 	! grep -q 'Source Themes Academic' $(BUILD_DIR)/index.xml
 	! grep -q 'Ink theme on Hugo' $(BUILD_DIR)/index.xml
-	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-intro-architecture.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-intro-architecture.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/share/what-is-wcode.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/share/what-is-wcode.en.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
 	test -f $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	test -f $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
-	grep -q 'property="og:image" content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/share/jev-wcode-scopwis.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'property="og:image" content="https://francis.run/img/share/jev-wcode-scopwis.en.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
-	grep -q 'name=twitter:image content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
+	grep -q 'name=twitter:image content="https://francis.run/img/share/jev-wcode-scopwis.png"' $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
-	grep -q 'name=twitter:image content="https://francis.run/img/wcode/wcode-architecture.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
+	grep -q 'name=twitter:image content="https://francis.run/img/share/jev-wcode-scopwis.en.png"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	test -f $(BUILD_DIR)/img/share-default.png
+	for source in content/blogs/*wcode*.md; do \
+		card="$$(basename "$$source" .md).png"; \
+		test -f "static/img/share/$$card" && \
+		cmp "static/img/share/$$card" "$(BUILD_DIR)/img/share/$$card" || exit 1; \
+	done
 	test -f $(BUILD_DIR)/blog/wiki-graph/index.html
 	grep -q 'property="og:image" content="https://francis.run/img/share-default.png"' $(BUILD_DIR)/blog/wiki-graph/index.html
 	grep -q 'name=twitter:card content="summary_large_image"' $(BUILD_DIR)/blog/wiki-graph/index.html

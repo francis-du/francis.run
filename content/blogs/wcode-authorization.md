@@ -3,7 +3,7 @@ title: "wcode 的授权现在怎么做"
 date: 2026-08-26T23:35:00+08:00
 draft: false
 url: /blog/wcode-authorization/
-image: /img/wcode/wcode-access-management.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "我把未授权命令、高风险执行、Runtime Executor 和删除操作都接进了同一个 Pending Authorization Queue，模型可以申请，但不能自己批准。"
 tags:
   - wcode
@@ -11,7 +11,7 @@ tags:
   - MCP
   - AI Agent
 images:
-  - /img/wcode/wcode-access-management.png
+  - /img/share/wcode-authorization.png
 ---
 
 我一直不想给 Agent 一个 Shell。

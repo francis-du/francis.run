@@ -3,7 +3,7 @@ title: "wcode v0.6.2：我不再拿 SLOTS 当性能了"
 date: 2026-09-12T05:32:00+08:00
 draft: false
 url: /blog/wcode-v0-6-2/
-image: /img/wcode/wcode-observatory-full.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "0.6.2 把 Tool Slot、CPU、文件 I/O 和子进程拆开计量，也顺手修了位置检索、验证计划和 Observatory 里几处容易误读的状态。"
 tags:
   - wcode
@@ -14,7 +14,7 @@ tags:
   - Observability
   - Release
 images:
-  - /img/wcode/wcode-observatory-full.png
+  - /img/share/wcode-v0-6-2.png
 ---
 
 前几天我一直盯着 wcode 的并发面板看。

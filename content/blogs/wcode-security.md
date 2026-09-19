@@ -3,7 +3,7 @@ title: "wcode：我还是不想给 Agent 一个 Shell"
 date: 2026-08-26T03:17:00+08:00
 draft: false
 url: /blog/wcode-security/
-image: /img/wcode/wcode-access-management.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "wcode 上层功能越来越多，但 Workspace Root、Symlink、SHA、原子写入、授权和 no-shell 这些底层边界我一直没准备放松。"
 tags:
   - Security
@@ -11,7 +11,7 @@ tags:
   - MCP
   - wcode
 images:
-  - /img/wcode/wcode-access-management.png
+  - /img/share/wcode-security.png
 ---
 
 wcode 第一版里，我花时间最多的其实不是 MCP。

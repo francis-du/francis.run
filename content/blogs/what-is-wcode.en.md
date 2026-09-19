@@ -5,7 +5,7 @@ lastmod: 2026-09-17
 draft: false
 url: blog/what-is-wcode/
 translationKey: what-is-wcode
-image: /img/wcode/wcode-intro-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.svg
 description: "wcode started because I wanted browser-based models to work on local code. The project changed once I started using it for real edits and had to deal with repository context, safe changes, and proof."
 tags:
   - wcode
@@ -14,7 +14,7 @@ tags:
   - Coding Agents
   - Developer Tools
 images:
-  - /img/wcode/wcode-intro-architecture.png
+  - /img/share/what-is-wcode.en.png
 ---
 
 <p class="project-logo"><a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode documentation"><img src="/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"></a></p>

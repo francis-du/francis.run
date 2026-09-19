@@ -3,7 +3,7 @@ title: "wcode v0.5：LSP 不再每次现启"
 date: 2026-08-30T17:30:00+08:00
 draft: false
 url: /blog/wcode-v0-5/
-image: /img/wcode/wcode-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "v0.5 把 LSP 改成可复用的 Warm Session。普通定位继续走 Tree-sitter/Search，只有跨文件关系真的需要语义时才进 LSP。"
 tags:
   - wcode
@@ -13,7 +13,7 @@ tags:
   - LSP
   - Release
 images:
-  - /img/wcode/wcode-architecture.png
+  - /img/share/wcode-v0-5.png
 ---
 
 v0.4 做完以后，我以为 wcode 写代码这条主链已经比较顺了。

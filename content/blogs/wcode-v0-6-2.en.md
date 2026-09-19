@@ -3,7 +3,7 @@ title: "wcode 0.6.2: What 32 Tool Slots Were Hiding"
 date: 2026-09-12T05:35:00+08:00
 draft: false
 url: blog/wcode-v0-6-2/
-image: /img/wcode/wcode-observatory-full.png
+image: /img/wcode/wcode-intro-intelligence-stack.svg
 description: "I split tool slots, CPU, file I/O, and child processes into separate budgets, then fixed a few places where wcode looked healthier or busier than it really was."
 tags:
   - wcode
@@ -13,7 +13,7 @@ tags:
   - Observability
   - Release
 images:
-  - /img/wcode/wcode-observatory-full.png
+  - /img/share/wcode-v0-6-2.en.png
 ---
 
 I spent several days watching wcode sit at 32 tool slots with decent peak occupancy while a few real tasks still felt slow.

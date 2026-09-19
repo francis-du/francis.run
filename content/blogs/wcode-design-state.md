@@ -3,7 +3,7 @@ title: "我为什么把 wcode 的需求写进仓库"
 date: 2026-08-26T03:11:00+08:00
 draft: false
 url: /blog/wcode-design-state/
-image: /img/wcode/wcode-intro-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "我给 wcode 加了 Design State，把 Requirement、Component、实现和测试之间的关系直接留在仓库里。"
 tags:
   - Rust
@@ -11,7 +11,7 @@ tags:
   - Software Design
   - AI Agent
 images:
-  - /img/wcode/wcode-intro-architecture.png
+  - /img/share/wcode-design-state.png
 ---
 
 做 wcode 一段时间以后，我越来越不喜欢一种状态：代码里明明有很多约束，但这些约束只活在人脑里。

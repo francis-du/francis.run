@@ -3,7 +3,7 @@ title: "wcode v0.6.1：`parallel_tools` 不再按层等"
 date: 2026-09-12T05:31:00+08:00
 draft: false
 url: /blog/wcode-v0-6-1/
-image: /img/wcode/wcode-tui.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "v0.6.1 把 parallel_tools 改成 completion-driven：自己的依赖一完成就继续，失败和取消只影响该影响的分支。"
 tags:
   - wcode
@@ -14,7 +14,7 @@ tags:
   - Parallelism
   - Release
 images:
-  - /img/wcode/wcode-tui.png
+  - /img/share/wcode-v0-6-1.png
 ---
 
 [v0.6](/blog/wcode-v0-6/) 开始在 `agent_context` 里标出可以并行的工作。接着我去看 Runtime 本身，发现 `parallel_tools` 虽然已经有依赖图，执行时还保留着按层推进的做法。

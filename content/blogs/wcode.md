@@ -3,7 +3,7 @@ title: "我写了 wcode：把 Web AI 接到本地代码库"
 date: 2026-08-23T18:30:00+08:00
 draft: false
 url: /blog/wcode/
-image: /img/wcode/wcode-tui.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "这是 wcode 第一版的记录：一个用 Rust 写的 Remote MCP Bridge，主要解决 OAuth、Workspace 隔离、代码索引、修改和并发。"
 tags:
   - Rust
@@ -11,7 +11,7 @@ tags:
   - AI Agent
   - Security
 images:
-  - /img/wcode/wcode-tui.png
+  - /img/share/wcode.png
 ---
 
 <p class="project-logo"><a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="打开 wcode 官网"><img src="/img/wcode/wcode-logo.svg" alt="wcode 官网" width="320" height="96"></a></p>

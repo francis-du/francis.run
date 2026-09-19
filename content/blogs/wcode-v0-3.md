@@ -3,7 +3,7 @@ title: "wcode v0.3：它已经不只是一个 MCP Bridge 了"
 date: 2026-08-26T23:30:00+08:00
 draft: false
 url: /blog/wcode-v0-3/
-image: /img/wcode/wcode-architecture.png
+image: /img/wcode/wcode-intro-intelligence-stack.zh-CN.svg
 description: "v0.3 里我把 Design State、Software Graph、Risk、Verification、Evidence 和 Reconciliation 接了起来，wcode 开始明显偏离最早的 MCP Bridge。"
 tags:
   - wcode
@@ -11,7 +11,7 @@ tags:
   - MCP
   - Release
 images:
-  - /img/wcode/wcode-architecture.png
+  - /img/share/wcode-v0-3.png
 ---
 
 wcode 的 v0.3 是一次比较明显的方向变化。
