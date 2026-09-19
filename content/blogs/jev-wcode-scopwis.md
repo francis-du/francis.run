@@ -1,10 +1,10 @@
 ---
-title: "我把 Jev 接进 wcode 和 Scopwis：从判断实验到工程落地"
+title: "Jev 在 wcode 和 Scopwis 里的实践"
 date: 2026-09-19T12:30:00+08:00
 draft: false
 url: /blog/jev-wcode-scopwis/
 translationKey: jev-wcode-scopwis
-description: "我把 Jev 接到 wcode 和 Scopwis 的 Decision Plane 后，做了多轮真实 API 测试。结果最有意思的不是“准确率多高”，而是哪些判断适合交给 Decision Plane、问题该怎么写，以及什么时候反而不该用它。"
+description: "我把 Jev 接进 wcode 和 Scopwis 后，拿真实 API 跑了几轮判断测试。这里记下问题怎么问、哪些判断值得交给 Jev，以及我最后把它放在系统里的什么位置。"
 tags:
   - wcode
   - Jev
@@ -15,13 +15,11 @@ tags:
 images: []
 ---
 
-我一开始对 Jev 的预期很简单：如果一次判断比 GPT、Claude 这类推理模型便宜得多，那就让它先看一眼，能少调一次大模型就赚了。
+我最开始接 Jev，想法其实很功利：它便宜。一个判断如果能先让 Jev 做，少叫一次 GPT、Claude 这类 reasoning model，就能省一点成本和时间。
 
-真正接进 wcode、再连续做了几轮测试以后，我发现这个理解还是太粗。
+真接进 wcode 和 Scopwis 以后，最先暴露的问题却不是模型够不够强，而是我自己问得太宽。
 
-**Jev 最有价值的地方，不是“用一个小模型替代一个大模型”，而是把 Agent 里原本很模糊的判断，拆成一组便宜、可测、可校准的语义条件。**
-
-Coding Agent 经常会遇到这些问题：
+Agent 平时会反复碰到这种判断：
 
 ~~~text
 上下文够不够了？
@@ -31,21 +29,21 @@ Coding Agent 经常会遇到这些问题：
 这里值得再跑一轮大模型推理吗？
 ~~~
 
-这些问题都不像“把这个函数重写一遍”那样需要生成能力。它们更接近程序里的 if，只是条件不是一个整数或布尔值，而是要读懂代码任务的语义。
+它们不像“把这个函数重写一遍”，更像程序里的几个 if，只是条件需要读懂当前任务。
 
-这正好是我后来给 Jev 找到的位置：它不是另一套 Agent，而是一组可以嵌进普通控制流里的语义判断。
+Jev 的位置也就慢慢清楚了：不让它接管 Agent，只让它回答这些边界比较窄的语义问题。控制流、权限、副作用和能直接计算出来的事实继续留在代码里。
 
-Jev 官方文档强调把窄而结构化的判断嵌进普通软件：**控制流、确定性规则和副作用继续留在代码里，模型只回答边界清楚的问题。** 文档里反复强调 atomic、typed、parallel：问题要小、答案要有类型，同一个 state 上互相独立的问题一次并行问完。可以看 [How to build with Jev](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)、[Noul](https://docs.typesafe.ai/primitives/noul)、[Choice](https://docs.typesafe.ai/primitives/choice) 和 [Score](https://docs.typesafe.ai/primitives/score)。
+这和 Jev 文档里 atomic、typed、parallel 的做法基本一致：问题拆小，答案有类型，同一个 state 上互不依赖的问题一起问。相关说明可以看 [How to build with Jev](https://docs.typesafe.ai/concepts/how-to-build-with-system-one)、[Noul](https://docs.typesafe.ai/primitives/noul)、[Choice](https://docs.typesafe.ai/primitives/choice) 和 [Score](https://docs.typesafe.ai/primitives/score)。
 
-我后来发现，wcode 的 Decision Plane 和这个思路非常合。
+wcode 原来就有 Decision Plane，所以我先从这里开始接。
 
-## 先说清楚：我测的不是“Jev 写代码比 GPT 好多少”
+## 我先测了什么
 
-这篇里的数据，都是 **Decision Layer 的真实 API 测试**，不是完整 Coding Benchmark。
+这篇里的数字都来自 **Decision Layer 的真实 API 测试**，不是完整 Coding Benchmark。
 
-我没有拿 100 个 GitHub Issue 分别让“纯 GPT Agent”和“GPT + Jev Agent”各做一遍，然后宣称成功率提升多少。那种实验更接近最终产品效果，但变量也更多：模型版本、上下文、工具调用、仓库大小、测试环境都会影响结果。
+我没有拿一批 GitHub Issue 去做“纯 GPT Agent”和“GPT + Jev Agent”的端到端对照。那样更接近最终产品效果，但模型、上下文、工具、仓库和测试环境全混在一起，不太适合先看 Decision Plane 本身。
 
-我先做的是更基础的一层：
+所以我先只测一层：
 
 > 给 Jev 两组实际会出现在项目里的状态：一组来自 wcode 的代码分析/编辑决策，一组来自 Scopwis 这条 Data Agent 的数据分析决策。看它能不能稳定回答“下一步需要什么证据”“是否必须继续推理”“是否需要语义导航”这类问题。
 
@@ -53,11 +51,11 @@ Jev 官方文档强调把窄而结构化的判断嵌进普通软件：**控制�
 
 当前 Jev 的模型页显示 <code>jev-1.13.0</code> 输入价格是 **$0.042 / 1M tokens，输出免费**；<code>jev-latest</code> 当前指向这个版本。官方还特别提醒：alias 后面会移动，如果阈值是按某个版本校准的，生产环境应该 pin 版本。见 [Models](https://docs.typesafe.ai/models)。
 
-后面所有准确率都只代表这批测试，不代表一个通用 benchmark。
+后面的准确率都只代表这批样本。
 
-## 第一轮就踩坑：问“有没有价值”，Jev 会真的回答“有没有价值”
+## Scopwis 第一轮：问题问宽了
 
-一开始我先测 Scopwis。这里的 Data Agent 就是 Scopwis，不是一个泛化的假想产品。我拿的是它 ReAct / Decision Plane 里会遇到的数据分析状态：
+我先拿 Scopwis 开刀。这里的 Data Agent 就是 Scopwis，我直接用了它 ReAct / Decision Plane 会遇到的数据分析状态：
 
 ~~~text
 Would another full reasoning-model step likely add meaningful analytical value before finalization?
@@ -67,9 +65,7 @@ Would another full reasoning-model step likely add meaningful analytical value b
 
 > 再跑一次完整推理模型，会不会给最终分析带来有意义的价值？
 
-听起来没问题。
-
-实际效果并不好。
+看起来挺合理，跑出来却不太行。
 
 12 个更严格的分析 case 里，这个宽问题的准确率是 **75%**，Brier Score 是 **0.1789**。Brier 越低越好，0 代表概率和真值完全一致。
 
@@ -122,13 +118,11 @@ Jev 在 [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13
 | 明确写出必要条件 | 100% | 0.0470 |
 | 再加 true / false criteria | 100% | 0.0316 |
 
-这组结果对我影响很大。
+这轮以后，我不太愿意把这类问题只归成“模型能力”了。问题本身怎么定义，就是实现的一部分。
 
-我原来会把这类问题叫“模型能力”。现在更愿意把它叫 **judgment design**。
+问“有没有价值”，模型就按“有没有价值”回答；程序真正需要的是更窄的条件，就得把那个条件写出来。
 
-问题写得宽，模型就稳定地在一个宽边界里工作；问题写成真正需要的程序条件，它才像一个可以组合的 primitive。
-
-## wcode 里同样明显：不要问“语义导航有没有帮助”
+## wcode 里也踩了同一个坑
 
 wcode 里有一个很自然的判断：
 
@@ -144,7 +138,7 @@ Would semantic navigation likely add material value before editing?
 
 也就是“语义导航会不会有实际帮助”。
 
-这个问法表现很差。
+这个问法也不行。
 
 14 个代码场景里，Accuracy 只有 **57.1%**，Brier **0.2114**。
 
@@ -185,11 +179,9 @@ Accuracy 变成 **85.7%**，Brier **0.1339**。
 | “是不是安全修改前的必要证据？” | 85.7% | 0.1339 |
 | 再加边界 criteria | 100% | 0.0862 |
 
-我不会因为 14 个样本就说“生产环境 100%”。
+14 个样本当然不能拿来宣称“生产环境 100%”。但至少这轮很清楚：模型没换，state 没换，只把问题从“有帮助吗”改成“是不是必要证据”，结果就完全不一样。
 
-真正值得记住的是：**同一个模型、同一批状态，仅仅改 judgment 的定义，结果就从接近抛硬币变成了非常可用。**
-
-## Choice 也一样：相邻选项一定要把边界写出来
+## Choice 的问题在相邻选项
 
 Noul 是 yes/no。Choice 用来选一个有限动作，比如 wcode 里：
 
@@ -218,7 +210,7 @@ other_review
 }
 ~~~
 
-结果也很明显：
+结果如下：
 
 | Next Action Choice | 普通 criteria | 结构化 use_when / do_not_use_when |
 | --- | ---: | ---: |
@@ -260,14 +252,14 @@ confidence = 0.96
 
 Jev 对 confidence 的定义本来就不是“这次工作流决策正确的概率”。它是 Choice/Score 概率分布有多集中。官方 [Confidence](https://docs.typesafe.ai/confidence) 页面也明确说了这一点。
 
-所以我的结论不是：
+所以我不会写这种规则：
 
 ~~~text
 confidence > 0.9
 => 绝对相信
 ~~~
 
-而是：
+我现在会这样处理：
 
 ~~~text
 先用带真值的数据校准
@@ -277,7 +269,7 @@ confidence > 0.9
 
 这和数据库查询优化器、风控规则没什么神秘区别：阈值是业务策略，不是模型常数。
 
-## 稳定性反而不是我现在最担心的问题
+## 我又把同一批问题重复跑了 15 次
 
 我还专门做了 15 次重复采样。
 
@@ -300,17 +292,13 @@ Jev 自己的 [Noul self-consistency cookbook](https://docs.typesafe.ai/cookbook
 
 不过这不能外推成“Choice 天生不会抖”。Jev 的 [Choice self-consistency cookbook](https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook) 故意选了更模糊的 moderation case；那组实验里 Jev 的原始 label agreement 是 90.8%，8 个 Choice 里有 2 个发生过 label flip。加上 top probability 至少 0.60 的 abstain 以后，agreement 升到 99.2%，但自动处理覆盖率是 74.2%。这更接近我想要的用法：边界 case 不硬猜，交给 fallback。
 
-所以在**我这组 wcode / Scopwis 样本里**，目前更危险的不是“今天 0.8，明天随机变 0.2”。
+这批样本里，我暂时没看到“今天 0.8，明天突然 0.2”这种乱跳。反而更值得防的是另一件事：问题边界写错了，Jev 还很稳定地照着错边界执行。
 
-而是：
+所以后面我花在 question review 上的时间，已经比盯着单个 benchmark 分数更多。
 
-> **把一个错误的判断边界写进系统，然后让 Jev 很稳定地执行这个错误边界。**
+## 8 个问题，一次发
 
-这也是为什么我现在更重视 question review，而不是只看 model benchmark。
-
-## 同一个 state，问题一定要一次问完
-
-这部分是 Jev 对 Agent 架构最直接的性能价值。
+这块是我测下来最直接的性能收益。
 
 我做了一个同时包含 **Scopwis 数据分析状态**和 **wcode 代码分析状态**的请求，一共 8 个问题：
 
@@ -350,7 +338,7 @@ Jev 官方文档也有专门的 [Parallel questions cookbook](https://docs.types
 
 我们本机的倍数没那么夸张，因为我的 state 短得多。
 
-但架构结论一样：
+所以我最后把调用方式改成这样：
 
 ~~~text
 错误做法：
@@ -372,7 +360,7 @@ state → Jev ────┼─ next_action
 
 顺便说一句，Jev 的架构文档写“most queries complete in about 100 ms”。我从本机走生产公开 API 测到的端到端 P50，大部分轮次在 **1.2～1.4 秒**附近，8-question batch 是 1.77 秒。两者不一定是同一个口径，网络和服务路径都会算进我的数字。做产品延迟预算时，我会以自己部署位置的真实端到端数据为准，而不是只看模型侧数字。
 
-## State 也不能什么都塞
+## State 不能直接塞聊天记录
 
 Jev 1.13 的官方 jaggedness 页面还列了两个和 Agent 特别相关的问题：
 
@@ -418,15 +406,13 @@ noise 和 untrusted_note 是不可信内容，
 | 大量无关 noise | 100% | 83.3% |
 | adversarial text | 100% | 100% |
 
-样本不大，但这个方向和官方建议完全一致：**先在代码里做 retrieval/filtering，再给 Jev 一个结构清楚的 state。**
+样本不大，但够提醒我一件事：先在代码里做 retrieval / filtering，再把整理过的 state 交给 Jev。
 
-这也是为什么我不打算把整个 MCP transcript、终端日志、网页内容、用户 Prompt 全部直接丢给 Decision Plane。
+所以整个 MCP transcript、终端日志、网页内容、用户 Prompt 我都不会原样往 Decision Plane 里灌。Jev 看到的是程序状态，不是聊天记录拼盘。
 
-Jev 看到的应该是“已经整理好的程序状态”，不是聊天垃圾场。
+## 我最后只给 Jev 很小的权限
 
-## 它在 wcode 里到底应该负责什么
-
-做完这些测试后，我对 wcode 里的分工反而更保守了。
+测完以后，我在 wcode 里反而把 Jev 的权限收得更小。
 
 有些事情绝对不需要 Jev：
 
@@ -495,13 +481,13 @@ Calibrated savings
 只在经过验证的 judgment 上允许少跑一次昂贵步骤
 ~~~
 
-这个过程比“接上 API 看起来能跑”麻烦，但 Decision Plane 一旦真的能减少错误探索和无意义推理，收益会比单纯换一个模型稳定得多。
+这比“API 接通就算完成”麻烦不少，但至少每一步为什么放权、放到哪里，都能解释。
 
-## Jev 在 wcode 和 Scopwis 里是怎么落地的
+## 现在两边怎么接
 
-前面讲的是 judgment 怎么设计。真正做进产品以后，我更在意的是：**Jev 判断错了，不能把原来确定性的工程边界一起带错。**
+真正进产品以后，我只守一个底线：Jev 可以判断错，但不能因为它判断错，就把原来确定性的工程边界一起放松。
 
-wcode 和 Scopwis 都接了 Jev，但两边没有硬套同一个实现。它们共享的是原则，不是代码形状。
+wcode 和 Scopwis 都接了 Jev，不过两边运行方式不一样。我只复用了边界，没有硬套同一份实现。
 
 ### wcode：Jev 是 Agent Context 里的第二意见
 
@@ -617,9 +603,9 @@ Credential 和 endpoint 绑定：base URL 改掉以后，旧 Key 不会偷偷复
 
 配置不要求重启。打开 Jev 设置时会重新发现环境；每个新的 Agent run 开始前也会刷新 provider。Jev 不可用时，Scopwis 继续使用本地 Decision Plane 和原来的 reasoning-model 路径。
 
-## 我后来怎么验证这套东西
+## 接上以后，我又拿 wcode 跑了 500 个 case
 
-接通 API 只是第一步。真正有用的是让 Jev 在不掌权的情况下参与 review。
+API 能通没什么好说的。我更想知道它在不掌权的前提下，能不能帮我把值得继续查的地方挑出来。
 
 我在 wcode 上又跑过一轮 500-case adversarial validation。这里是我自己的工程测试，不是 Jev 官方文档 benchmark：
 
@@ -672,11 +658,9 @@ low confidence / signal disagreement
 
 Jev 更像一个独立 semantic reviewer：它不断给 typed judgment、confidence 和 risk surface；低置信或和 deterministic evidence 不协调的地方，变成继续往请求绑定、状态发布和 UI truthfulness 下钻的线索。最终是不是 bug、改哪里、修复是否成立，仍然由源码 contract 和测试决定。
 
-所以我现在更认可这种工程方式：
+这轮以后，我对它的定位基本定了：拿来找语义上“不太对劲”的地方，最后是不是 bug 仍然让源码和测试说话。
 
-> **把 Jev 当语义异常探测器，不要当最终裁判。**
-
-wcode 和 Scopwis 最后留下来的共同模式也很简单：
+wcode 和 Scopwis 最后留下来的共同模式是：
 
 ~~~text
 1. deterministic baseline / gate 先存在
@@ -689,9 +673,9 @@ wcode 和 Scopwis 最后留下来的共同模式也很简单：
 8. 有足够 replay 数据以后，才考虑让 Jev 真正省工作
 ~~~
 
-对我来说，这才是“把 Jev 落进 Agent”最重要的部分。
+我现在说“把 Jev 接进 Agent”，主要指的就是这层边界。
 
-## 一个 Scopwis Data Agent 例子：为什么结账转化率掉了？
+## Scopwis 里一个具体例子：checkout conversion 为什么掉了
 
 Coding Agent 之外，Scopwis 这条 Data Agent 更能说明这个设计。下面这个例子沿用前面测试 Scopwis Decision Plane 时的思路，把数据质量、证据是否完整、是否需要 reasoning model、报告是否完成拆开判断。
 
@@ -775,15 +759,15 @@ else:
     finalize
 ~~~
 
-这个结构有一个很实际的好处：
+这么拆以后，出错比较好查。
 
 如果今天 Agent 把“缺 baseline”误当成“需要思考”，我们能看到究竟是哪一个 primitive 错了，单独改它的 criteria、阈值和测试集。
 
 如果只有一个“下一步怎么办”的自由文本 Prompt，出错以后很难知道到底是哪一步推理边界有问题。
 
-这也是我认为 Decision Plane 对 Scopwis 这类 Data Agent 最有价值的地方：**它把 Agent 内部的模糊决策变成可以逐个测量的接口。**
+对 Scopwis 来说，我最看重的就是这一点：原来藏在 Agent 里的判断，现在至少能单独看、单独测、单独改。
 
-## 我现在会遵守的实现规则
+## 这些规则我现在还在用
 
 经过这几轮，我大概会把 Jev 的工程实践收成下面这些规则：
 
@@ -797,37 +781,23 @@ else:
 8. **模型版本要可追踪。** 调试时可以用 <code>jev-latest</code>；一旦阈值和策略围绕一个版本调好，生产应考虑 pin <code>jev-1.13.0</code> 这类版本 ID。
 9. **先 shadow，再放权。** 先记录“如果听 Jev 的会怎么走”，用最终测试、Verification、人工标签或业务结果做 truth，再决定哪些 judgment 可以真正节省工作。
 
-Jev 官方文档实际上也一直在讲这套思想：用软件组合很多小判断，而不是让模型接管程序。只是只有自己做过几轮错题以后，才会真正理解“问题要窄”到底有多重要。
+文档里“问题要小”这句话看着很普通，自己踩过几轮坑以后才知道它不是写作建议，而是接口设计。
 
-## 那 Jev 到底给 wcode 和 Scopwis 带来了什么？
+## 做到这里，我会把 Jev 放在哪
 
-现在可以谈的是**已经测到的 Decision Plane 收益和工程边界**，还不能把它写成端到端 Agent 提升数字。
+如果现在让我概括 Jev 给这两个项目加了什么，我不会写“整体提效 X%”。我还没有那组数据。
 
-对 wcode，这批数据支持：
+wcode 这边，我现在主要拿它做低成本的语义判断和第二意见。它可以说“这里还该继续查”“这里最好看 caller/reference”，也可以在 500-case 那轮里把低 confidence、disagreement 和 risk surface 暴露出来。但 SHA、Worktree、Authorization、Verification 这些门还是原来的代码说了算。
 
-- Jev 很适合做低成本 semantic decision primitive，尤其是“还要不要继续取证”“语义关系是不是安全修改前的必要证据”这类窄判断；
-- deterministic baseline + same-request shadow comparison + increase-only authority，让外部判断可以参与路由和调查，但不能降低 SHA、Worktree、Authorization 或 Verification 的下限；
-- 500-case adversarial validation 说明它适合作为 semantic anomaly detector：低 confidence / disagreement 用来决定“往哪里继续查”，真实 bug 最后仍由 deterministic contract 和 regression test 定案。
+Scopwis 里它的位置更窄：本地 Decision Plane 已经准备 fast-finalize 时，Jev 再看一次有没有证据或语义上的缺口。它可以把任务打回去，不能自己宣布完成。
 
-对 Scopwis，这批数据支持：
+几轮测试里，我觉得最有用的不是某个最高准确率。更实在的是这些变化：同一个模型，只改问题定义，某组判断从 57.1% 做到 100%；8 个问题合成一个 batch 后，输入成本约少 3.9 倍，顺序 wall-clock 约少 6.4 倍；重复采样本身很稳，但边界 Choice 仍然需要 abstain / fallback；state 里混进对抗性文本时，普通 Choice 会明显受影响。
 
-- Jev 适合做 ReAct 旁边的独立 Decision Plane，而不是另一个聊天模型；
-- “现有证据是否足够”“还值不值得进入一轮 reasoning model”“分析进度到哪”这类拆开的判断，比一个大的“下一步怎么办”更容易测、调和回放；
-- increase-only 的边界同样重要：Jev 可以阻止 fast-finalize、要求更多 reasoning，但不能自己触发 finalize，最终交付仍由 deterministic deliverable / report / evidence gate 决定。
-
-两边共同观察到的还有：
-
-- question/criteria 设计能让同一个模型在某个受控判断集上从约 57% 提升到 100%，说明 judgment design 本身就是工程工作；
-- 同 state 批量问问题，在我的实测里把输入成本降到单问方式的约 1/3.9，把顺序 wall-clock 降到约 1/6.4；
-- 15 次重复测试里的随机漂移很小，但官方 Choice consistency 实验也证明边界 case 会 flip，所以 abstain / fallback 不能省；
-- 对抗性 state 会影响普通 Choice，context filtering、trust boundary 和 deterministic invariants 都必须在模型外面；
-- confidence 可以帮助路由，但不能代替目标域 calibration。
-
-现在还不能支持的是：
+这些数字足够指导现在的实现，但还不能支持这种话：
 
 > “wcode 或 Scopwis 接 Jev 以后，真实端到端任务成功率提升 X%，总体成本下降 Y%。”
 
-这个要靠下一阶段的 paired replay：
+这个要靠真实任务 paired replay：
 
 ~~~text
 同一个真实 task state
@@ -846,17 +816,11 @@ Jev 官方文档实际上也一直在讲这套思想：用软件组合很多小�
 
 等 wcode 和 Scopwis 都积累了足够的真实 task replay，才能分别算清楚它们的端到端 Agent ROI。
 
-不过做到这里，我已经很确定一件事：
+所以目前我不会让 Jev 替 wcode 写代码，也不会让它替 Scopwis 做完整分析。
 
-**Jev 最好的位置，不是替 wcode 写代码，也不是替 Scopwis 做完整分析，而是让程序更早知道“现在缺的到底是什么”。**
+reasoning model 继续做复杂推理和生成；wcode 管仓库边界、源码证据和验证；Scopwis 管数据边界、分析流程和最终交付。Jev 夹在中间，回答几类很窄的问题：还缺什么、要不要继续查、现有证据够不够。
 
-reasoning model 继续负责复杂推理和生成。
-
-wcode 继续负责仓库边界、源码证据和验证；Scopwis 继续负责数据边界、分析流程和最终交付 gate。
-
-Jev 留在两者中间，做一批便宜、可测、可以被代码组合的语义 if。
-
-这个位置，比“再加一个 Agent”有意思得多。
+至少现在，这个位置对我比“再加一个 Agent”实用。
 
 ## 资料
 

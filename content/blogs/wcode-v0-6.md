@@ -1,10 +1,10 @@
 ---
-title: "wcode v0.6：我开始让 Agent 先决定什么能并行"
+title: "wcode v0.6：哪些工具调用可以一起跑"
 date: 2026-09-12T05:30:00+08:00
 draft: false
 url: /blog/wcode-v0-6/
 image: /img/wcode/wcode-architecture.png
-description: "v0.6 开始让 agent_context 直接给出任务执行信息：可并行工作、真实依赖、语义能力状态，以及需要本地确认的精确命令。"
+description: "v0.6 让 agent_context 除了给上下文，也直接给依赖和并行信息，尽量少让模型自己猜哪些工具调用能一起跑。"
 tags:
   - wcode
   - Rust
@@ -42,9 +42,7 @@ v0.6 就从这里开始改。我想让 Harness 少给模型一层猜测：当前
 
 它把 Design State、Repo Map、目标源码、SHA、验证入口和项目约束压进一个有界包里，让模型不用每次从根目录重新理解一遍。
 
-到了 v0.6，我开始把它往 **Task-ready Context** 推。
-
-到了 v0.6，我给这份 Context 多加了一层执行信息：
+到了 v0.6，我给这份 Context 又加了一层执行信息：
 
 ```text
 你现在应该做什么？

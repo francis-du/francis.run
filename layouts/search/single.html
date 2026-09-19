@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.Language.Locale | default "zh-CN" }}">
+{{ partial "header.html" . }}
+<body>
+	<div class="container wrapper">
+		{{ partial "head.html" . }}
+		<main id="main-content" tabindex="-1">
+			<div class="page-heading search-heading">
+				<span class="eyebrow">{{ i18n "searchEyebrow" }}</span>
+				<h1 class="page-title">{{ .Title }}</h1>
+				{{ with .Description }}<p>{{ . }}</p>{{ end }}
+			</div>
+
+			<section class="site-search" aria-label="{{ i18n "searchTitle" }}">
+				<form id="site-search-form" class="search-form" role="search"
+					data-index-url="{{ "index.json" | relLangURL }}"
+					data-ready="{{ i18n "searchReady" }}"
+					data-loading="{{ i18n "searchLoading" }}"
+					data-empty="{{ i18n "searchNoResults" }}"
+					data-error="{{ i18n "searchError" }}"
+					data-result-singular="{{ i18n "searchResultSingular" }}"
+					data-result-plural="{{ i18n "searchResultPlural" }}">
+					<label for="search-input">{{ i18n "searchInputLabel" }}</label>
+					<input id="search-input" name="q" type="search" autocomplete="off" spellcheck="false"
+						placeholder="{{ i18n "searchPlaceholder" }}" aria-describedby="search-hint" aria-keyshortcuts="/">
+					<p id="search-hint" class="search-hint">{{ i18n "searchHint" }}</p>
+				</form>
+				<p id="search-status" class="search-status" role="status" aria-live="polite">{{ i18n "searchReady" }}</p>
+				<ol id="search-results" class="search-results"></ol>
+				<noscript><p class="search-status">{{ i18n "searchNoScript" }}</p></noscript>
+			</section>
+		</main>
+	</div>
+	{{ partial "footer.html" . }}
+</body>
+</html>

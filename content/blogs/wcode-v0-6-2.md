@@ -4,7 +4,7 @@ date: 2026-09-12T05:32:00+08:00
 draft: false
 url: /blog/wcode-v0-6-2/
 image: /img/wcode/wcode-observatory-full.png
-description: "0.6.2 重新拆了 wcode 的执行资源：Tool Slot、CPU、文件 I/O 和子进程分别计量，同时修了位置检索、验证计划、配置和 Observatory 的几处误导状态。"
+description: "0.6.2 把 Tool Slot、CPU、文件 I/O 和子进程拆开计量，也顺手修了位置检索、验证计划和 Observatory 里几处容易误读的状态。"
 tags:
   - wcode
   - Rust
@@ -19,7 +19,7 @@ images:
 
 前几天我一直盯着 wcode 的并发面板看。
 
-`SLOTS` 32，`PEAK` 看起来也不低，但实际跑起来还是会出现一种很奇怪的感觉：**数字挺忙，任务不一定真快。**
+`SLOTS` 32，`PEAK` 看起来也不低，但实际跑起来还是有一种很奇怪的感觉：数字挺忙，任务不一定真快。
 
 我把执行链拆开看了一遍，问题就清楚了。
 

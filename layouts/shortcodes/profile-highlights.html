@@ -1,0 +1,12 @@
+{{- $lang := .Page.Site.Language.Lang -}}
+<ul class="profile-highlights">
+{{- range hugo.Data.profile.highlights }}
+  {{- $title := .title_zh -}}
+  {{- $body := .body_zh -}}
+  {{- if eq $lang "en" -}}
+    {{- $title = .title_en -}}
+    {{- $body = .body_en -}}
+  {{- end -}}
+  <li data-profile-id="{{ .id }}"><strong>{{ $title }}</strong> — {{ $body | markdownify }}</li>
+{{- end }}
+</ul>

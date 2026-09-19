@@ -4,7 +4,7 @@ date: 2026-08-23T18:30:00+08:00
 draft: false
 url: /blog/wcode/
 image: /img/wcode/wcode-tui.png
-description: "wcode 是一个用 Rust 写的 Remote MCP Bridge。这篇文章记录它的协议、OAuth、工作区隔离、代码索引和并发设计。"
+description: "这是 wcode 第一版的记录：一个用 Rust 写的 Remote MCP Bridge，主要解决 OAuth、Workspace 隔离、代码索引、修改和并发。"
 tags:
   - Rust
   - MCP

@@ -1,10 +1,10 @@
 ---
-title: "wcode v0.3：从本地代码桥到 Software Intelligence Runtime"
+title: "wcode v0.3：它已经不只是一个 MCP Bridge 了"
 date: 2026-08-26T23:30:00+08:00
 draft: false
 url: /blog/wcode-v0-3/
 image: /img/wcode/wcode-architecture.png
-description: "v0.2 还是一个轻量的 Remote MCP 代码桥，v0.3 开始把 Design State、Software Graph、Risk、Verification、Evidence 和 Reconciliation 接成一套真正的软件控制面。"
+description: "v0.3 里我把 Design State、Software Graph、Risk、Verification、Evidence 和 Reconciliation 接了起来，wcode 开始明显偏离最早的 MCP Bridge。"
 tags:
   - wcode
   - Rust
@@ -16,17 +16,13 @@ images:
 
 wcode 的 v0.3 是一次比较明显的方向变化。
 
-v0.2 发布时，我给它的定位还很简单：**一个轻量的 Code Agent plugin，把你已经在用的 AI Client 接到本地仓库。**
+v0.2 发布时，我给它的定位还很简单：一个轻量的 Code Agent plugin，把已经在用的 AI Client 接到本地仓库。
 
 这个定位没有消失。Remote MCP、OAuth、Workspace、Tree-sitter、代码读写、Git Review 和 Verification 这些底层能力都还在。
 
 但如果只看 v0.3 的代码和界面，它已经不太像一个“桥”了。
 
-我现在更愿意把它叫做：
-
-> **Software Intelligence Runtime for AI-native development.**
-
-模型仍然负责写代码，wcode 开始负责另一件更难长期维护的事：软件到底应该是什么、现在是什么、哪里变了、风险在哪里、什么证据说明这次修改真的完成了。
+到 v0.3，我已经不太把它当成一个单纯的“桥”了。模型还是写代码，wcode 开始额外保存设计、变化、风险和验证这些仓库状态。
 
 ![wcode 最新终端实时面板](/img/wcode/wcode-tui.png)
 
@@ -76,7 +72,7 @@ v0.3 想回答的问题已经变成：
 
 > 多个模型、人和工具不断修改一个项目以后，怎么还知道这个软件为什么是现在这样？
 
-## 最大变化：Design State 进入了开发闭环
+## 这版我先把 Design State 接进来了
 
 v0.3 里最重要的东西不是某个新 Tool，而是 `.wcode` Design State。
 

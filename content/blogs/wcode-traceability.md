@@ -3,7 +3,7 @@ title: "wcode：Git Diff 之外，我还想知道什么"
 date: 2026-08-26T03:13:00+08:00
 draft: false
 url: /blog/wcode-traceability/
-description: "Diff 能告诉我哪里改了，但 Review 时我真正想知道的是：这个改动碰到了什么功能、哪些约束、哪些调用方，以及设计有没有开始和代码分叉。"
+description: "Code Review 时我很少只看 Diff。我还会继续查调用方、测试、约束，以及这次改动有没有让设计和代码开始分叉。"
 tags:
   - Rust
   - wcode

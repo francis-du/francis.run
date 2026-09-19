@@ -1,12 +1,12 @@
 ---
-title: "How wcode Started, and What Problem It Actually Solves"
+title: "How wcode Grew Past the MCP Bridge I Started With"
 date: 2026-09-12T05:41:00+08:00
 lastmod: 2026-09-17
 draft: false
 url: blog/what-is-wcode/
 translationKey: what-is-wcode
 image: /img/wcode/wcode-intro-architecture.png
-description: "wcode started as a bridge between browser-based models and local code, then grew into an engineering layer for helping models read, understand, change, and verify real repositories."
+description: "wcode started because I wanted browser-based models to work on local code. The project changed once I started using it for real edits and had to deal with repository context, safe changes, and proof."
 tags:
   - wcode
   - Rust
@@ -23,11 +23,11 @@ images:
 
 I did not start wcode because I wanted to build another coding agent.
 
-The first idea was much simpler: **use the models that vendors already made available in their web products for coding, while giving those models a way to work with the real repository on my machine.** The model was in the browser; the code was local. Anything beyond a tiny question meant copying files, uploading an archive, explaining the directory structure, and doing it again as soon as the repository changed.
+The first idea was simple: use the models already available in web products for coding, while giving them a way to work with the real repository on my machine. The model was in the browser; the code was local. Anything beyond a tiny question meant copying files, uploading an archive, explaining the directory structure, and doing it again as soon as the repository changed.
 
 The first version of wcode was therefore a bridge. It let a browser-based model search local files, read code, make changes, and run checks through tools. MCP later gave that connection a more standard shape, but getting the connection to work was not the part that kept me working on the project.
 
-Once the bridge worked, a more interesting problem became obvious: **how was the agent actually reading the codebase?**
+Once the bridge worked, another problem became much harder to ignore: how was the agent actually reading the codebase?
 
 A lot of code-CLI discovery starts with `grep`, `ripgrep`, file listings, and shell-style repository scans. There is nothing wrong with that. I use those tools all the time, and for finding a string, filename, or obvious symbol they are often exactly the right choice.
 
@@ -37,9 +37,9 @@ A search returns matching text. The model still has to reconstruct which definit
 
 Stronger models can reconstruct more of that from snippets, but the repository-understanding work is still being pushed back into the context window. As the codebase grows, repeated names, cross-module calls, generated code, and incomplete slices make that reconstruction increasingly fragile.
 
-That is where wcode changed direction. **Instead of only giving the model more commands, I started treating “how the model reads a repository” as an engineering problem of its own.**
+That is where wcode changed direction. I stopped only adding commands and started treating repository reading as its own engineering problem.
 
-## The difference I care about is how the model reads the repository
+## Then I started working on how the agent reads the repository
 
 wcode still uses text search. Cheap localization should stay cheap. If the question is “where is `FooConfig`?”, starting a semantic pipeline just to look sophisticated would be wasteful.
 

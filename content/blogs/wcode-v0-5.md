@@ -1,10 +1,10 @@
 ---
-title: "wcode v0.5：我把 LSP 从一个工具，变成了 Agent 的常驻语义层"
+title: "wcode v0.5：LSP 不再每次现启"
 date: 2026-08-30T17:30:00+08:00
 draft: false
 url: /blog/wcode-v0-5/
 image: /img/wcode/wcode-architecture.png
-description: "v0.5 把第一方 LSP 从一次性语义索引器升级成受限 Warm Semantic Runtime：普通定位继续走 Tree-sitter/Search，跨文件 Reference、Caller、Implementation 与 Impact 才进入可复用 LSP Session。"
+description: "v0.5 把 LSP 改成可复用的 Warm Session。普通定位继续走 Tree-sitter/Search，只有跨文件关系真的需要语义时才进 LSP。"
 tags:
   - wcode
   - Rust
@@ -37,9 +37,7 @@ Tree-sitter 和 Search 对定位其实已经很好用了。
 
 这种时候，grep 能找到很多东西，但不一定完整；Tree-sitter 能告诉我语法结构，但它也不应该假装自己知道类型系统。
 
-所以 v0.5 我做的不是“再加几个 LSP API”。
-
-我最后把它做成了一层 **Warm Semantic Runtime**。
+所以 v0.5 没继续堆零散的 LSP API，我直接把 Language Server 的生命周期重新做了一遍，让它可以受限地常驻和复用。
 
 ![wcode Architecture](/img/wcode/wcode-architecture.png)
 

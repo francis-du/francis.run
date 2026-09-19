@@ -1,10 +1,10 @@
 ---
-title: "wcode: Connecting Web AI to a Local Repository"
+title: "wcode: How I Connected Web AI to a Local Repository"
 date: 2026-09-12T05:33:00+08:00
 draft: false
 url: blog/wcode/
 image: /img/wcode/wcode-tui.png
-description: "wcode is a local MCP runtime that gives web-based AI and coding agents bounded access to real repositories, with workspace isolation, semantic code intelligence, exact authorization, and revision-aware verification."
+description: "I built wcode so browser-based models could work on a repository on my machine without turning the machine into an open remote shell."
 tags:
   - wcode
   - Rust

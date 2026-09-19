@@ -1,10 +1,10 @@
 ---
-title: "Putting Jev into wcode and Scopwis: From Decision Experiments to Engineering Practice"
+title: "Using Jev in wcode and Scopwis"
 date: 2026-09-19T12:31:00+08:00
 draft: false
 url: blog/jev-wcode-scopwis/
 translationKey: jev-wcode-scopwis
-description: "After wiring Jev into the Decision Planes of wcode and Scopwis, I ran several rounds of live API tests. The useful part was not a headline accuracy number, but learning which agent decisions fit Decision Plane, how question design changes the result, and where Jev should not be trusted."
+description: "I wired Jev into wcode and Scopwis and ran several rounds of live API tests. This is what changed when I narrowed the questions, where the numbers held up, and where I finally gave Jev authority in each system."
 tags:
   - wcode
   - Jev
@@ -15,13 +15,11 @@ tags:
 images: []
 ---
 
-My first idea for Jev was fairly simple: if a decision is much cheaper than a GPT- or Claude-class reasoning call, let Jev look first. Every expensive model call it avoids is a win.
+My first reason for trying Jev was pretty practical: it is cheap. If it could make a small decision before I called a GPT- or Claude-class reasoning model, I might save a model call.
 
-After wiring it into wcode and running several rounds of live tests, that framing started to feel incomplete.
+Once I wired it into wcode and Scopwis, the first problem was not model quality. It was the way I was asking the questions.
 
-**The most useful thing about Jev is not “replace a large model with a small one.” It is turning vague agent judgment into a set of cheap, measurable, calibratable semantic conditions.**
-
-A coding agent constantly makes decisions like these:
+Agents keep running into decisions like these:
 
 ~~~text
 Do I have enough context?
@@ -31,19 +29,19 @@ Can I edit, or should I inspect the worktree first?
 Is another expensive reasoning step worth running?
 ~~~
 
-These are not generation problems like “rewrite this function.” They look much more like if statements, except the condition depends on understanding the meaning of a code task.
+They are not really generation problems. They are closer to if statements whose conditions happen to depend on the meaning of the current task.
 
-That is the role I eventually found for Jev: not another agent, but a set of semantic judgments embedded in ordinary control flow.
+That became Jev's job in my code: answer a few narrow semantic questions, not run another agent. Control flow, permissions, side effects, and facts I can compute directly stay in normal code.
 
-Jev's documentation emphasizes embedding narrow, structured judgments inside ordinary software: **control flow, deterministic rules, and side effects stay in code; the model answers bounded semantic questions.** The recurring ideas are atomic questions, typed answers, and parallel evaluation. The clearest starting points are [How to build with Jev](https://docs.typesafe.ai/concepts/how-to-build-with-system-one), [Noul](https://docs.typesafe.ai/primitives/noul), [Choice](https://docs.typesafe.ai/primitives/choice), and [Score](https://docs.typesafe.ai/primitives/score).
+That is also close to Jev's own atomic / typed / parallel guidance: keep questions small, keep outputs typed, and ask independent questions over the same state together. The relevant docs are [How to build with Jev](https://docs.typesafe.ai/concepts/how-to-build-with-system-one), [Noul](https://docs.typesafe.ai/primitives/noul), [Choice](https://docs.typesafe.ai/primitives/choice), and [Score](https://docs.typesafe.ai/primitives/score).
 
-That model fits wcode's Decision Plane surprisingly well.
+wcode already had a Decision Plane, so that was the first place I tried it.
 
-## First, what I did not benchmark
+## What I actually tested
 
-The numbers in this post come from **live decision-layer API tests**, not a full coding benchmark.
+The numbers here come from **live decision-layer API tests**, not a full coding benchmark.
 
-I did not take 100 GitHub issues, run one set with a plain GPT agent and another with GPT + Jev, then claim a percentage improvement in task completion. That would be closer to the final product question, but it would also mix in many other variables: the reasoning model, repository size, tool behavior, context construction, and the quality of the test environment.
+I did not run a pile of GitHub issues through a plain GPT agent and a GPT + Jev agent and call the difference an end-to-end gain. That mixes the reasoning model, repository, tools, context construction, and test environment into the same number.
 
 I started one layer lower:
 
@@ -53,19 +51,17 @@ On September 19, 2026, I called the production Jev API directly using a local ke
 
 The current Jev model docs lists <code>jev-1.13.0</code> at **$0.042 per million input tokens, with output tokens free**, and says <code>jev-latest</code> currently points to that version. It also makes an important operational point: aliases move. If you calibrate thresholds against a version, pin the versioned ID in production. See [Models](https://docs.typesafe.ai/models).
 
-The accuracy numbers below describe these test sets, not a universal benchmark.
+The accuracy numbers below only describe these samples.
 
-## The first failure was useful: “would more reasoning help?” is the wrong question
+## Scopwis, round one: I asked the question too broadly
 
-I started with Scopwis. When I say Data Agent in this post, I mean Scopwis, not a generic hypothetical agent. The cases came from the kinds of data-analysis states its ReAct / Decision Plane has to route:
+I started with Scopwis and used the kinds of data-analysis states its ReAct / Decision Plane actually has to route:
 
 ~~~text
 Would another full reasoning-model step likely add meaningful analytical value before finalization?
 ~~~
 
-It sounds reasonable.
-
-It was not a good workflow primitive.
+It sounds reasonable. In practice, it was the wrong primitive.
 
 Across 12 stricter analysis cases, the broad question reached **75% accuracy** with a **0.1789 Brier score**. Lower Brier is better; zero is perfect probability agreement with the label.
 
@@ -114,13 +110,11 @@ One Noul detail is worth making explicit: `noul` itself is **P(yes)**. There is 
 | Exact necessary condition | 100% | 0.0470 |
 | Exact condition + true / false criteria | 100% | 0.0316 |
 
-That changed how I think about these integrations.
+After that run, I stopped treating this as just a model-capability problem. The question definition is part of the implementation.
 
-I used to file this under “model capability.” I now think of it more as **judgment design**.
+Ask whether something is “useful” and the model will answer that question. If the program needs a much narrower condition, I have to write the narrower condition.
 
-A broad question gives the model a broad decision boundary. A good Decision Plane primitive has to look like the condition the program actually needs.
-
-## The same thing happened in wcode: don't ask whether semantic navigation is “helpful”
+## wcode hit the same problem
 
 There is a natural wcode question:
 
@@ -134,7 +128,7 @@ My first version was:
 Would semantic navigation likely add material value before editing?
 ~~~
 
-That performed badly.
+That version was bad too.
 
 Across 14 coding states, accuracy was **57.1%** with a **0.2114 Brier score**.
 
@@ -173,11 +167,9 @@ Adding explicit true / false criteria produced **14/14 correct answers** in that
 | “Is it necessary evidence before a safe edit?” | 85.7% | 0.1339 |
 | Same question + explicit boundary criteria | 100% | 0.0862 |
 
-Fourteen cases are nowhere near enough to claim 100% production accuracy.
+Fourteen cases are nowhere near enough to claim 100% production accuracy. But the difference was hard to miss: same model, same states, different definition of the question.
 
-The useful point is the delta: **same model, same states, radically different result because the judgment was specified differently.**
-
-## Choice improved when neighboring options were made contrastive
+## Choice had the same boundary problem
 
 Noul gives a yes/no probability. Choice picks from a finite set, which maps naturally to actions such as:
 
@@ -248,14 +240,14 @@ confidence = 0.96
 
 This is consistent with Jev's definition of confidence. On the [Confidence](https://docs.typesafe.ai/confidence) page, confidence is derived from how concentrated the Choice or Score probability distribution is. It is not a guarantee that the workflow action is correct.
 
-So the production rule should not be:
+So I would not ship a rule like:
 
 ~~~text
 confidence > 0.9
 => trust it
 ~~~
 
-It should be:
+I handle it like this instead:
 
 ~~~text
 calibrate against labeled outcomes
@@ -265,7 +257,7 @@ use higher thresholds for higher-cost mistakes
 
 That is closer to risk scoring than magic model certainty.
 
-## Randomness is not the thing I worry about most anymore
+## I repeated the same questions 15 times
 
 I also ran a 15-repeat self-consistency test.
 
@@ -288,17 +280,13 @@ Jev's own [Noul self-consistency cookbook](https://docs.typesafe.ai/cookbooks/co
 
 That does not mean Choice labels never move. Jev's [Choice self-consistency cookbook](https://docs.typesafe.ai/cookbooks/consistency_choice_cookbook) deliberately uses a fuzzier moderation example. In that run, Jev's raw label agreement was 90.8%, with label flips on 2 of 8 Choice questions. Requiring a top probability of at least 0.60 raised agreement to 99.2%, while automatic coverage fell to 74.2%. That is much closer to how I want to use it: ambiguous cases should abstain and fall back rather than force a route.
 
-So **on this wcode / Scopwis sample**, the more dangerous failure mode is not “0.8 today, random 0.2 tomorrow.”
+In this sample I did not see the probabilities randomly jumping from 0.8 to 0.2. The more useful warning was the opposite: I can define the wrong boundary and get a very consistent answer to the wrong question.
 
-It is:
+That pushed question review much higher on my list than staring at a single benchmark score.
 
-> **define the wrong decision boundary, then have Jev execute that wrong boundary very consistently.**
+## Eight questions, one request
 
-That makes reviewable question definitions much more important than I expected.
-
-## If questions share a state, batch them
-
-This is the most direct performance win for an agent architecture.
+This was the clearest performance win in the whole exercise.
 
 I built one request containing both **Scopwis data-analysis state** and **wcode coding state**, with eight questions:
 
@@ -338,7 +326,7 @@ Jev has a dedicated [Parallel questions cookbook](https://docs.typesafe.ai/cookb
 
 My state was much smaller, so the savings were naturally smaller.
 
-The architectural lesson is still the same:
+So I ended up with this call shape:
 
 ~~~text
 Bad:
@@ -360,7 +348,7 @@ This matters in wcode because the coding agent already has expensive model/tool 
 
 Jev's architecture guide says “most queries complete in about 100 ms.” My public-API end-to-end measurements from this machine were mostly around **1.2–1.4 seconds P50** in the larger test rounds, and the eight-question batch was 1.77 seconds. Those are not necessarily the same measurement boundary—network and service path are included in mine—but for a real product I would budget against observed end-to-end latency from the deployment environment.
 
-## Don't send the entire transcript as state
+## State is not a transcript dump
 
 Two documented Jev 1.13 edges are especially relevant to agents:
 
@@ -406,17 +394,13 @@ The result:
 | Large irrelevant noise | 100% | 83.3% |
 | Adversarial text | 100% | 100% |
 
-Again, this is a small experiment, not a safety proof.
+This was a small test, not a safety proof, but it was enough to change how I build the state.
 
-But the direction matches Jev's own [Jev 1.13 jaggedness](https://docs.typesafe.ai/model-jaggedness/jev-1.13): filter first, point questions at the relevant state, make adversarial boundaries explicit, and test edge cases.
+I filter and structure it in code first. I do not concatenate an MCP transcript, terminal scrollback, web text, and the user prompt and call that Decision Plane input. Jev gets program state, not a transcript dump.
 
-For wcode this means Jev should see a structured repository state, not an unfiltered MCP transcript, terminal scrollback, web page, and user prompt all concatenated together.
+## I gave Jev very little authority in wcode
 
-The Decision Plane should receive **program state**, not a chat landfill.
-
-## What Jev should actually own inside wcode
-
-After these tests, my boundary is more conservative than when I started.
+After the tests, I made the boundary smaller than I first expected.
 
 Some questions have no reason to involve Jev:
 
@@ -485,13 +469,13 @@ Calibrated savings
 only proven judgments may remove expensive work
 ~~~
 
-That is slower than wiring an API call and calling it done, but the result is much easier to reason about.
+That is more work than wiring an API call and calling the integration done, but I can explain every place where Jev is allowed to matter.
 
-## How Jev is actually wired into wcode and Scopwis
+## How the two integrations work now
 
-The previous sections are about judgment design. Once Jev was inside real products, the more important engineering question was: **a bad Jev decision must not drag a deterministic engineering boundary down with it.**
+Once Jev was in the products, I kept one hard rule: Jev is allowed to be wrong; a wrong Jev answer is not allowed to weaken a deterministic engineering boundary.
 
-wcode and Scopwis both use Jev, but I did not force them into the same implementation. They share the same rules, not the same runtime shape.
+wcode and Scopwis both use it, but the runtime shape is different. I reused the boundary, not the implementation.
 
 ### wcode: Jev is a second opinion inside Agent Context
 
@@ -607,9 +591,9 @@ Credentials are endpoint-scoped: changing the base URL does not silently reuse t
 
 No service restart is required. Opening Jev settings refreshes environment discovery, and each new Agent run refreshes the provider again. If Jev is disabled or unavailable, Scopwis continues with the local Decision Plane and the existing reasoning-model path.
 
-## How I validate the integration in practice
+## Then I ran 500 wcode cases against it
 
-Connecting the API is only the first step. The useful part is letting Jev participate in review without giving it final authority.
+A working API call was not the interesting part. I wanted to see whether Jev could point me toward cases worth inspecting without getting final authority.
 
 On wcode I ran a 500-case adversarial validation campaign. These are my own engineering-test numbers, not a Jev benchmark:
 
@@ -666,9 +650,7 @@ Jev did not “fix” either bug.
 
 Its role was closer to an independent semantic reviewer: typed judgments, confidence, and risk surfaces made some cases worth deeper inspection. Whether something was actually a bug, where the contract belonged, and whether the fix worked still came from source inspection and deterministic tests.
 
-That is the engineering pattern I trust most now:
-
-> **Use Jev as a semantic anomaly detector, not the final judge.**
+That is where I ended up using it: as a way to surface semantic anomalies. Whether something is actually a bug still comes from source contracts and tests.
 
 The common pattern across wcode and Scopwis is:
 
@@ -683,9 +665,9 @@ The common pattern across wcode and Scopwis is:
 8. only after enough replay data should Jev be allowed to save work
 ~~~
 
-That is the part of “putting Jev into an agent” that matters most to me.
+That boundary is what I now mean when I say Jev is “inside” the agent.
 
-## A Scopwis Data Agent example: why did checkout conversion fall?
+## A concrete Scopwis example: why did checkout conversion fall?
 
 The same design becomes even clearer in Scopwis. This example follows the same Decision Plane split used in the tests above: data quality, evidence completeness, reasoning model value, and report completion are separate decisions.
 
@@ -770,15 +752,15 @@ else:
     finalize
 ~~~
 
-The practical benefit is debuggability.
+The practical benefit is that failures are easier to trace.
 
 If the agent mistakes “missing baseline” for “needs more reasoning,” there is a named primitive with a probability, criteria, test set, and threshold that can be fixed.
 
 With one giant “what next?” prompt, it is much harder to tell which decision boundary was wrong.
 
-That is the part of Decision Plane I find most useful for Scopwis and similar Data Agents: **it turns hidden agent intuition into interfaces you can evaluate one by one.**
+For Scopwis, that is the useful part: decisions that used to be buried inside the agent become things I can inspect, test, and change separately.
 
-## The implementation rules I would keep
+## The rules I still use
 
 After these experiments, my practical rules for Jev are:
 
@@ -792,39 +774,23 @@ After these experiments, my practical rules for Jev are:
 8. **Track the exact model version.** <code>jev-latest</code> is convenient while experimenting. Once thresholds matter, consider pinning a version such as <code>jev-1.13.0</code>.
 9. **Shadow before granting authority.** Compare Jev decisions with final verification or business truth before letting them remove expensive work.
 
-This is also the direction of Jev's official architecture guidance: compose many small decisions in software instead of handing control of the program to the model.
+The docs say to keep the decisions small. After a few bad runs, I started reading that as an interface-design rule rather than general prompting advice.
 
-It took a few rounds of wrong answers for me to appreciate just how literal “small decisions” needs to be.
+## Where I would put Jev today
 
-## So what has Jev actually added to wcode and Scopwis?
+If I had to summarize what Jev has added to these two projects, I would not write “X% end-to-end improvement.” I do not have that experiment yet.
 
-What I can talk about now is **measured Decision Plane behavior and engineering boundaries**, not a headline end-to-end Agent improvement number.
+In wcode I mostly use it for cheap semantic decisions and a second opinion. It can say that more repository evidence is probably missing, or that caller/reference inspection is worth doing. In the 500-case run it also exposed low-confidence and disagreement clusters that were worth inspecting. But SHA, worktree, authorization, and verification still belong to deterministic code.
 
-For wcode, the data supports these claims:
+In Scopwis the role is even narrower. The local Decision Plane is already close to fast-finalize before Jev is called. Jev gets one chance to point out an evidence or semantic gap. It can send the task back; it cannot declare the task complete.
 
-- Jev is a good fit for low-cost semantic decision primitives, especially narrow questions such as whether more evidence is needed or whether semantic relationships are necessary before a safe edit;
-- deterministic baseline + same-request shadow comparison + increase-only authority lets an external judgment influence investigation and routing without lowering SHA, worktree, authorization, or verification floors;
-- the 500-case adversarial validation suggests a useful role as a semantic anomaly detector: low confidence or disagreement says where to inspect next, while deterministic contracts and regression tests still decide whether a real bug exists.
+The numbers that mattered most to me were not the highest accuracy number. They were the deltas: one controlled decision set moved from 57.1% to 100% just by fixing the question boundary; batching eight questions cut input cost by about 3.9× and sequential wall-clock by about 6.4×; repeated samples were stable, but borderline Choice cases still need abstention and fallback; adversarial text in state can still move an ordinary Choice.
 
-For Scopwis, the data supports a different but related role:
-
-- Jev works well as a separate Decision Plane beside ReAct, not as another chat model;
-- decomposed questions such as evidence sufficiency, reasoning model value, and analysis progress are easier to measure, tune, and replay than one broad “what should the agent do next?” decision;
-- the increase-only boundary matters here too: Jev may block fast-finalize or request more reasoning, but it cannot finalize the task; deterministic deliverable, report, and evidence gates retain completion authority.
-
-Across both projects:
-
-- question and criteria design moved the same model from roughly 57% accuracy to 100% on one controlled decision set, which makes judgment design an engineering task of its own;
-- batching questions over one state reduced input cost by about 3.9× and sequential wall-clock by about 6.4× in my local test;
-- my 15-repeat sample had low random drift, while Jev's own Choice consistency experiment shows borderline labels can still flip, so abstention and fallback remain necessary;
-- adversarial state text can alter ordinary Choice behavior, which makes context filtering, trust boundaries, and deterministic invariants necessary;
-- confidence is useful for routing, but it is not a substitute for calibration on the target domain.
-
-What the data does **not** yet support is a claim such as:
+That is enough to shape the implementation, but not enough to support a claim like:
 
 > “Adding Jev to wcode or Scopwis improves real end-to-end task completion by X% and lowers total cost by Y%.”
 
-That requires the next stage: paired replay over real tasks.
+That still needs paired replay over real tasks.
 
 ~~~text
 same real task state
@@ -843,17 +809,11 @@ what were total latency, tokens, and cost?
 
 Once both wcode and Scopwis have enough real-task replay data, their end-to-end Agent ROI can be measured separately.
 
-But I am already confident about one thing:
+So I am not asking Jev to write code for wcode or do the full analysis for Scopwis.
 
-**The best role for Jev is not writing code for wcode or doing the whole analysis for Scopwis. It is helping the program decide what is still missing.**
+The reasoning model still handles complex reasoning and generation. wcode owns repository boundaries, source evidence, and verification. Scopwis owns data boundaries, the analysis flow, and final delivery gates. Jev sits in the middle and answers a few narrow questions: what is still missing, whether another lookup is needed, and whether the current evidence is enough.
 
-The reasoning model can keep doing complex reasoning and generation.
-
-wcode keeps owning repository boundaries, source evidence, and verification; Scopwis keeps owning data boundaries, analysis flow, and final deliverable gates.
-
-Jev sits between them as a set of cheap, measurable, composable semantic if statements.
-
-That is much more interesting to me than adding another agent.
+For now, that is more useful to me than adding another agent.
 
 ## Sources
 

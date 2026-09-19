@@ -1,10 +1,10 @@
 ---
-title: "wcode 的授权中心：模型可以提权限，但不能替我批准"
+title: "wcode 的授权现在怎么做"
 date: 2026-08-26T23:35:00+08:00
 draft: false
 url: /blog/wcode-authorization/
 image: /img/wcode/wcode-access-management.png
-description: "模型遇到未授权命令、高风险执行、Runtime Executor 或删除操作时，不再只有永久拒绝和全局放开两个选项；wcode 把它们变成可选择的 Pending Authorization。"
+description: "我把未授权命令、高风险执行、Runtime Executor 和删除操作都接进了同一个 Pending Authorization Queue，模型可以申请，但不能自己批准。"
 tags:
   - wcode
   - Security
@@ -26,11 +26,7 @@ images:
 整个进程都信任
 ```
 
-最近我把 wcode 的授权做成了真正的 Pending Authorization Queue。
-
-核心原则很简单：
-
-> **模型可以提出权限请求，但决定权必须留在用户手里。**
+最近我把这些情况统一收进了 Pending Authorization Queue。模型可以把请求挂出来，最后还是我自己选哪一条批、哪一条拒绝。
 
 ![wcode 授权与访问控制界面](/img/wcode/wcode-access-management.png)
 

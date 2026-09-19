@@ -1,10 +1,10 @@
 ---
-title: "wcode 0.6.2: Faster Execution Without Pretending Busy Means Fast"
+title: "wcode 0.6.2: What 32 Tool Slots Were Hiding"
 date: 2026-09-12T05:35:00+08:00
 draft: false
 url: blog/wcode-v0-6-2/
 image: /img/wcode/wcode-observatory-full.png
-description: "wcode 0.6.2 separates tool slots from real throughput, prioritizes precise diagnostic locations, hardens verification accounting, simplifies performance configuration, and makes the Project Observatory more honest."
+description: "I split tool slots, CPU, file I/O, and child processes into separate budgets, then fixed a few places where wcode looked healthier or busier than it really was."
 tags:
   - wcode
   - Coding Agents

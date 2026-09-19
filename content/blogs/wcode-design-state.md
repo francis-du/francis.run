@@ -1,9 +1,9 @@
 ---
-title: "wcode 的 Design State：我为什么把需求写进仓库"
+title: "我为什么把 wcode 的需求写进仓库"
 date: 2026-08-26T03:11:00+08:00
 draft: false
 url: /blog/wcode-design-state/
-description: "我想留住的不是一套漂亮文档，而是 Requirement、Component、实现和测试之间那条会随着代码一起被检查的链。"
+description: "我给 wcode 加了 Design State，把 Requirement、Component、实现和测试之间的关系直接留在仓库里。"
 tags:
   - Rust
   - wcode

@@ -3,7 +3,7 @@ title: "wcode 的 Software Graph：先承认自己不知道"
 date: 2026-08-26T03:12:00+08:00
 draft: false
 url: /blog/wcode-software-graph/
-description: "Tree-sitter、LSP、Runtime 都能提供关系，但它们不是同一种事实。我更在意把来源、精度和版本留下来。"
+description: "Software Graph 不是把关系画成一团图。我更在意 Tree-sitter、LSP、Runtime 各自到底知道什么，以及这些关系来自哪个版本。"
 tags:
   - Rust
   - Tree-sitter
@@ -154,6 +154,6 @@ Software Graph 做完后，我也走过一个很自然的弯路：既然已经�
 
 它仍然是 Context、Impact、历史 Diff 的数据来源，只是不再承担“解释整个项目”的视觉任务。
 
-这可能是我做这块以后最大的一个认识：**有 Graph，不代表产品就应该长成 Graph。**
+做到这里我才确定一件事：底层有 Graph，不代表 UI 也应该是一团 Graph。
 
 Graph 到这里还只是底层事实。真正拿它去做 Review 时，问题会变成另一句：Diff 之外，这次到底动了什么。那部分我放在 [Git Diff 之外，我还想知道什么](/blog/wcode-traceability/) 里。

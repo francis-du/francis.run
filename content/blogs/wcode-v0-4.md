@@ -1,10 +1,10 @@
 ---
-title: "wcode v0.4：开始为 Agent 的上下文成本负责"
+title: "wcode v0.4：我开始压 Context 和 Tool Call"
 date: 2026-08-27T23:55:00+08:00
 draft: false
 url: /blog/wcode-v0-4/
 image: /img/wcode/wcode-workspace-intelligence.png
-description: "v0.3 把 wcode 变成了 Software Intelligence Runtime，v0.4 没继续堆大功能，而是重新压了一遍 Agent 真正写代码的热路径：更少 Context、更少 Tool Round-trip、更清楚的架构和更精确的执行边界。"
+description: "v0.4 没继续堆大功能，我主要压了 Agent 写代码时的 Context、Tool Round-trip 和默认执行路径。"
 tags:
   - wcode
   - Rust
@@ -19,17 +19,13 @@ v0.3 做完以后，wcode 已经有 Design State、Software Graph、Traceability
 
 从“能力列表”看，其实已经很多了。
 
-但我拿它真的去写几个项目以后，最明显的问题反而变得很朴素：
+但我拿它真的去写几个项目以后，最明显的问题反而很朴素：Agent 已经知道怎么做了，前面还是花了太多 Context 和 Tool Call。
 
-> **Agent 明明已经能做这件事了，为什么还要花这么多 Context 和 Tool Call 才开始改代码？**
-
-所以 v0.4 没有再把重点放在“再加一个 Intelligence Tool”。
-
-这一版主要做的是另一件事：**把 Agent 真正写代码的主路径重新压一遍。**
+所以 v0.4 我先没加新的大能力，主要把写代码这条默认路径重新压了一遍。
 
 ![wcode 最新终端实时面板](/img/wcode/wcode-tui.png)
 
-## v0.3 和 v0.4 的差别，不是能力多少
+## v0.4 先不加大功能
 
 v0.3 我最关心的是“软件状态能不能留下来”。
 

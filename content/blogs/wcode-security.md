@@ -4,7 +4,7 @@ date: 2026-08-26T03:17:00+08:00
 draft: false
 url: /blog/wcode-security/
 image: /img/wcode/wcode-access-management.png
-description: "功能越来越多以后，我反而更确定几条底层边界不能省：Root、Symlink、SHA、原子写入、动态授权，以及不经过 Shell 的命令执行。"
+description: "wcode 上层功能越来越多，但 Workspace Root、Symlink、SHA、原子写入、授权和 no-shell 这些底层边界我一直没准备放松。"
 tags:
   - Security
   - Rust
@@ -171,7 +171,7 @@ Scheduler 会先建立 Path Resource Model。
 
 能不能并发应该在执行前就尽量说清楚。
 
-## Security 不能写在 Prompt 里
+## 安全边界不能只写在 Prompt 里
 
 我还是会在 Skill 和 Agent Instructions 里写：不要逃出 Workspace，不要绕过授权，不要自己扩大 risky execution。
 

@@ -3,7 +3,7 @@ title: "wcode：测试通过以后，我还想留下什么"
 date: 2026-08-26T03:14:00+08:00
 draft: false
 url: /blog/wcode-verification/
-description: "一句 tests passed 对长期项目不够。我想留下跑了什么、针对哪个 revision、谁 review 过、还有什么 gate 没过。"
+description: "我后来不太接受一句 tests passed 就结束任务了。wcode 会把跑了什么、对应哪个 revision、谁 review 过和还缺什么一起留下来。"
 tags:
   - Rust
   - Testing

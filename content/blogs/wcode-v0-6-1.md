@@ -1,10 +1,10 @@
 ---
-title: "wcode v0.6.1：把 parallel_tools 改成完成驱动调度"
+title: "wcode v0.6.1：`parallel_tools` 不再按层等"
 date: 2026-09-12T05:31:00+08:00
 draft: false
 url: /blog/wcode-v0-6-1/
 image: /img/wcode/wcode-tui.png
-description: "v0.6.1 把 parallel_tools 从按层等待改成完成驱动调度：前置完成的分支立即继续，失败只截断依赖分支，取消、批处理部分失败、同文件合并和持久 MCP Task 也重新收紧了语义。"
+description: "v0.6.1 把 parallel_tools 改成 completion-driven：自己的依赖一完成就继续，失败和取消只影响该影响的分支。"
 tags:
   - wcode
   - Rust
@@ -39,7 +39,7 @@ B ─────────→ D
 
 C 明明在 100ms 时已经 Ready，却因为一个和自己无关的 B，被迫多等几秒。
 
-所以 v0.6.1 我把调度器改成了 **completion-driven**。
+所以 v0.6.1 我把调度器改成了 completion-driven。
 
 ![wcode TUI](/img/wcode/wcode-tui.png)
 

@@ -1,9 +1,9 @@
 ---
-title: "wcode：MCP 负责能力，Skill 只负责工作习惯"
+title: "wcode 里，我把 MCP 和 Skill 分开了"
 date: 2026-08-26T03:16:00+08:00
 draft: false
 url: /blog/wcode-mcp-agent/
-description: "我后来把两件事分开了：MCP 决定 Agent 真正能做什么，Skill 只告诉它我希望它按什么顺序做。"
+description: "MCP 负责 Agent 真正能调用的能力，Skill 只保留工作顺序和习惯。我后来把这两层彻底拆开了。"
 tags:
   - MCP
   - AI Agent
@@ -172,6 +172,6 @@ Verification Plan、Evidence、Reconciliation、Graph History、Semantic Registr
 
 从 Claude 换到 Codex，或者 Web 端换成本地 Agent，模型上下文会变，但项目本身不应该跟着清零。
 
-这也是我现在比较满意的一点：MCP 没有越做越大，反而被压回了它最合适的位置。
+这样换模型时轻松很多，MCP 也没有继续膨胀成一套自己的 Agent。
 
 最后还是会回到最底层的问题：这些 Agent 到底能在我的机器上做什么。Workspace、命令执行和授权的边界，我单独写在 [我还是不想给 Agent 一个 Shell](/blog/wcode-security/) 里。

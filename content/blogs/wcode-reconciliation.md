@@ -3,7 +3,7 @@ title: "wcode：我为什么开始把 edit file 往后放"
 date: 2026-08-26T03:15:00+08:00
 draft: false
 url: /blog/wcode-reconciliation/
-description: "真正麻烦的不是怎么改文件，而是为什么改、先改什么、谁来验证，以及一个长任务中断以后还能不能继续。"
+description: "用久以后我发现 edit_file 反而不难，麻烦的是任务为什么改、先做什么、什么时候算完成，以及中断以后谁来接。"
 tags:
   - Rust
   - wcode
@@ -59,7 +59,7 @@ Plan 不是一句“修好这个问题”。
 
 它会带上这次 Design Change、发现的 Drift、Impact、Risk、Change Intent 和 Verification Requirement，然后再拆成有依赖的 Task。
 
-这听起来有点重，但我做它的原因其实很现实：**聊天记录不是工作状态。**
+这听起来有点重，但原因其实很现实：聊天记录不适合拿来当长期工作状态。
 
 ## Session 断掉比想象中常见
 
