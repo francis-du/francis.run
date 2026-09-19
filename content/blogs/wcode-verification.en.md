@@ -3,6 +3,7 @@ title: "Why “Tests Passed” Wasn't Enough for wcode"
 date: 2026-09-12T05:34:00+08:00
 draft: false
 url: blog/wcode-verification/
+image: /img/wcode/wcode-verification-detail.png
 description: "I wanted more than a green line at the end of an agent run, so wcode keeps verification tied to the exact repository revision and records what is still unknown."
 tags:
   - wcode
@@ -10,7 +11,8 @@ tags:
   - Verification
   - Testing
   - Software Engineering
-images: []
+images:
+  - /img/wcode/wcode-verification-detail.png
 ---
 
 I keep seeing the same line at the end of agent runs:

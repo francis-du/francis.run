@@ -60,11 +60,17 @@
     {{- if gt (len $keywords) 0 -}}
         {{- $data = merge $data (dict "keywords" $keywords) -}}
     {{- end -}}
+    {{- $imageURLs := slice -}}
     {{- with .Params.images -}}
-        {{- $imageURLs := slice -}}
         {{- range . -}}
             {{- $imageURLs = $imageURLs | append (. | absURL) -}}
         {{- end -}}
+    {{- else -}}
+        {{- with .Params.image -}}
+            {{- $imageURLs = $imageURLs | append (. | absURL) -}}
+        {{- end -}}
+    {{- end -}}
+    {{- if gt (len $imageURLs) 0 -}}
         {{- $data = merge $data (dict "image" $imageURLs) -}}
     {{- end -}}
 <script type="application/ld+json">{{ $data | jsonify | safeJS }}</script>

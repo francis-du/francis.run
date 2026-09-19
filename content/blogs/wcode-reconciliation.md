@@ -3,13 +3,15 @@ title: "wcode：我为什么开始把 edit file 往后放"
 date: 2026-08-26T03:15:00+08:00
 draft: false
 url: /blog/wcode-reconciliation/
+image: /img/wcode/wcode-observatory-full.png
 description: "用久以后我发现 edit_file 反而不难，麻烦的是任务为什么改、先做什么、什么时候算完成，以及中断以后谁来接。"
 tags:
   - Rust
   - wcode
   - AI Agent
   - Software Design
-images: []
+images:
+  - /img/wcode/wcode-observatory-full.png
 ---
 
 写 Coding Agent 很容易最后都收敛到几个工具：

@@ -4,6 +4,7 @@ date: 2026-09-19T12:30:00+08:00
 draft: false
 url: /blog/jev-wcode-scopwis/
 translationKey: jev-wcode-scopwis
+image: /img/wcode/wcode-architecture.png
 description: "我把 Jev 接进 wcode 和 Scopwis 后，拿真实 API 跑了几轮判断测试。这里记下问题怎么问、哪些判断值得交给 Jev，以及我最后把它放在系统里的什么位置。"
 tags:
   - wcode
@@ -12,7 +13,8 @@ tags:
   - Coding Agent
   - Data Agent
   - Scopwis
-images: []
+images:
+  - /img/wcode/wcode-architecture.png
 ---
 
 我最开始接 Jev，想法其实很功利：它便宜。一个判断如果能先让 Jev 做，少叫一次 GPT、Claude 这类 reasoning model，就能省一点成本和时间。

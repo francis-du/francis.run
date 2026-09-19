@@ -3,13 +3,15 @@ title: "wcode 的 Software Graph：先承认自己不知道"
 date: 2026-08-26T03:12:00+08:00
 draft: false
 url: /blog/wcode-software-graph/
+image: /img/wcode/wcode-observatory-full.png
 description: "Software Graph 不是把关系画成一团图。我更在意 Tree-sitter、LSP、Runtime 各自到底知道什么，以及这些关系来自哪个版本。"
 tags:
   - Rust
   - Tree-sitter
   - LSP
   - wcode
-images: []
+images:
+  - /img/wcode/wcode-observatory-full.png
 ---
 
 最早写 wcode 的代码索引时，我没想过要做什么 Software Graph。

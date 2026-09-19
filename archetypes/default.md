@@ -7,5 +7,6 @@ image: /img/{{ .Name }}.jpg
 description: "{{ replace .Name "-" " " | title }}"
 tags:
  -
-images: []
+images:
+  - /img/{{ .Name }}.jpg
 ---
