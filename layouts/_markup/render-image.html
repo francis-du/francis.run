@@ -12,11 +12,11 @@
 	{{- $image = resources.Get $assetPath -}}
 {{- end -}}
 {{- with $image -}}
-	{{- if eq .MediaType.MainType "image" -}}
+	{{- if reflect.IsImageResourceProcessable . -}}
 		{{- $width = .Width -}}
 		{{- $height = .Height -}}
 		{{- $subType := strings.ToLower .MediaType.SubType -}}
-		{{- if and (reflect.IsImageResourceProcessable .) (in (slice "jpeg" "png" "webp") $subType) (gt .Width 960) -}}
+		{{- if and (in (slice "jpeg" "png" "webp") $subType) (gt .Width 960) -}}
 			{{- $working := . -}}
 			{{- with .Meta -}}
 				{{- if gt .Orientation 1 -}}

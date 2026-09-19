@@ -156,6 +156,12 @@ check:
 	! grep -q 'Ink theme on Hugo' $(BUILD_DIR)/index.xml
 	grep -Eq 'property="og:image" content="https://francis.run/img/share/what-is-wcode\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/what-is-wcode/index.html
 	grep -Eq 'property="og:image" content="https://francis.run/img/share/what-is-wcode\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/what-is-wcode/index.html
+	test -f $(BUILD_DIR)/blog/wcode-v0-8/index.html
+	test -f $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
+	grep -q 'wcode v0.8：我开始把仓库当成一个 Engineering Digital Twin' $(BUILD_DIR)/blog/wcode-v0-8/index.html
+	grep -q 'wcode 0.8: I Started Treating the Repository as an Engineering Digital Twin' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
+	grep -Eq 'property="og:image" content="https://francis.run/img/share/wcode-v0-8\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wcode-v0-8/index.html
+	grep -Eq 'property="og:image" content="https://francis.run/img/share/wcode-v0-8\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
 	test -f $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html
 	test -f $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
 	grep -q 'property="og:type" content="article"' $(BUILD_DIR)/en/blog/jev-wcode-scopwis/index.html
