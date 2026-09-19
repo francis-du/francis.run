@@ -1,4 +1,205 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Decision Plane | Francis Du</title><link>https://francis.run/en/tags/decision-plane/</link><atom:link href="https://francis.run/en/tags/decision-plane/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>en-US</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 19 Sep 2026 12:31:00 +0800</lastBuildDate><item><title>Using Jev in wcode and Scopwis</title><link>https://francis.run/en/blog/jev-wcode-scopwis/</link><pubDate>Sat, 19 Sep 2026 12:31:00 +0800</pubDate><guid>https://francis.run/en/blog/jev-wcode-scopwis/</guid><description>&lt;p&gt;My first reason for trying Jev was pretty practical: it is cheap. If it could make a small decision before I called a GPT- or Claude-class reasoning model, I might save a model call.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Decision Plane | Francis Du</title><link>https://francis.run/en/tags/decision-plane/</link><atom:link href="https://francis.run/en/tags/decision-plane/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>en-US</language><copyright>© Francis Du</copyright><lastBuildDate>Sat, 19 Sep 2026 15:33:00 +0800</lastBuildDate><item><title>wcode 0.8: I Started Treating the Repository as an Engineering Digital Twin</title><link>https://francis.run/en/blog/wcode-v0-8/</link><pubDate>Sat, 19 Sep 2026 15:33:00 +0800</pubDate><guid>https://francis.run/en/blog/wcode-v0-8/</guid><description>&lt;p&gt;By the end of 0.7, wcode could already give an agent bounded repository context, edit files with SHA preconditions, run verification, and keep Design State, Software Graph, Evidence, and Reconciliation around the work.&lt;/p&gt;
+&lt;p&gt;But when I used it myself, one gap was still obvious:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;An agent being able to operate a repository does not mean a human can quickly understand the state of that repository.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I still kept going back to an IDE to inspect the tree, callers, tests, and Git changes, then back to wcode for verification and evidence. Each view was useful, but they were not really one engineering model.&lt;/p&gt;
+&lt;p&gt;That became the main idea behind 0.8.&lt;/p&gt;
+&lt;p&gt;I did not want another batch of MCP tools. I wanted to pull the existing pieces toward one thing:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;an Engineering Digital Twin of the repository that can be inspected, queried, revisited, and explicit about the precision of its evidence.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The current release is &lt;strong&gt;v0.8.1&lt;/strong&gt;. v0.8.0 built the main structure; v0.8.1 tightened the Decision Plane and Jev boundaries immediately afterwards.&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-intelligence-stack.svg" alt="The wcode engineering intelligence stack, from repository facts to graph relationships and verification evidence"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;h2 id="a-code-graph-is-only-useful-if-it-admits-what-it-knows"&gt;A Code Graph is only useful if it admits what it knows&lt;a class="heading-anchor" href="#a-code-graph-is-only-useful-if-it-admits-what-it-knows" aria-label="Permalink to section: A Code Graph is only useful if it admits what it knows"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I have always been a little suspicious of code graphs.&lt;/p&gt;
+&lt;p&gt;The easy version is to draw every file, symbol, and module as a large connected ball. It looks impressive and becomes difficult to use almost immediately.&lt;/p&gt;
+&lt;p&gt;The questions I actually care about are more boring:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Where did this relationship come from?&lt;/li&gt;
+&lt;li&gt;Was it observed by Tree-sitter or confirmed by LSP?&lt;/li&gt;
+&lt;li&gt;Was it declared in Design State or seen at runtime?&lt;/li&gt;
+&lt;li&gt;Does it belong to the current graph revision?&lt;/li&gt;
+&lt;li&gt;Is it related to the current Working Tree change?&lt;/li&gt;
+&lt;li&gt;Is there proof or a test behind it?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;In 0.8, Code Graph became a workbench inside &lt;strong&gt;Engineering Architecture&lt;/strong&gt; rather than another top-level workspace.&lt;/p&gt;
+&lt;p&gt;Architecture remains the primary model. The graph is a deeper observable layer.&lt;/p&gt;
+&lt;p&gt;From a symbol, I can now inspect bounded callers, callees, references, dependencies, implementation ownership, tests, requirements, and verification/proof context.&lt;/p&gt;
+&lt;p&gt;Calls, Impact, and All Evidence modes all have hard depth, node, and edge limits. The UI uses upstream → focus → downstream lanes instead of allowing an unbounded node-ball.&lt;/p&gt;
+&lt;p&gt;More importantly, every retained relation keeps its &lt;strong&gt;provenance&lt;/strong&gt; and &lt;strong&gt;precision&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Declared, syntax, semantic/LSP, runtime, deterministic, and heuristic evidence do not get flattened into a single vague confidence number.&lt;/p&gt;
+&lt;p&gt;I would rather see “this edge is syntax-derived” than have a clean graph hide uncertainty from me.&lt;/p&gt;
+&lt;h3 id="graph-history-is-part-of-the-same-view"&gt;Graph History is part of the same view&lt;a class="heading-anchor" href="#graph-history-is-part-of-the-same-view" aria-label="Permalink to section: Graph History is part of the same view"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The Code Graph can also open a stored Graph History snapshot.&lt;/p&gt;
+&lt;p&gt;That gives me read-only graph time travel: I can ask whether a caller, dependency, or proof relationship existed in an earlier graph revision without rebuilding the repository or mutating current state.&lt;/p&gt;
+&lt;p&gt;For an agent this is useful context. For me it is mostly an engineering history tool.&lt;/p&gt;
+&lt;h2 id="the-observatory-is-quieter-now"&gt;The Observatory is quieter now&lt;a class="heading-anchor" href="#the-observatory-is-quieter-now" aria-label="Permalink to section: The Observatory is quieter now"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The old Observatory could become noisy because a browser trying to get fresh state could trigger groups of relatively heavy snapshots.&lt;/p&gt;
+&lt;p&gt;That was technically correct and operationally annoying.&lt;/p&gt;
+&lt;p&gt;In 0.8, each Workspace allows at most one background Observatory rebuild at a time. Cached responses are revision-stamped and explicitly say whether the state is cached, current, or refreshing.&lt;/p&gt;
+&lt;p&gt;The browser renders useful cached state first and uses bounded lightweight probes instead of fanning out more heavy snapshot work.&lt;/p&gt;
+&lt;p&gt;I also reworked the information hierarchy.&lt;/p&gt;
+&lt;p&gt;Project Pulse and state are first-glance information. Metrics, relationships, and timelines come next. Evidence and inspectors are the third layer.&lt;/p&gt;
+&lt;p&gt;Stale, Unknown, Inconclusive, Failed, and Unverified are not allowed to look like current passing proof.&lt;/p&gt;
+&lt;p&gt;That sounds like a UI detail, but for an engineering control plane it is a trust boundary:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;the interface should never look more certain than the evidence underneath it.&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="why-i-finally-started-using-the-phrase-engineering-digital-twin"&gt;Why I finally started using the phrase Engineering Digital Twin&lt;a class="heading-anchor" href="#why-i-finally-started-using-the-phrase-engineering-digital-twin" aria-label="Permalink to section: Why I finally started using the phrase Engineering Digital Twin"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I avoided that phrase for a while.&lt;/p&gt;
+&lt;p&gt;If all I had was a code index with graph edges, “Digital Twin” would feel inflated.&lt;/p&gt;
+&lt;p&gt;0.8 is the first version where the name feels closer to what the system is actually doing:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Design State
+↓
+Implementation ownership
+↓
+Syntax / Semantic / Runtime relations
+↓
+Working Tree changes
+↓
+Drift / Risk / Impact
+↓
+Verification / Evidence
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is not a second mutable project database.&lt;/p&gt;
+&lt;p&gt;Source, Git, Design State, runtime providers, and Evidence remain their own sources of truth. The Digital Twin is a read-only engineering view that composes them without pretending they have the same precision.&lt;/p&gt;
+&lt;p&gt;That distinction matters. The moment a twin becomes a second mutable project state, I have created a new consistency problem instead of solving one.&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-engineering-loop.svg" alt="The wcode engineering loop connecting context, graph, changes, verification, and evidence"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;h2 id="the-decision-plane-became-a-real-subsystem-in-08"&gt;The Decision Plane became a real subsystem in 0.8&lt;a class="heading-anchor" href="#the-decision-plane-became-a-real-subsystem-in-08" aria-label="Permalink to section: The Decision Plane became a real subsystem in 0.8"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The other large piece of 0.8 is the &lt;strong&gt;Decision Plane&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Coding agents make many small decisions that do not necessarily require the main reasoning model:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Is the current context sufficient?&lt;/li&gt;
+&lt;li&gt;Should retrieval continue?&lt;/li&gt;
+&lt;li&gt;Are semantic relationships necessary evidence before a safe edit?&lt;/li&gt;
+&lt;li&gt;Should verification become deeper?&lt;/li&gt;
+&lt;li&gt;Is this state clear enough to act, or should it abstain?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;0.8 represents these as provider-neutral structured Probability, Choice, and Score signals.&lt;/p&gt;
+&lt;p&gt;But the important part is not that I can plug a smaller model into the path.&lt;/p&gt;
+&lt;p&gt;The important part is that the Decision Plane still does &lt;strong&gt;not&lt;/strong&gt; own the deterministic engineering boundary.&lt;/p&gt;
+&lt;p&gt;Authorization, Workspace boundaries, SHA preconditions, Evidence, risk-derived verification, and human approval stay deterministic.&lt;/p&gt;
+&lt;p&gt;A provider can say “retrieve more.” It cannot say:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Confidence is 0.93, so skip the SHA check.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That would defeat most of the work I have done on wcode.&lt;/p&gt;
+&lt;h2 id="engineering-fitness-stopped-using-wcodes-own-readiness-as-truth"&gt;Engineering Fitness stopped using wcode&amp;rsquo;s own readiness as truth&lt;a class="heading-anchor" href="#engineering-fitness-stopped-using-wcodes-own-readiness-as-truth" aria-label="Permalink to section: Engineering Fitness stopped using wcode’s own readiness as truth"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A Decision Plane is not useful if it grades itself.&lt;/p&gt;
+&lt;p&gt;For context sufficiency, 0.8 calibrates against independently authored &lt;strong&gt;Engineering Fitness Gold&lt;/strong&gt; instead of using wcode readiness fields as the answer.&lt;/p&gt;
+&lt;p&gt;I care about four different things:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Did retrieval find the required identity?&lt;/li&gt;
+&lt;li&gt;Did the agent receive the complete source body?&lt;/li&gt;
+&lt;li&gt;Is the SHA fresh?&lt;/li&gt;
+&lt;li&gt;If the task is actually writable, are all required edit inputs present?&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;On the 60-case model-free diagnostic used for the 0.8.0 release, the 1K cold and warm runs both reached &lt;strong&gt;100%&lt;/strong&gt; required identity recall, complete-body recall, and fresh-SHA recall. All &lt;strong&gt;58/58&lt;/strong&gt; eligible writable cases received the required edit inputs.&lt;/p&gt;
+&lt;p&gt;The decision baseline had a Brier score of &lt;strong&gt;0.018846&lt;/strong&gt;, with zero false stops and zero false continues.&lt;/p&gt;
+&lt;p&gt;I do not read those numbers as “context engineering is solved.”&lt;/p&gt;
+&lt;p&gt;They are a baseline I can use when I change retrieval, ranking, budgets, or the Decision Plane. At least I can detect when I have broken a basic property without needing a large reasoning model to judge the result.&lt;/p&gt;
+&lt;h2 id="jev-got-narrower-again-in-081"&gt;Jev got narrower again in 0.8.1&lt;a class="heading-anchor" href="#jev-got-narrower-again-in-081" aria-label="Permalink to section: Jev got narrower again in 0.8.1"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;v0.8.0 already supported comparing a baseline Decision Plane provider with a candidate on the same request.&lt;/p&gt;
+&lt;p&gt;In v0.8.1, I cleaned up the naming:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;the local model-free layer is the &lt;strong&gt;Decision Plane&lt;/strong&gt;;&lt;/li&gt;
+&lt;li&gt;the external semantic provider is &lt;strong&gt;Jev&lt;/strong&gt;;&lt;/li&gt;
+&lt;li&gt;the main large model is the &lt;strong&gt;Reasoning Model&lt;/strong&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;More importantly, I rewrote the questions.&lt;/p&gt;
+&lt;p&gt;A broad question such as:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Would semantic navigation be useful?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;is almost always answered “yes” in a coding task. Looking at more relationships is usually useful.&lt;/p&gt;
+&lt;p&gt;The narrower 0.8.1 boundary is closer to:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Are semantic relationships necessary evidence before a safe edit?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Choice criteria now define positive and negative boundaries, and other_review exists for states that should abstain instead of pretending to be edit-ready.&lt;/p&gt;
+&lt;p&gt;The current Agent Context Jev question set is wcode.agent_context@3.&lt;/p&gt;
+&lt;h3 id="jev-is-increase-only"&gt;Jev is increase-only&lt;a class="heading-anchor" href="#jev-is-increase-only" aria-label="Permalink to section: Jev is increase-only"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Jev may ask for more retrieval, semantic navigation, deeper verification, or more reasoning.&lt;/p&gt;
+&lt;p&gt;It may not reduce deterministic work.&lt;/p&gt;
+&lt;p&gt;A Jev edit_then_verify recommendation is suppressed unless the deterministic baseline already selected the same action. Unknown edit readiness goes to other_review rather than silently becoming edit-ready.&lt;/p&gt;
+&lt;p&gt;If the Jev advisory block would overflow the Agent Context budget, the advisory is dropped first. Source, SHA preconditions, tests, and deterministic risk evidence keep priority.&lt;/p&gt;
+&lt;p&gt;That gives me a failure mode I am comfortable with:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;if Jev disappears, wcode loses advice; it does not lose safety.&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id="shadow-ab-is-more-useful-to-me-than-replacing-the-baseline"&gt;Shadow A/B is more useful to me than replacing the baseline&lt;a class="heading-anchor" href="#shadow-ab-is-more-useful-to-me-than-replacing-the-baseline" aria-label="Permalink to section: Shadow A/B is more useful to me than replacing the baseline"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I did not make Jev the Decision Plane authority.&lt;/p&gt;
+&lt;p&gt;The baseline and candidate see the same immutable DecisionRequest, and wcode records shared and missing signals, probability and score deltas, Choice disagreements, shape mismatches, and safety-policy violations.&lt;/p&gt;
+&lt;p&gt;That is closer to Shadow A/B.&lt;/p&gt;
+&lt;p&gt;I want to see where a provider disagrees with the deterministic baseline before I give it any authority over runtime behavior.&lt;/p&gt;
+&lt;p&gt;It is slower than “API connected, enable it by default,” but much easier to reason about.&lt;/p&gt;
+&lt;h2 id="repository-scanning-finally-shares-ignore-semantics"&gt;Repository scanning finally shares Ignore semantics&lt;a class="heading-anchor" href="#repository-scanning-finally-shares-ignore-semantics" aria-label="Permalink to section: Repository scanning finally shares Ignore semantics"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;This is less visible than the Digital Twin, but it has a large effect on everyday use.&lt;/p&gt;
+&lt;p&gt;Source scanning, search, indexing, status, and subspace discovery used to have slightly different traversal paths. That creates silly cases where one subsystem ignores target and another walks straight through it.&lt;/p&gt;
+&lt;p&gt;0.8 moves repository-wide walking onto shared ignore-aware behavior.&lt;/p&gt;
+&lt;p&gt;By default it respects .gitignore, .ignore, Git info exclude, Git global exclude, and protected paths. Heavy generated trees such as target, node_modules, caches, and common build outputs are pruned before traversal.&lt;/p&gt;
+&lt;p&gt;Explicit intent still wins. If I directly ask wcode to read or search an ignored path, bounded operations can still access it.&lt;/p&gt;
+&lt;p&gt;Performance rules should not silently override an explicit user request.&lt;/p&gt;
+&lt;h2 id="the-tui-became-more-task-first"&gt;The TUI became more task-first&lt;a class="heading-anchor" href="#the-tui-became-more-task-first" aria-label="Permalink to section: The TUI became more task-first"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I removed some permanent engineering telemetry from the main TUI.&lt;/p&gt;
+&lt;p&gt;Wide terminals now use a 70/30 layout: Workspace Activity is the main canvas, while engineering and connection state live in a compact control rail.&lt;/p&gt;
+&lt;p&gt;The rail is reduced to four independent lines:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ARCH
+DRIFT
+PROOF
+MODEL
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Medium and narrow terminals drop the permanent Engineering Pulse entirely so task rows keep the space.&lt;/p&gt;
+&lt;p&gt;The TUI is increasingly about three questions:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;What is the agent doing now?&lt;/li&gt;
+&lt;li&gt;Is it blocked by authorization, verification, or runtime state?&lt;/li&gt;
+&lt;li&gt;When do I need to intervene?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Detailed architecture and proof still live in the Engineering Console.&lt;/p&gt;
+&lt;h2 id="081-also-fixed-two-looks-correct-ui-bugs"&gt;0.8.1 also fixed two &amp;ldquo;looks correct&amp;rdquo; UI bugs&lt;a class="heading-anchor" href="#081-also-fixed-two-looks-correct-ui-bugs" aria-label="Permalink to section: 0.8.1 also fixed two “looks correct” UI bugs"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;These were good examples of why observability has to be part of correctness.&lt;/p&gt;
+&lt;p&gt;Code Graph requests are parameterized by query, mode, depth, and snapshot. A late response is not safe to render just because it succeeded; all four request semantics must still match the current view.&lt;/p&gt;
+&lt;p&gt;The Access page has a similar rule. Workspaces, commands, and authorizations are now published atomically. If one response fails shape validation, the group remains Unknown instead of showing a partially truthful state.&lt;/p&gt;
+&lt;p&gt;The dangerous UI is not the one that crashes.&lt;/p&gt;
+&lt;p&gt;It is the one that displays a coherent-looking answer made from mismatched state.&lt;/p&gt;
+&lt;h2 id="the-old-boundaries-are-still-the-boundaries"&gt;The old boundaries are still the boundaries&lt;a class="heading-anchor" href="#the-old-boundaries-are-still-the-boundaries" aria-label="Permalink to section: The old boundaries are still the boundaries"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode has changed a lot between 0.3 and 0.8, but I have not changed the basic rules I started with:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Workspace Root remains a boundary;&lt;/li&gt;
+&lt;li&gt;edits remain SHA-bound;&lt;/li&gt;
+&lt;li&gt;Full Access is an explicit operator decision;&lt;/li&gt;
+&lt;li&gt;the Decision Plane cannot grant authorization;&lt;/li&gt;
+&lt;li&gt;Jev cannot lower verification;&lt;/li&gt;
+&lt;li&gt;cancellation is not rollback;&lt;/li&gt;
+&lt;li&gt;verification evidence belongs to an exact revision.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The Engineering Digital Twin is read-only observability. A graph relationship does not grant permission to mutate anything.&lt;/p&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-intro-verification-mesh.svg" alt="The wcode verification mesh keeps checks, independent review, and evidence bound to repository state"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;h2 id="the-release-was-larger-than-i-expected"&gt;The release was larger than I expected&lt;a class="heading-anchor" href="#the-release-was-larger-than-i-expected" aria-label="Permalink to section: The release was larger than I expected"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;From v0.7.6 to v0.8.0, the Git diff touched &lt;strong&gt;135 files, about +7,364 / -775 lines&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;I originally thought 0.8 would mostly be “Code Graph plus a better Observatory.”&lt;/p&gt;
+&lt;p&gt;Instead it pulled on the whole path:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;Repository scan
+↓
+Context
+↓
+Graph / Digital Twin
+↓
+Decision Plane
+↓
+Edit boundary
+↓
+Verification
+↓
+Evidence
+↓
+Human observability
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;That is why I ended up calling the release &lt;strong&gt;Engineering Digital Twin&lt;/strong&gt; rather than Code Graph.&lt;/p&gt;
+&lt;p&gt;The graph is only one entry point into it.&lt;/p&gt;
+&lt;h2 id="the-current-release-is-081"&gt;The current release is 0.8.1&lt;a class="heading-anchor" href="#the-current-release-is-081" aria-label="Permalink to section: The current release is 0.8.1"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;v0.8.0 was the Engineering Digital Twin release on September 19. Later the same day I shipped v0.8.1, tightening Jev decisions, naming, and WebUI state truthfulness.&lt;/p&gt;
+&lt;p&gt;The detailed release notes are here:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://wcode.francis.run/docs/releases/v0.8.0/"&gt;v0.8.0 — Engineering Digital Twin&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://wcode.francis.run/docs/releases/v0.8.1/"&gt;v0.8.1 — Jev Decision Plane hardening&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;If I had to reduce 0.8 to one change, it would be this:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;wcode used to focus mainly on helping an agent operate a repository safely. In 0.8, I started trying to make the human and the agent look at the same evidence-aware engineering state.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;That part is nowhere near finished, but the direction finally feels coherent.&lt;/p&gt;</description></item><item><title>Using Jev in wcode and Scopwis</title><link>https://francis.run/en/blog/jev-wcode-scopwis/</link><pubDate>Sat, 19 Sep 2026 12:31:00 +0800</pubDate><guid>https://francis.run/en/blog/jev-wcode-scopwis/</guid><description>&lt;p&gt;My first reason for trying Jev was pretty practical: it is cheap. If it could make a small decision before I called a GPT- or Claude-class reasoning model, I might save a model call.&lt;/p&gt;
 &lt;p&gt;Once I wired it into wcode and Scopwis, the first problem was not model quality. It was the way I was asking the questions.&lt;/p&gt;
 &lt;p&gt;Agents keep running into decisions like these:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Do I have enough context?
