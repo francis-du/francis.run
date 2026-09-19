@@ -31,10 +31,26 @@
 	{{- end -}}
 	{{- if eq .Kind "404" -}}
 	<meta name="robots" content="noindex,follow">
+	{{- else if eq .Type "gallery" -}}
+	<meta name="robots" content="noindex,follow,max-image-preview:large">
+	{{- else -}}
+	<meta name="robots" content="max-image-preview:large">
 	{{- end -}}
 	{{- if not $metaDescription -}}
 		{{- if .IsPage -}}
 			{{- $metaDescription = .Summary | plainify -}}
+		{{- else if eq .Kind "term" -}}
+			{{- if eq .Site.Language.Lang "zh-cn" -}}
+				{{- $metaDescription = printf "Francis Du 关于 %s 的技术文章、工程实践与项目笔记。" .Title -}}
+			{{- else -}}
+				{{- $metaDescription = printf "Francis Du's technical articles, engineering notes, and project write-ups about %s." .Title -}}
+			{{- end -}}
+		{{- else if eq .Kind "taxonomy" -}}
+			{{- if eq .Site.Language.Lang "zh-cn" -}}
+				{{- $metaDescription = "按主题浏览 Francis Du 的技术文章、工程实践与项目笔记。" -}}
+			{{- else -}}
+				{{- $metaDescription = "Browse Francis Du's technical articles, engineering notes, and project write-ups by topic." -}}
+			{{- end -}}
 		{{- else -}}
 			{{- $metaDescription = .Site.Params.description -}}
 		{{- end -}}
@@ -56,12 +72,17 @@
 		{{- end }}
 	{{- end }}
 
-	<link rel="canonical" href="{{ .Permalink }}" />
-	{{- range .AllTranslations }}
+	{{- $canonicalURL := .Permalink -}}
+	{{- with .Store.Get "seoCanonicalURL" }}{{ $canonicalURL = . }}{{ end -}}
+	<link rel="canonical" href="{{ $canonicalURL }}" />
+	{{- $paginationContinuation := .Store.Get "seoPaginationContinuation" | default false -}}
+	{{- if not $paginationContinuation }}
+		{{- range .AllTranslations }}
 	<link rel="alternate" hreflang="{{ .Language.Locale }}" href="{{ .Permalink }}" />
-	{{- if .Language.IsDefault }}
+		{{- if .Language.IsDefault }}
 	<link rel="alternate" hreflang="x-default" href="{{ .Permalink }}" />
-	{{- end }}
+		{{- end }}
+		{{- end }}
 	{{- end }}
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	{{ with .OutputFormats.Get "rss" -}}
@@ -70,6 +91,20 @@
 
 
 	{{- partial "_internal/schema" . -}}
+	{{- if and (ne .Kind "404") (not .IsHome) (ne .Type "gallery") -}}
+		{{- $crumbs := slice (dict "@type" "ListItem" "position" 1 "name" .Site.Title "item" .Site.Home.Permalink) -}}
+		{{- if eq .Section "blogs" -}}
+			{{- with .Site.GetPage "/blogs" -}}
+				{{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" 2 "name" .Title "item" .Permalink) -}}
+			{{- end -}}
+		{{- else if eq .Kind "term" -}}
+			{{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" 2 "name" "Tags" "item" ("/tags/" | absLangURL)) -}}
+		{{- end -}}
+		{{- $position := add (len $crumbs) 1 -}}
+		{{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" $position "name" .Title "item" $canonicalURL) -}}
+		{{- $breadcrumb := dict "@context" "https://schema.org" "@type" "BreadcrumbList" "itemListElement" $crumbs -}}
+	<script type="application/ld+json">{{ $breadcrumb | jsonify | safeJS }}</script>
+	{{- end -}}
 	{{- template "_internal/opengraph.html" . -}}
 	{{- template "_internal/twitter_cards.html" . -}}
 	{{- $needsDisplayFont := or .IsHome (in (slice "section" "term") .Kind) -}}

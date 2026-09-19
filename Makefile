@@ -68,6 +68,16 @@ check:
 	! grep -q '"url":"/about/' $(BUILD_DIR)/index.json
 	grep -q 'rel=canonical href=https://francis.run/' $(BUILD_DIR)/index.html
 	grep -q 'rel=canonical href=https://francis.run/en/' $(BUILD_DIR)/en/index.html
+	grep -q 'rel=canonical href=https://francis.run/blogs/page/2/' $(BUILD_DIR)/blogs/page/2/index.html
+	! grep -q 'hreflang=' $(BUILD_DIR)/blogs/page/2/index.html
+	grep -q 'meta name=robots content="max-image-preview:large"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -q 'meta name=robots content="noindex,follow,max-image-preview:large"' $(BUILD_DIR)/gallery/index.html
+	grep -q '"@type":"BreadcrumbList"' $(BUILD_DIR)/blog/what-is-wcode/index.html
+	grep -q '"@type":"BreadcrumbList"' $(BUILD_DIR)/tags/wcode/index.html
+	grep -q 'Francis Du 关于 Wcode 的技术文章、工程实践与项目笔记。' $(BUILD_DIR)/tags/wcode/index.html
+	! grep -q '<loc>https://francis.run/gallery/</loc>' $(BUILD_DIR)/zh-cn/sitemap.xml
+	! grep -q '^Disallow: /gallery/$$' $(BUILD_DIR)/robots.txt
+	grep -q '^Disallow: /gallery/images/$$' $(BUILD_DIR)/robots.txt
 	grep -q 'meta name=description' $(BUILD_DIR)/index.html
 	grep -q 'Francis Du 的个人技术博客' $(BUILD_DIR)/index.html
 	grep -q "Francis Du's engineering notes" $(BUILD_DIR)/en/index.html

@@ -1,3 +1,7 @@
+{{- $pages := where .RegularPages "Params.hidden" "ne" true -}}
+{{- $paginator := .Paginate $pages -}}
+{{- .Store.Set "seoCanonicalURL" ($paginator.URL | absURL) -}}
+{{- .Store.Set "seoPaginationContinuation" (gt $paginator.PageNumber 1) -}}
 <!DOCTYPE html>
 <html lang="{{ .Site.Language.Locale | default "zh-CN" }}">
 {{ partial "header.html" . }}
@@ -15,8 +19,6 @@
 		
 		{{ .Content }}
 
-		{{- $pages := where .RegularPages "Params.hidden" "ne" true -}}
-		{{- $paginator := .Paginate $pages -}}
 		<ul class="posts flat">
 			{{- range $paginator.Pages -}}
 			<li class="post">

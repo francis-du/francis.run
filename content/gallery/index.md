@@ -3,6 +3,8 @@ title: "Gallery"
 type: "gallery"
 build:
   publishResources: false
+sitemap:
+  disable: true
 tag:
   - gallery
 ---
