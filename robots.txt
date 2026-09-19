@@ -1,5 +1,4 @@
 User-agent: *
-Disallow: /gallery/
 Disallow: /gallery/images/
 
 Sitemap: https://francis.run/sitemap.xml
