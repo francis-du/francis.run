@@ -1,441 +1,617 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>TypeSafe | Francis Du</title><link>https://francis.run/tags/typesafe/</link><atom:link href="https://francis.run/tags/typesafe/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Tue, 22 Sep 2026 02:35:00 +0800</lastBuildDate><item><title>wcode：重做 Coding Agent 下面那一层</title><link>https://francis.run/blog/coding-agent-without-kv-cache/</link><pubDate>Tue, 22 Sep 2026 02:35:00 +0800</pubDate><guid>https://francis.run/blog/coding-agent-without-kv-cache/</guid><description>&lt;p&gt;最近我在继续想 wcode 下一步到底应该往哪里长。&lt;/p&gt;
-&lt;p&gt;看了一份叫 &lt;a href="https://docs.google.com/document/d/1G61uUB0FifUnmmrPzFQojZ3KpczYKmXGpgEXDJ2l_Zg/mobilebasic"&gt;Why yet another agent&lt;/a&gt; 的笔记以后，这件事反而更清楚了：&lt;strong&gt;wcode 不应该去复制 Claude Code、Codex 或另一个 Coding Agent，而应该继续往它们下面那一层走。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;里面有个问题我很喜欢：&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>TypeSafe | Francis Du</title><link>https://francis.run/tags/typesafe/</link><atom:link href="https://francis.run/tags/typesafe/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Tue, 22 Sep 2026 02:35:00 +0800</lastBuildDate><item><title>wcode：用 Jev 的理念重构 Coding Agent Runtime</title><link>https://francis.run/blog/coding-agent-without-kv-cache/</link><pubDate>Tue, 22 Sep 2026 02:35:00 +0800</pubDate><guid>https://francis.run/blog/coding-agent-without-kv-cache/</guid><description>&lt;p&gt;最近我一直在想一件事：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;如果 LLM 完全没有 KV cache，你会怎么设计一个 Coding Agent？&lt;/p&gt;
+&lt;p&gt;wcode 下一步到底应该继续“补 Agent 能力”，还是应该重做 Agent 下面那一层？&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;这个问题看起来像在讨论推理性能，实际一下把很多现在已经习以为常的 Agent 设计掀开了。&lt;/p&gt;
-&lt;p&gt;我之前一直觉得，Coding Agent 真正复杂的地方不是那个 while loop。模型看任务、选工具、执行、读结果、继续，这层其实出奇地简单。真正越来越重的是围绕它长出来的上下文管理、工具定义、权限、subagent、compaction、restart、memory 和各种恢复机制。&lt;/p&gt;
-&lt;p&gt;这些东西当然都有现实价值。&lt;/p&gt;
-&lt;p&gt;但看完这份笔记以后，我开始怀疑：这里面有多少是在解决 Agent 本身的问题，又有多少只是在解决 &lt;strong&gt;“我们必须尽量复用一份越来越大的 KV cache”&lt;/strong&gt; 这个问题。&lt;/p&gt;
-&lt;p&gt;所以这篇不是想重新发明一个 Agent，而是想回答一个更具体的问题：&lt;strong&gt;如果把 KV cache 这个历史前提拿掉，wcode 应该为 Coding Agent 提供什么样的底层运行时？&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="coding-agent-本身可能真的没那么复杂"&gt;Coding Agent 本身可能真的没那么复杂&lt;a class="heading-anchor" href="#coding-agent-%e6%9c%ac%e8%ba%ab%e5%8f%af%e8%83%bd%e7%9c%9f%e7%9a%84%e6%b2%a1%e9%82%a3%e4%b9%88%e5%a4%8d%e6%9d%82" aria-label="章节链接：Coding Agent 本身可能真的没那么复杂"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;先把 Agent 的外壳去掉，最小实现大概就是：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;while not done:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; context = current_state()
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; response = model(context, tools)
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; execute(response.tool_calls)
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;真正决定体验的东西不在 while，而在三个问题：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;current_state() 到底是什么；&lt;/li&gt;
-&lt;li&gt;当前这一轮模型到底能看见哪些 actions；&lt;/li&gt;
-&lt;li&gt;执行完以后，什么状态应该保留下来。&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;现在大部分 Coding Agent 对第一个问题的默认答案，其实是：&lt;/p&gt;
+&lt;p&gt;前几天读了一份叫 &lt;a href="https://docs.google.com/document/d/1G61uUB0FifUnmmrPzFQojZ3KpczYKmXGpgEXDJ2l_Zg/mobilebasic"&gt;Why yet another agent&lt;/a&gt; 的笔记，里面有一个问题我很喜欢：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果 LLM 没有 KV cache，你会怎么设计一个 Coding Agent？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这个问题让我一下把很多已经习惯的东西重新看了一遍：compaction、restart、subagent、tool schema、skills、model routing、长 session、memory。&lt;/p&gt;
+&lt;p&gt;最后我的结论不是“再做一个更聪明的 Agent”。&lt;/p&gt;
+&lt;p&gt;恰恰相反。&lt;/p&gt;
+&lt;p&gt;我更确定 &lt;strong&gt;wcode 不应该去复制 Claude Code、Codex 或 Cursor，而应该把 Agent 下面缺的那层 Runtime 做出来。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;而 Jev / TypeSafe 给我的启发，正好不是“换一个模型”，而是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;把原本藏在 Prompt 和上下文里的模糊语义判断，变成有类型、有边界、有状态的程序决策。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这篇主要记我现在准备怎么用这个理念继续重构 wcode。&lt;/p&gt;
+&lt;h2 id="我不想让-jev-接管-agent"&gt;我不想让 Jev 接管 Agent&lt;a class="heading-anchor" href="#%e6%88%91%e4%b8%8d%e6%83%b3%e8%ae%a9-jev-%e6%8e%a5%e7%ae%a1-agent" aria-label="章节链接：我不想让 Jev 接管 Agent"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;先说一个容易误解的地方。&lt;/p&gt;
+&lt;p&gt;我不是想做：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;让 Jev 决定所有事情
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这和我的方向完全相反。&lt;/p&gt;
+&lt;p&gt;wcode 里现在很多东西就是故意保持 deterministic：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;当前文件 SHA 对不对？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;路径是不是在 Workspace？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;命令有没有授权？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification 有没有真的跑？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence 属不属于当前 revision？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State 有没有 drift？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Worklist 还有没有没做完的东西？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些东西代码能算，就应该让代码算。&lt;/p&gt;
+&lt;p&gt;Jev 真正适合的是另外一类问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;当前 context 够不够？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;还缺不缺重要 evidence？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;是不是必须看 callers / references / implementations？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;几个合法 action 里哪一个更适合当前语义状态？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;当前失败更像缺证据、缺语义，还是应该直接 repair？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是一些以前很容易写进 Prompt 里的“语义 if”。&lt;/p&gt;
+&lt;p&gt;这也是为什么我现在更喜欢把 Jev 看成 &lt;strong&gt;Decision Plane 的一部分&lt;/strong&gt;，而不是另一个 Agent。&lt;/p&gt;
+&lt;h2 id="wcode-已经有一版-decision-plane"&gt;wcode 已经有一版 Decision Plane&lt;a class="heading-anchor" href="#wcode-%e5%b7%b2%e7%bb%8f%e6%9c%89%e4%b8%80%e7%89%88-decision-plane" aria-label="章节链接：wcode 已经有一版 Decision Plane"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;现在 wcode 里的 Jev 不是直接拿用户 Prompt 去问。&lt;/p&gt;
+&lt;p&gt;流程大概是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;repository state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic baseline
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── worktree
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── semantic readiness
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── current risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;DecisionRequest
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── local deterministic decision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── Jev decision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; shadow comparison
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; increase-only guidance
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jev 现在可以回答 Noul / Choice / Score 这几类问题。&lt;/p&gt;
+&lt;p&gt;比如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context_sufficient -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;continue_retrieval -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation_required -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification_escalation -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;next_action -&amp;gt; Choice
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;risk_surface -&amp;gt; Choice
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence_density -&amp;gt; Score
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但它不能说：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“我觉得没事，所以跳过 verification。”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;现在的规则是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Jev 可以增加工作，不能减少确定性安全边界。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;比如它可以建议：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;先再查一个 symbol
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;先 review worktree
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;补 semantic navigation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;把 verification 升到 full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但它不能取消：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA precondition
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;authorization
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;workspace containment
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification floor
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current-revision evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这条边界我准备继续保持。&lt;/p&gt;
+&lt;h2 id="jev-真正改变我的地方是state-应该先于-prompt"&gt;Jev 真正改变我的地方，是“State 应该先于 Prompt”&lt;a class="heading-anchor" href="#jev-%e7%9c%9f%e6%ad%a3%e6%94%b9%e5%8f%98%e6%88%91%e7%9a%84%e5%9c%b0%e6%96%b9%e6%98%afstate-%e5%ba%94%e8%af%a5%e5%85%88%e4%ba%8e-prompt" aria-label="章节链接：Jev 真正改变我的地方，是“State 应该先于 Prompt”"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;传统 Coding Agent 很容易把状态理解成：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;system prompt
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ conversation
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ files read before
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ 之前读过的文件
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ tool calls
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ tool outputs
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ summaries
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ subagent results
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ maybe memory
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后尽可能复用上一轮已经算好的 KV cache。&lt;/p&gt;
-&lt;p&gt;这很合理，也很划算。&lt;/p&gt;
-&lt;p&gt;但它同时把很多架构决策偷偷固定住了。&lt;/p&gt;
-&lt;h2 id="kv-cache-让-model-routing-变得很奇怪"&gt;KV cache 让 model routing 变得很奇怪&lt;a class="heading-anchor" href="#kv-cache-%e8%ae%a9-model-routing-%e5%8f%98%e5%be%97%e5%be%88%e5%a5%87%e6%80%aa" aria-label="章节链接：KV cache 让 model routing 变得很奇怪"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;原文里先算了一笔旧模型价格下的账。&lt;/p&gt;
-&lt;p&gt;假设有大模型 Opus 和便宜一点的 Sonnet。直觉上，一个简单阶段先给 Sonnet，复杂阶段再切回 Opus，应该更便宜。&lt;/p&gt;
-&lt;p&gt;问题是切回来以后，Opus 要重新吃一遍 Sonnet 期间积累的上下文。&lt;/p&gt;
-&lt;p&gt;原文用一个简化公式表示：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Pure Opus:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;25Y + 5Z
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Opus -&amp;gt; Sonnet -&amp;gt; Opus:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;3X + 20Y + 8Z
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;X 是已有 context；&lt;/li&gt;
-&lt;li&gt;Y 是模型生成内容；&lt;/li&gt;
-&lt;li&gt;Z 是生成过程中新增的工具/文件等上下文。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;在它举的那组比例里，第二条路径反而更贵。&lt;/p&gt;
-&lt;p&gt;这个例子里的价格当然会变，具体比例也不是重点。&lt;/p&gt;
-&lt;p&gt;重点是：&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ compaction summary
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;现在的 routing 不只是“哪一步用哪个模型”，而是“切模型以后谁来重新支付状态加载成本”。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;模型知道什么，主要取决于这次 session 以前发生过什么。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;所以一个非常自然的系统设计——把简单任务交给便宜模型——在长 session 里可能因为 context replay 变得不自然。&lt;/p&gt;
-&lt;p&gt;这也是为什么我现在觉得，真正需要一等公民化的不是 model router，而是 &lt;strong&gt;state/context 本身&lt;/strong&gt;。&lt;/p&gt;
-&lt;h2 id="tool-calling-也在交-context-税"&gt;Tool calling 也在交 context 税&lt;a class="heading-anchor" href="#tool-calling-%e4%b9%9f%e5%9c%a8%e4%ba%a4-context-%e7%a8%8e" aria-label="章节链接：Tool calling 也在交 context 税"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;现在 MCP / function calling 的典型做法，是模型开始这一轮之前就看见完整工具定义。&lt;/p&gt;
-&lt;p&gt;工具不多时没什么问题。&lt;/p&gt;
-&lt;p&gt;几十个以后就开始别扭：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tool name
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;description
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;JSON schema
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;arguments
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;enum
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;nested object
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;...
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;很多工具这一轮根本不会用，但 schema 还是进了 context。&lt;/p&gt;
-&lt;p&gt;更麻烦的是，工具数量越多，模型不一定越聪明。&lt;/p&gt;
-&lt;p&gt;高 cardinality 的 action space，加上很多模型训练时没见过的自定义工具，本身就会让选择变难。&lt;/p&gt;
-&lt;p&gt;这也是为什么 Skills 经常比 Tool 更顺手：Skill 的短描述比较像一种方向提示，而 Tool schema 更像执行阶段才需要的精确定义。&lt;/p&gt;
-&lt;p&gt;我现在越来越觉得中间应该有一层：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Agent 只先知道：
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- semantic navigation
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- repository search
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- verification
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- runtime control
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- browser
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- deploy
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;- database inspection
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;真正决定要用某类能力以后
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;才加载具体 action 和完整 schema
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不是把所有东西永久塞在 system prompt 里。&lt;/p&gt;
-&lt;p&gt;如果这层做得好，理论上一个 Agent 有几百个 tool、几千份 docs，并不意味着每一轮都要为它们交 context 成本。&lt;/p&gt;
-&lt;h2 id="compaction-可能是在压错东西"&gt;Compaction 可能是在压错东西&lt;a class="heading-anchor" href="#compaction-%e5%8f%af%e8%83%bd%e6%98%af%e5%9c%a8%e5%8e%8b%e9%94%99%e4%b8%9c%e8%a5%bf" aria-label="章节链接：Compaction 可能是在压错东西"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Compaction 的逻辑也很好理解。&lt;/p&gt;
-&lt;p&gt;上下文越来越长，于是把前面的 conversation 压成 summary，再接着跑。&lt;/p&gt;
-&lt;p&gt;但这里其实隐含了一个很强的假设：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;未来所有请求都需要同一份“共享摘要状态”。&lt;/strong&gt;&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这不一定成立。&lt;/p&gt;
-&lt;p&gt;假设刚才做了一个 OAuth 修复，context 里有：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;callback；&lt;/li&gt;
-&lt;li&gt;token；&lt;/li&gt;
-&lt;li&gt;origin；&lt;/li&gt;
-&lt;li&gt;tests；&lt;/li&gt;
-&lt;li&gt;logs；&lt;/li&gt;
-&lt;li&gt;design；&lt;/li&gt;
-&lt;li&gt;reviewer feedback。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;下一条用户消息突然变成：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;帮我改博客首页字体。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这时候最好的压缩算法不是“把 OAuth 那一大坨压得特别好”。&lt;/p&gt;
-&lt;p&gt;而是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;大部分根本不用加载。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;一旦知道当前 query 是什么，compression 会简单很多。&lt;/p&gt;
-&lt;p&gt;所以比 global compaction 更自然的东西可能是：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;query-aware context construction。&lt;/strong&gt;&lt;/p&gt;
-&lt;h2 id="我更喜欢把它叫-context-compiler"&gt;我更喜欢把它叫 Context Compiler&lt;a class="heading-anchor" href="#%e6%88%91%e6%9b%b4%e5%96%9c%e6%ac%a2%e6%8a%8a%e5%ae%83%e5%8f%ab-context-compiler" aria-label="章节链接：我更喜欢把它叫 Context Compiler"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;原文里用了一个词：&lt;strong&gt;Meta-attention&lt;/strong&gt;。&lt;/p&gt;
-&lt;p&gt;我觉得这个词挺准确。&lt;/p&gt;
-&lt;p&gt;不是只让 Transformer 在已经塞进去的 token 上做 attention，而是在进模型之前，系统自己先决定这一轮“什么值得被 attention”。&lt;/p&gt;
-&lt;p&gt;比如仓库里现在有 500 个 context chunks：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;用户历史
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;源文件
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;测试
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tool output
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;编译日志
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Git diff
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Graph
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;LSP
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;AGENTS.md
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;以前的 Evidence
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;以前的 reviewer 结论
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;...
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每一个 chunk 都可以先有一个 rendering level：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;0 = 不加载
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;1 = 一行摘要
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;2 = 较长摘要
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;3 = 原文
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;于是每一轮真正发生的是：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;query
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate state
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;relevance / risk / freshness / cost
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;render level
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;compiled context
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;model
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这和 compaction 是完全不同的思路。&lt;/p&gt;
-&lt;p&gt;Compaction 是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;“这段历史怎么压短？”&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;Context Compiler 问的是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;“这一轮为什么要看这段历史？”&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;对我来说，这是这份笔记最重要的一点。&lt;/p&gt;
-&lt;h2 id="状态如果显式很多奇怪机制都会变简单"&gt;状态如果显式，很多奇怪机制都会变简单&lt;a class="heading-anchor" href="#%e7%8a%b6%e6%80%81%e5%a6%82%e6%9e%9c%e6%98%be%e5%bc%8f%e5%be%88%e5%a4%9a%e5%a5%87%e6%80%aa%e6%9c%ba%e5%88%b6%e9%83%bd%e4%bc%9a%e5%8f%98%e7%ae%80%e5%8d%95" aria-label="章节链接：状态如果显式，很多奇怪机制都会变简单"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;现在主流 Agent 很多状态其实藏在 transcript 里。&lt;/p&gt;
-&lt;p&gt;“模型知道什么”，很大程度等于“它前面读过什么”。&lt;/p&gt;
-&lt;p&gt;这会带来几个问题。&lt;/p&gt;
-&lt;h3 id="subagent-为什么一直有点别扭"&gt;Subagent 为什么一直有点别扭&lt;a class="heading-anchor" href="#subagent-%e4%b8%ba%e4%bb%80%e4%b9%88%e4%b8%80%e7%9b%b4%e6%9c%89%e7%82%b9%e5%88%ab%e6%89%ad" aria-label="章节链接：Subagent 为什么一直有点别扭"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;派一个 subagent 本身并不难。&lt;/p&gt;
-&lt;p&gt;真正难的是：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;主 Agent 的哪些 context 要复制过去？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;subagent 自己新读了什么？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;结果回来以后要保留哪一段？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;要不要把它的 reasoning / tool output merge 回去？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;多个 subagent 同时改状态怎么办？
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以很多 subagent 最后还是表现成：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;主 Agent 给一大段 prompt → subagent 干活 → 返回一大段文字。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;如果状态是显式的，它可以更像：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Subgoal:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;find callers affected by API change
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Input:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;revision R
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;symbol X
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Allowed reads:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic provider
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;source
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Output:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ImpactReport
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;No repository writes
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它读的是共享 state，不需要复制主聊天。&lt;/p&gt;
-&lt;p&gt;返回的也是一个结构化结果，不需要把自己的 session 拼回主 session。&lt;/p&gt;
-&lt;p&gt;我觉得这才是 subagent 真正应该长成的样子。&lt;/p&gt;
-&lt;h3 id="restart-也没那么特殊了"&gt;Restart 也没那么特殊了&lt;a class="heading-anchor" href="#restart-%e4%b9%9f%e6%b2%a1%e9%82%a3%e4%b9%88%e7%89%b9%e6%ae%8a%e4%ba%86" aria-label="章节链接：Restart 也没那么特殊了"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;现在长 session 用坏了，经常有一种解决办法：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;restart。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;换个新 session，把当前问题重新讲一下。&lt;/p&gt;
-&lt;p&gt;本质上是在清掉被污染的 implicit state。&lt;/p&gt;
-&lt;p&gt;如果仓库状态、任务状态、验证证据、当前 goal、本轮 relevant history 都可以按需重新构造，那么“新 session”就不应该意味着“重新从零理解项目”。&lt;/p&gt;
-&lt;p&gt;它只是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;新建一个 model context，然后重新 compile 当前需要的 state。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这两个概念区别很大。&lt;/p&gt;
-&lt;h2 id="skillsagentsmd-和-tools-其实混了三种东西"&gt;Skills、AGENTS.md 和 Tools 其实混了三种东西&lt;a class="heading-anchor" href="#skillsagentsmd-%e5%92%8c-tools-%e5%85%b6%e5%ae%9e%e6%b7%b7%e4%ba%86%e4%b8%89%e7%a7%8d%e4%b8%9c%e8%a5%bf" aria-label="章节链接：Skills、AGENTS.md 和 Tools 其实混了三种东西"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;现在这几个东西经常被揉在一起。&lt;/p&gt;
-&lt;p&gt;但我觉得可以拆开：&lt;/p&gt;
-&lt;h3 id="action"&gt;Action&lt;a class="heading-anchor" href="#action" aria-label="章节链接：Action"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;现在就要执行的能力：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run test
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rename symbol
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;search references
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deploy
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="skill"&gt;Skill&lt;a class="heading-anchor" href="#skill" aria-label="章节链接：Skill"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;完成一类任务的工作流：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;release package
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;debug frontend
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;review migration
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="conditional-context"&gt;Conditional Context&lt;a class="heading-anchor" href="#conditional-context" aria-label="章节链接：Conditional Context"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;这一类任务里应该一直知道的规则：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;frontend -&amp;gt; style guide
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;src/auth -&amp;gt; auth gotchas
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rust perf -&amp;gt; perf conventions
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;writing -&amp;gt; personal style samples
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;第三种尤其容易被忽略。&lt;/p&gt;
-&lt;p&gt;AGENTS.md 现在通常是全局读进去，或者随着目录递归加载。&lt;/p&gt;
-&lt;p&gt;但如果 Context Compiler 存在，就可以变成：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if task.frontend:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include frontend-style
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if path under src/auth:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include auth-gotchas
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if task.writing:
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include writing-style
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而且这些 context 可以声明：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sticky = true
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;意思不是“永久塞进 session”，而是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;只要当前 task 条件还成立，每次重新编译 context 都必须重新带上。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这样也不怕 compaction 把重要规则压没。&lt;/p&gt;
-&lt;h2 id="batteries-included-可能不再和-power-user-冲突"&gt;Batteries included 可能不再和 power user 冲突&lt;a class="heading-anchor" href="#batteries-included-%e5%8f%af%e8%83%bd%e4%b8%8d%e5%86%8d%e5%92%8c-power-user-%e5%86%b2%e7%aa%81" aria-label="章节链接：Batteries included 可能不再和 power user 冲突"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Agent 产品一直有一个很现实的矛盾。&lt;/p&gt;
-&lt;p&gt;内置东西越多，新用户越方便。&lt;/p&gt;
-&lt;p&gt;但 tool、rules、plugins、skills、docs 越多，system prompt 和选择空间也越来越重。&lt;/p&gt;
-&lt;p&gt;所以一边是 OpenClaw 这种“什么都给你”，另一边是很多 power user 更喜欢一个小而可控的核心。&lt;/p&gt;
-&lt;p&gt;如果 action/schema/docs 都可以动态发现，这个矛盾会弱很多。&lt;/p&gt;
-&lt;p&gt;你完全可以内置：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;100+ tools
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;1000+ docs
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;几十种 workflow
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;各种热门 repo 工具
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但默认只暴露非常小的 capability index。&lt;/p&gt;
-&lt;p&gt;等模型判断“这里可能需要 AST search”，再加载 ast-grep 的详细说明和 action schema。&lt;/p&gt;
-&lt;p&gt;这时候“内置很多东西”的边际 context 成本接近于零。&lt;/p&gt;
-&lt;p&gt;这个方向我很感兴趣，因为它不只是省 token。&lt;/p&gt;
-&lt;p&gt;它会改变 Agent 产品到底该不该 batteries included 这个问题。&lt;/p&gt;
-&lt;h2 id="background-processing-可能比-subagent-更值得先做"&gt;Background processing 可能比 Subagent 更值得先做&lt;a class="heading-anchor" href="#background-processing-%e5%8f%af%e8%83%bd%e6%af%94-subagent-%e6%9b%b4%e5%80%bc%e5%be%97%e5%85%88%e5%81%9a" aria-label="章节链接：Background processing 可能比 Subagent 更值得先做"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;原文后面的一个 Appendix 也让我印象很深。&lt;/p&gt;
-&lt;p&gt;最近很多看起来很有用的 Agent workflow 有一个共同点：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;它们其实适合在后台跑。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;比如：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;生成/刷新 UI 页面；&lt;/li&gt;
-&lt;li&gt;构建理解代码库的 artifacts；&lt;/li&gt;
-&lt;li&gt;后台生成 eval；&lt;/li&gt;
-&lt;li&gt;cross-model review；&lt;/li&gt;
-&lt;li&gt;security review；&lt;/li&gt;
-&lt;li&gt;documentation drift；&lt;/li&gt;
-&lt;li&gt;graph refresh。&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;而且很多任务都是当前 codebase revision 的只读函数。&lt;/p&gt;
-&lt;p&gt;也就是说：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Revision R
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── architecture review
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── security review
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── test-gap analysis
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph refresh
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── docs drift
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── eval generation
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它们完全可以并行。&lt;/p&gt;
-&lt;p&gt;只要 revision 变成 R+1：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;旧结果 -&amp;gt; stale
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这和“启动 N 个聊天 subagent，然后把聊天合回来”不一样。&lt;/p&gt;
-&lt;p&gt;它更像一个 build system 或 dataflow。&lt;/p&gt;
-&lt;p&gt;我现在越来越觉得，很多所谓 Multi-Agent 问题最后会长成：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;structured state + scheduler + read/write set + revision。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;而不是很多人格不同的小模型互相聊天。&lt;/p&gt;
-&lt;h2 id="这也是为什么我不太想让-wcode-变成另一个-claude-code"&gt;这也是为什么我不太想让 wcode 变成另一个 Claude Code&lt;a class="heading-anchor" href="#%e8%bf%99%e4%b9%9f%e6%98%af%e4%b8%ba%e4%bb%80%e4%b9%88%e6%88%91%e4%b8%8d%e5%a4%aa%e6%83%b3%e8%ae%a9-wcode-%e5%8f%98%e6%88%90%e5%8f%a6%e4%b8%80%e4%b8%aa-claude-code" aria-label="章节链接：这也是为什么我不太想让 wcode 变成另一个 Claude Code"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;我之前给 wcode 的定位一直是 Repository / Engineering Control Plane。&lt;/p&gt;
-&lt;p&gt;读完这份笔记后，我反而更确定这一点。&lt;/p&gt;
-&lt;p&gt;如果真的从 KV-cache-free 的角度重新设计，最值得造的不一定是：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;又一个 Coding Agent UI。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;而是 Agent 下面那层本来就应该存在的 runtime。&lt;/p&gt;
-&lt;p&gt;现在 wcode 已经有很多适合放在这层的东西：&lt;/p&gt;
+&lt;p&gt;这很适合 KV cache。&lt;/p&gt;
+&lt;p&gt;但它不一定是最适合工程系统的状态模型。&lt;/p&gt;
+&lt;p&gt;wcode 现在已经有很多东西其实根本不属于聊天：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Execution
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Worklist
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Workspace
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Software Graph
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Semantic / LSP
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Semantic Provider State
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Impact
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Risk
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification Plan
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Reconciliation
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Runtime Tasks
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些状态都不应该只存在于某个聊天 session。&lt;/p&gt;
-&lt;p&gt;模型可以换。&lt;/p&gt;
-&lt;p&gt;Codex、Claude Code、ChatGPT、自研 Agent 都可以换。&lt;/p&gt;
-&lt;p&gt;仓库当前发生了什么、什么已经验证、什么还没做，不应该跟着换。&lt;/p&gt;
-&lt;h2 id="下一步我更想做-context-fabric"&gt;下一步我更想做 Context Fabric&lt;a class="heading-anchor" href="#%e4%b8%8b%e4%b8%80%e6%ad%a5%e6%88%91%e6%9b%b4%e6%83%b3%e5%81%9a-context-fabric" aria-label="章节链接：下一步我更想做 Context Fabric"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;我现在脑子里的结构大概是：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Agent
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; current goal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Runtime Task
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些才是项目真正的状态。&lt;/p&gt;
+&lt;p&gt;模型换了，状态不能跟着没。&lt;/p&gt;
+&lt;p&gt;会话断了，状态不能跟着没。&lt;/p&gt;
+&lt;p&gt;Compaction 了，状态也不能跟着被总结错。&lt;/p&gt;
+&lt;p&gt;所以我下一步想继续把 wcode 往一个更明确的结构推：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Runtime owns state，Agent 只拿当前任务需要的一份 view。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="第一件事把-agent-context-重构成-context-compiler"&gt;第一件事：把 Agent Context 重构成 Context Compiler&lt;a class="heading-anchor" href="#%e7%ac%ac%e4%b8%80%e4%bb%b6%e4%ba%8b%e6%8a%8a-agent-context-%e9%87%8d%e6%9e%84%e6%88%90-context-compiler" aria-label="章节链接：第一件事：把 Agent Context 重构成 Context Compiler"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode 现在已经有 agent_context，它做的事情比“搜几个文件”多很多：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;找 target；&lt;/li&gt;
+&lt;li&gt;带当前 SHA；&lt;/li&gt;
+&lt;li&gt;带 Design State；&lt;/li&gt;
+&lt;li&gt;带验证入口；&lt;/li&gt;
+&lt;li&gt;带 graph / semantic readiness；&lt;/li&gt;
+&lt;li&gt;带 Worklist；&lt;/li&gt;
+&lt;li&gt;给出 next actions。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;但从这个新视角看，它还可以继续往前走。&lt;/p&gt;
+&lt;p&gt;我想把它从：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“生成一包 edit-ready context”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;进一步重构成：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Context Compiler。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;也就是所有可进入模型的东西，先变成一种统一的 context candidate：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ContextChunk {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; source
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; scope
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; freshness
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sensitivity
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cost
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; relevance
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; precision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; render_level
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后每次任务重新编译：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current goal
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌──────────────────┐
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Decision Plane │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └────────┬─────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate chunks
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌────────────────┼────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── source
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── semantic
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── design
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── worklist
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── past decisions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── runtime state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic filters
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev semantic scoring
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;render policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── omit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── one-line summary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── detailed summary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── full content
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;compiled context
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这和 compaction 最大的区别是：&lt;/p&gt;
+&lt;p&gt;Compaction 问：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;过去这些东西怎么压短？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Context Compiler 问的是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;这一轮到底为什么需要看这些东西？&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我觉得这才是更根本的优化。&lt;/p&gt;
+&lt;h2 id="第二件事把-retrieval-从继续不继续升级成-reranking"&gt;第二件事：把 Retrieval 从“继续不继续”升级成 reranking&lt;a class="heading-anchor" href="#%e7%ac%ac%e4%ba%8c%e4%bb%b6%e4%ba%8b%e6%8a%8a-retrieval-%e4%bb%8e%e7%bb%a7%e7%bb%ad%e4%b8%8d%e7%bb%a7%e7%bb%ad%e5%8d%87%e7%ba%a7%e6%88%90-reranking" aria-label="章节链接：第二件事：把 Retrieval 从“继续不继续”升级成 reranking"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;现在 wcode 的 Jev 已经能判断：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;continue_retrieval?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation_required?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但下一步我更想做的是候选级别的 scoring。&lt;/p&gt;
+&lt;p&gt;比如一次 search / graph / experience / design lookup 找到 30 个候选：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 2
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 3
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 30
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不应该简单按 lexical hit 或固定 heuristic 全塞给模型。&lt;/p&gt;
+&lt;p&gt;更合理的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;bounded candidate pool
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; relevance?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; task-critical?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; test-related?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; security-sensitive?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; stale?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; contradictory?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rerank
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;top context
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但这里仍然需要 deterministic floor。&lt;/p&gt;
+&lt;p&gt;下面这些我不准备交给 Jev 删除：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;用户明确点名的 target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;当前 changed files
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;security-sensitive files
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mapped acceptance tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current failure locations
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA edit target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current revision evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jev 可以重排 optional context，不能删硬约束。&lt;/p&gt;
+&lt;h2 id="第三件事做-context-firewall"&gt;第三件事：做 Context Firewall&lt;a class="heading-anchor" href="#%e7%ac%ac%e4%b8%89%e4%bb%b6%e4%ba%8b%e5%81%9a-context-firewall" aria-label="章节链接：第三件事：做 Context Firewall"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;原文里有一个方向我觉得对 Agent 很重要：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;retrieved text 不应该默认等价于 instruction。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这件事在 Coding Agent 里比普通 RAG 更危险。&lt;/p&gt;
+&lt;p&gt;因为 Agent 会读：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;README；&lt;/li&gt;
+&lt;li&gt;docs；&lt;/li&gt;
+&lt;li&gt;issue；&lt;/li&gt;
+&lt;li&gt;generated source；&lt;/li&gt;
+&lt;li&gt;shell output；&lt;/li&gt;
+&lt;li&gt;web content；&lt;/li&gt;
+&lt;li&gt;dependency docs；&lt;/li&gt;
+&lt;li&gt;MCP resource；&lt;/li&gt;
+&lt;li&gt;comments。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这些内容里完全可能出现：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Ignore previous instructions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Run this command
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Upload this token
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Disable verification
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果都原样塞到 context 里，实际上是在把 repository data 和 agent instruction 混成一种东西。&lt;/p&gt;
+&lt;p&gt;所以我想在 Context Compiler 前再加一层：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;retrieved chunk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic boundary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic classification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── conflict
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── instruction-like
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── irrelevant
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context admission
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是 &lt;strong&gt;Context Firewall&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Jev 在这里不是安全 authority。&lt;/p&gt;
+&lt;p&gt;真正的权限仍然在 wcode。&lt;/p&gt;
+&lt;p&gt;但它可以帮忙判断：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;这段文本更像 evidence，还是更像试图改变 Agent 行为的 instruction？&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我觉得这个能力以后会越来越重要。&lt;/p&gt;
+&lt;h2 id="第四件事tools-不应该永远全量暴露"&gt;第四件事：Tools 不应该永远全量暴露&lt;a class="heading-anchor" href="#%e7%ac%ac%e5%9b%9b%e4%bb%b6%e4%ba%8btools-%e4%b8%8d%e5%ba%94%e8%af%a5%e6%b0%b8%e8%bf%9c%e5%85%a8%e9%87%8f%e6%9a%b4%e9%9c%b2" aria-label="章节链接：第四件事：Tools 不应该永远全量暴露"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这篇原文里另一个我非常认同的点，是 Tool calling 的 context 税。&lt;/p&gt;
+&lt;p&gt;现在 function calling / MCP 常见的方式是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;工具 schema 先全部放进模型 context。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;工具少的时候没问题。&lt;/p&gt;
+&lt;p&gt;工具几十、上百以后，开始出现两个代价：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;schema 本身很占 context；&lt;/li&gt;
+&lt;li&gt;action space 太大，模型选择未必更准确。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;wcode 自己这两年也一直在做 tool schema 收敛。&lt;/p&gt;
+&lt;p&gt;但我现在想更进一步：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;把完整 Tool Catalog 改成 Action Registry + progressive disclosure。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;第一层模型只看到：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;repository_search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;code_edit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;runtime_control
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;authorization
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design_state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些只是 capability hints。&lt;/p&gt;
+&lt;p&gt;真正选中一个 capability 后，再动态加载：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;exact action
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;full schema
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;argument constraints
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;examples
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;failure semantics
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;risk class
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是说：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Goal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Action Router
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Top-K capability
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;load full action schema
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;model tool call
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这和 TypeSafe 的 Skill Suggestion 很像：&lt;/p&gt;
+&lt;p&gt;先看短 description。&lt;/p&gt;
+&lt;p&gt;选 Top-K。&lt;/p&gt;
+&lt;p&gt;再加载更完整的信息做第二次判断。&lt;/p&gt;
+&lt;p&gt;如果这件事做成，我觉得 wcode 才真正有可能做到：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;内置很多能力，但不让模型每一轮都付出完整上下文成本。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="第五件事skillstoolscontext-rule-分开"&gt;第五件事：Skills、Tools、Context Rule 分开&lt;a class="heading-anchor" href="#%e7%ac%ac%e4%ba%94%e4%bb%b6%e4%ba%8bskillstoolscontext-rule-%e5%88%86%e5%bc%80" aria-label="章节链接：第五件事：Skills、Tools、Context Rule 分开"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我现在也越来越觉得这三个概念不应该混。&lt;/p&gt;
+&lt;h3 id="tool--action"&gt;Tool / Action&lt;a class="heading-anchor" href="#tool--action" aria-label="章节链接：Tool / Action"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;立刻执行一个动作：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;find references
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;start process
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="skill--workflow"&gt;Skill / Workflow&lt;a class="heading-anchor" href="#skill--workflow" aria-label="章节链接：Skill / Workflow"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;一类任务怎么做：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;release package
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;debug frontend
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;review migration
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;repair verification failure
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="context-rule"&gt;Context Rule&lt;a class="heading-anchor" href="#context-rule" aria-label="章节链接：Context Rule"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;做某类任务时必须带上的知识：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;frontend -&amp;gt; style guide
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;src/auth -&amp;gt; auth gotchas
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rust perf -&amp;gt; performance rules
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;writing -&amp;gt; personal style samples
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Context Rule 很像 AGENTS.md，但不是全局静态加载。&lt;/p&gt;
+&lt;p&gt;应该是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if scope == src/auth:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include auth-gotchas
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if task == frontend:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include frontend-style
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if task == release:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include release-policy
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;并且可以有一个很重要的属性：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sticky = true
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;意思不是永久存在于 KV cache。&lt;/p&gt;
+&lt;p&gt;而是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;只要 task condition 还成立，每次 Context Compiler 都必须重新带上。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这样就不会因为 compaction 或换模型把关键规则压没。&lt;/p&gt;
+&lt;h2 id="第六件事subagent-应该共享-state不是共享聊天"&gt;第六件事：Subagent 应该共享 State，不是共享聊天&lt;a class="heading-anchor" href="#%e7%ac%ac%e5%85%ad%e4%bb%b6%e4%ba%8bsubagent-%e5%ba%94%e8%af%a5%e5%85%b1%e4%ba%ab-state%e4%b8%8d%e6%98%af%e5%85%b1%e4%ba%ab%e8%81%8a%e5%a4%a9" aria-label="章节链接：第六件事：Subagent 应该共享 State，不是共享聊天"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;现在 subagent 最大的问题，我觉得一直不是“怎么启动另一个模型”。&lt;/p&gt;
+&lt;p&gt;真正麻烦的是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;主 Agent 的哪些 context 要传过去？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;它回来哪些东西要合并？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;它读到的 revision 还是不是当前 revision？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;几个 agent 同时写怎么办？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;结果有没有冲突？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;如果 State 是显式的，就可以换成另一种模型：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Subgoal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; id
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; input scope
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allowed reads
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allowed writes
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output schema
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;比如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;subgoal:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; inspect auth impact
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;revision:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; R
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Semantic Provider
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; src/auth
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mapped tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;write:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ImpactReport only
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它不需要复制主 Agent 的整个 session。&lt;/p&gt;
+&lt;p&gt;它只需要拿到一份 task-specific context view。&lt;/p&gt;
+&lt;p&gt;返回以后也不是“塞一大段聊天回来”，而是写一个结构化 artifact。&lt;/p&gt;
+&lt;p&gt;这时候 subagent 更像 worker，而不是另一个会话。&lt;/p&gt;
+&lt;h2 id="第七件事把-background-intelligence-当一等公民"&gt;第七件事：把 Background Intelligence 当一等公民&lt;a class="heading-anchor" href="#%e7%ac%ac%e4%b8%83%e4%bb%b6%e4%ba%8b%e6%8a%8a-background-intelligence-%e5%bd%93%e4%b8%80%e7%ad%89%e5%85%ac%e6%b0%91" aria-label="章节链接：第七件事：把 Background Intelligence 当一等公民"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;原文最后提到一个我觉得很有潜力的模式：&lt;/p&gt;
+&lt;p&gt;很多 Agent workflow 其实适合在后台跑。&lt;/p&gt;
+&lt;p&gt;尤其是只读任务：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;security review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;architecture review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;test-gap analysis
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph refresh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;documentation drift
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;eval generation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;performance analysis
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cross-model review
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它们都可以理解成：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;当前 repository revision 的函数。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以我更想让 wcode 后面形成：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Revision R
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Graph Builder
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Security Review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Architecture Review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Test Gap
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Docs Drift
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Eval Builder
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── Runtime Observation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Derived Engineering State
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只要 revision 变了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;R -&amp;gt; R+1
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;旧结果自动 stale。&lt;/p&gt;
+&lt;p&gt;这其实和 wcode 现在的 Evidence / Verification / Graph revision binding 是同一套思想。&lt;/p&gt;
+&lt;p&gt;我觉得这比“开很多 subagent 聊天”更像真正可维护的 multi-agent architecture。&lt;/p&gt;
+&lt;h2 id="第八件事model-router-最后再做"&gt;第八件事：Model Router 最后再做&lt;a class="heading-anchor" href="#%e7%ac%ac%e5%85%ab%e4%bb%b6%e4%ba%8bmodel-router-%e6%9c%80%e5%90%8e%e5%86%8d%e5%81%9a" aria-label="章节链接：第八件事：Model Router 最后再做"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;“Why yet another agent” 里花了不少篇幅讲 KV cache 怎么让 model routing 变得不经济。&lt;/p&gt;
+&lt;p&gt;我认同这个问题。&lt;/p&gt;
+&lt;p&gt;但我现在不会先做 model router。&lt;/p&gt;
+&lt;p&gt;因为如果 state/context 还是一坨 session history：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;再聪明的 routing 也只是在决定谁来重新吃这一坨 token。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;所以顺序应该反过来：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;先把 State 显式化
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;再做 Context Compiler
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;再做 Action Router
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;再做 Subgoal / Background Plane
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;最后 Model Router
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;到那个时候，小模型和大模型切换才自然：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;简单 task
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 编译一个很小的 Context View
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 小模型
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;复杂 task
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 编译一个更完整的 Context View
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 大模型
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;security review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 编译 security-specific View
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 独立 reviewer
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;模型不需要继承另一个模型过去半小时的“脑子”。&lt;/p&gt;
+&lt;p&gt;只需要读取同一份 Engineering State 的不同视图。&lt;/p&gt;
+&lt;h2 id="这会让-wcode-的定位更清楚"&gt;这会让 wcode 的定位更清楚&lt;a class="heading-anchor" href="#%e8%bf%99%e4%bc%9a%e8%ae%a9-wcode-%e7%9a%84%e5%ae%9a%e4%bd%8d%e6%9b%b4%e6%b8%85%e6%a5%9a" aria-label="章节链接：这会让 wcode 的定位更清楚"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我现在不太想把 wcode 定义成：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;一个更强的 Coding Agent。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;我更愿意把它定义成：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Coding Agent 下面的 Engineering Runtime。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;大概是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Codex / Claude / ChatGPT / 自研 Agent
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Current Goal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌─────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ wcode Decision │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Plane │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ deterministic + Jev │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └──────────┬──────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌─────────────────┼─────────────────┐
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼ ▼ ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Context Compiler Action Router Model Router
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Context Compiler Action Router Background Plane
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ │ │
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼ ▼ ▼
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; State Fabric Action Registry Models
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; State Fabric Action Registry Derived State
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── repository
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── execution
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── worklist
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── semantics
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── evidence
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── verification
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── runtime
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── background artifacts
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;其中我现在最想先做的不是 Model Router。&lt;/p&gt;
-&lt;p&gt;反而是前两个。&lt;/p&gt;
-&lt;h3 id="context-compiler--fabric"&gt;Context Compiler / Fabric&lt;a class="heading-anchor" href="#context-compiler--fabric" aria-label="章节链接：Context Compiler / Fabric"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;给所有可加载信息统一描述：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;source
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;revision
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;freshness
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;scope
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sensitivity
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cost
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;relevance
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;render level
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后根据当前 task 动态编译。&lt;/p&gt;
-&lt;h3 id="action-registry"&gt;Action Registry&lt;a class="heading-anchor" href="#action-registry" aria-label="章节链接：Action Registry"&gt;#&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;不让模型默认看完整 tool catalog。&lt;/p&gt;
-&lt;p&gt;先暴露轻量 capability index，需要时再加载完整 schema。&lt;/p&gt;
-&lt;p&gt;如果这两个成立，routing、subagent、skills 和 batteries included 后面都会好做很多。&lt;/p&gt;
-&lt;h2 id="typesafe--jev-在这里应该做什么"&gt;TypeSafe / Jev 在这里应该做什么&lt;a class="heading-anchor" href="#typesafe--jev-%e5%9c%a8%e8%bf%99%e9%87%8c%e5%ba%94%e8%af%a5%e5%81%9a%e4%bb%80%e4%b9%88" aria-label="章节链接：TypeSafe / Jev 在这里应该做什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;这里我也不想把 Jev 神化。&lt;/p&gt;
-&lt;p&gt;很多事情根本不需要模型：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;文件 SHA 对不对？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;当前 revision 是什么？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;路径在不在 Workspace？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 Evidence stale 了吗？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 command 被 policy 允许吗？
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;代码能算就让代码算。&lt;/p&gt;
-&lt;p&gt;TypeSafe / Jev 真正适合的是这种边界：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 chunk 对当前 query 有多相关？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;需要原文还是摘要？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;还缺不缺某类 repository evidence？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这几个 actions 哪个方向最合理？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 subgoal 和已有 subgoal 是不是重复？
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这段 retrieved text 是 evidence、冲突还是 instruction？
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;也就是把一些原本藏在 Agent prompt 里的“语义 if”结构化。&lt;/p&gt;
-&lt;p&gt;我还是会坚持现在 wcode 里那条边界：&lt;/p&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Execution
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Worklist
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Design State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Semantics
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Reconciliation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── Runtime Tasks
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Agent 可以换。&lt;/p&gt;
+&lt;p&gt;Model 可以换。&lt;/p&gt;
+&lt;p&gt;UI 可以换。&lt;/p&gt;
+&lt;p&gt;MCP client 可以换。&lt;/p&gt;
+&lt;p&gt;但工程状态和边界不换。&lt;/p&gt;
+&lt;p&gt;我觉得这是 wcode 最值得做的地方。&lt;/p&gt;
+&lt;h2 id="jev-在这套架构里的角色"&gt;Jev 在这套架构里的角色&lt;a class="heading-anchor" href="#jev-%e5%9c%a8%e8%bf%99%e5%a5%97%e6%9e%b6%e6%9e%84%e9%87%8c%e7%9a%84%e8%a7%92%e8%89%b2" aria-label="章节链接：Jev 在这套架构里的角色"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;如果把上面所有东西压成一句话：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Learned decision 可以增加工作，不能绕过 deterministic safety。&lt;/p&gt;
+&lt;p&gt;Jev 不应该是 wcode 的大脑，而应该是 wcode 里负责“模糊语义分支”的 typed decision engine。&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h2 id="一个更激进的想法agent-不再拥有状态"&gt;一个更激进的想法：Agent 不再拥有状态&lt;a class="heading-anchor" href="#%e4%b8%80%e4%b8%aa%e6%9b%b4%e6%bf%80%e8%bf%9b%e7%9a%84%e6%83%b3%e6%b3%95agent-%e4%b8%8d%e5%86%8d%e6%8b%a5%e6%9c%89%e7%8a%b6%e6%80%81" aria-label="章节链接：一个更激进的想法：Agent 不再拥有状态"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;传统 Agent 很像：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Agent session
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; owns
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context/history/state
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我现在更喜欢：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Engineering Runtime
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; owns
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;state
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Agent
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; leases
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;a task-specific view
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Agent 只是当前这个任务的计算器。&lt;/p&gt;
-&lt;p&gt;它拿到一份 Context View，做一轮判断，调用 action，把结果写回 runtime。&lt;/p&gt;
-&lt;p&gt;下一轮甚至可以是另一个模型。&lt;/p&gt;
-&lt;p&gt;只要 state contract 没变，就不用把整个“脑子”搬过去。&lt;/p&gt;
-&lt;p&gt;如果最后能做到这一点，所谓 model routing 才会真正自然：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;任务简单
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 小模型拿一份小 context
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;任务复杂
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 大模型拿一份更丰富 context
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;需要 review
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ 另一个模型读取同一 revision 的 review view
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;不需要把一个模型过去半小时的 session 全部 replay 给另一个模型。&lt;/p&gt;
-&lt;p&gt;我觉得这才是 routing 真正应该解决的问题。&lt;/p&gt;
+&lt;p&gt;比如：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 chunk 是否相关？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;是否需要更详细版本？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;是否还缺 evidence？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这几个合法 action 哪个更适合？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 subgoal 是否重复？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这个 diff 是否值得额外 review？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;这段 retrieved text 是 evidence 还是 instruction？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些问题非常适合：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Choice
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Score
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;而：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;能不能写这个文件？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;能不能执行这个 command？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;当前 SHA 对不对？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;验证通过没有？
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence stale 没有？
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;继续由 deterministic code 决定。&lt;/p&gt;
+&lt;p&gt;我觉得这两层分得越清楚，系统反而越稳。&lt;/p&gt;
+&lt;h2 id="我准备怎么推进"&gt;我准备怎么推进&lt;a class="heading-anchor" href="#%e6%88%91%e5%87%86%e5%a4%87%e6%80%8e%e4%b9%88%e6%8e%a8%e8%bf%9b" aria-label="章节链接：我准备怎么推进"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这次看完以后，我给 wcode 后续重构排的顺序大概是：&lt;/p&gt;
+&lt;h3 id="1-decision-policy-产品化"&gt;1. Decision Policy 产品化&lt;a class="heading-anchor" href="#1-decision-policy-%e4%ba%a7%e5%93%81%e5%8c%96" aria-label="章节链接：1. Decision Policy 产品化"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;现在 question set、threshold、distribution、calibration 已经有了。&lt;/p&gt;
+&lt;p&gt;下一步要把它们变成真正可版本化的 policy：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;question_set_version
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;decision_policy_version
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;requested_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;resolved_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;calibration sample
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Brier
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;false-stop
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;false-continue
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="2-semantic-retrieval-reranker"&gt;2. Semantic Retrieval Reranker&lt;a class="heading-anchor" href="#2-semantic-retrieval-reranker" aria-label="章节链接：2. Semantic Retrieval Reranker"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;让 Jev 从“还要不要搜”变成“这些候选哪个最值得进 context”。&lt;/p&gt;
+&lt;h3 id="3-context-firewall"&gt;3. Context Firewall&lt;a class="heading-anchor" href="#3-context-firewall" aria-label="章节链接：3. Context Firewall"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;区分：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;conflict
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;instruction-like content
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;irrelevant
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="4-context-compiler"&gt;4. Context Compiler&lt;a class="heading-anchor" href="#4-context-compiler" aria-label="章节链接：4. Context Compiler"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;统一决定每个 context chunk：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;omit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;summary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;detailed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="5-action-registry"&gt;5. Action Registry&lt;a class="heading-anchor" href="#5-action-registry" aria-label="章节链接：5. Action Registry"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;让模型先看 capability index，再动态加载完整 tool schema。&lt;/p&gt;
+&lt;h3 id="6-structured-skill--context-rule"&gt;6. Structured Skill / Context Rule&lt;a class="heading-anchor" href="#6-structured-skill--context-rule" aria-label="章节链接：6. Structured Skill / Context Rule"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;把 workflow 和长期上下文规则分开。&lt;/p&gt;
+&lt;h3 id="7-background-intelligence"&gt;7. Background Intelligence&lt;a class="heading-anchor" href="#7-background-intelligence" aria-label="章节链接：7. Background Intelligence"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;把 graph、review、security、eval、docs drift 变成 revision-bound derived state。&lt;/p&gt;
+&lt;h3 id="8-最后才做-model-routing"&gt;8. 最后才做 Model Routing&lt;a class="heading-anchor" href="#8-%e6%9c%80%e5%90%8e%e6%89%8d%e5%81%9a-model-routing" aria-label="章节链接：8. 最后才做 Model Routing"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;到这一步，routing 才不是简单的“换模型”。&lt;/p&gt;
+&lt;p&gt;而是：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;为不同模型编译不同成本、不同深度、但来自同一个 State Fabric 的 Context View。&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h2 id="最后"&gt;最后&lt;a class="heading-anchor" href="#%e6%9c%80%e5%90%8e" aria-label="章节链接：最后"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;“Why yet another agent” 这个标题一开始会让人以为答案是：&lt;/p&gt;
+&lt;p&gt;Jev 对我最大的启发并不是“有一个便宜模型可以帮 Agent 做判断”。&lt;/p&gt;
+&lt;p&gt;真正重要的是：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;因为我们能做一个更好的 Agent。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;把 Agent 里的语义判断，从隐式 Prompt 行为变成显式、可类型化、可版本化、可校准的程序接口。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;我读完以后得到的答案反而是：&lt;/p&gt;
+&lt;p&gt;而 “Why yet another agent” 又把这个思路往前推了一步：&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;&lt;strong&gt;也许根本不应该先做 another agent。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;如果 state 也是显式的，很多今天围绕 KV cache 长出来的复杂设计，可能根本不需要存在。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;p&gt;现在很多 Coding Agent 的奇怪结构，并不一定是 Agent 的本质。&lt;/p&gt;
-&lt;p&gt;它们可能只是我们为了维护一个巨大、昂贵、不断增长的 KV cache，而逐渐长出来的工程妥协。&lt;/p&gt;
-&lt;p&gt;如果把 state 和 context 拆开，把 context 看成每轮动态编译的视图，把 tools/skills 看成可检索的 action space，把 subagent 看成共享 revision 上的结构化 worker，很多今天很难的问题会换一种样子。&lt;/p&gt;
-&lt;p&gt;所以对 wcode 来说，我现在更想做的不是一个新的聊天界面。&lt;/p&gt;
-&lt;p&gt;而是继续往下面走：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;State Fabric、Context Compiler、Action Registry、Background Intelligence。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Agent 本身可以很薄。&lt;/p&gt;
-&lt;p&gt;如果未来所有 Coding Agent 都能踩在这层上面，那比再做一个 Claude Code clone 有意思得多。&lt;/p&gt;</description></item></channel></rss>
+&lt;p&gt;所以接下来我想继续把 wcode 从 Repository Control Plane 往 Engineering Runtime 推。&lt;/p&gt;
+&lt;p&gt;不是再做一个 Agent。&lt;/p&gt;
+&lt;p&gt;而是让任何 Agent 都能踩在一套更干净的：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;State、Context、Decision、Action、Verification、Evidence 和 Background Intelligence&lt;/strong&gt; 上。&lt;/p&gt;
+&lt;p&gt;如果这个方向走通，我觉得它会比再造一个 Claude Code clone 有意思得多。&lt;/p&gt;</description></item></channel></rss>
