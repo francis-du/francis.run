@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Context | Francis Du</title><link>https://francis.run/en/tags/context/</link><atom:link href="https://francis.run/en/tags/context/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>en-US</language><copyright>© Francis Du</copyright><lastBuildDate>Tue, 22 Sep 2026 02:36:00 +0800</lastBuildDate><item><title>wcode: Rebuilding the Coding Agent Runtime Around Jev</title><link>https://francis.run/en/blog/coding-agent-without-kv-cache/</link><pubDate>Tue, 22 Sep 2026 02:36:00 +0800</pubDate><guid>https://francis.run/en/blog/coding-agent-without-kv-cache/</guid><description>&lt;p&gt;I have been thinking about one question for a while:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Should the next phase of wcode keep adding more agent features, or should it rebuild the layer underneath the agent?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;A few days ago I read a note called &lt;a href="https://docs.google.com/document/d/1G61uUB0FifUnmmrPzFQojZ3KpczYKmXGpgEXDJ2l_Zg/mobilebasic"&gt;Why yet another agent&lt;/a&gt;. One question in it stuck with me:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;How would you design a coding agent if LLMs had no KV cache?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That framing made a lot of things I had stopped questioning look strange again: compaction, restart, subagents, tool schemas, skills, model routing, long sessions, and memory.&lt;/p&gt;
+&lt;p&gt;My conclusion was not that we need a smarter agent.&lt;/p&gt;
+&lt;p&gt;It was almost the opposite.&lt;/p&gt;
+&lt;p&gt;I am more convinced now that &lt;strong&gt;wcode should not try to copy Claude Code, Codex, or Cursor. It should build the runtime layer those agents are missing underneath.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;The most useful idea I take from Jev / TypeSafe is not “use another model.”&lt;/p&gt;
+&lt;p&gt;It is this:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Turn fuzzy semantic judgments that normally live inside prompts and context into typed, bounded, explicit program decisions.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This is how I now want to keep restructuring wcode.&lt;/p&gt;
+&lt;h2 id="i-do-not-want-jev-to-run-the-agent"&gt;I do not want Jev to run the agent&lt;a class="heading-anchor" href="#i-do-not-want-jev-to-run-the-agent" aria-label="Permalink to section: I do not want Jev to run the agent"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The first distinction matters.&lt;/p&gt;
+&lt;p&gt;I am not trying to build this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev decides everything
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That would move wcode in the wrong direction.&lt;/p&gt;
+&lt;p&gt;A lot of wcode is deliberately deterministic already:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this file SHA still current?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this path inside the Workspace?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this command authorized?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Did Verification actually run?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Does this Evidence belong to the current revision?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Has Design State drifted?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Are there unfinished Worklist items?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If code can compute the answer, code should compute it.&lt;/p&gt;
+&lt;p&gt;Jev is more useful for another class of questions:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is the current context sufficient?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Are we still missing important evidence?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Do we actually need callers / references / implementations?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Which legal action best fits the current semantic state?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Does this failure need more evidence, more semantics, or a direct repair?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;These are the semantic if-statements that often end up buried in agent prompts.&lt;/p&gt;
+&lt;p&gt;That is why I think of Jev as part of the &lt;strong&gt;Decision Plane&lt;/strong&gt;, not as another agent.&lt;/p&gt;
+&lt;h2 id="wcode-already-has-a-first-version-of-that-decision-plane"&gt;wcode already has a first version of that Decision Plane&lt;a class="heading-anchor" href="#wcode-already-has-a-first-version-of-that-decision-plane" aria-label="Permalink to section: wcode already has a first version of that Decision Plane"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Jev in wcode does not receive the raw user prompt and take over.&lt;/p&gt;
+&lt;p&gt;The rough shape today is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;repository state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic baseline
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── worktree
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── semantic readiness
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── current risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;DecisionRequest
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── local deterministic decision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── Jev decision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; shadow comparison
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; increase-only guidance
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jev currently answers typed questions through Noul, Choice, and Score.&lt;/p&gt;
+&lt;p&gt;For example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context_sufficient -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;continue_retrieval -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation_required -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification_escalation -&amp;gt; Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;next_action -&amp;gt; Choice
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;risk_surface -&amp;gt; Choice
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence_density -&amp;gt; Score
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But it cannot say:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“Looks fine to me, skip verification.”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The current rule is simple:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Jev may increase work, but it may not reduce deterministic safety.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;It can ask wcode to:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;retrieve one more symbol
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;review the worktree first
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run semantic navigation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;raise verification to full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It cannot remove:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;SHA preconditions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;authorization
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;workspace containment
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;the verification floor
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current-revision evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I want to keep that boundary.&lt;/p&gt;
+&lt;h2 id="the-bigger-jev-lesson-state-should-come-before-prompt"&gt;The bigger Jev lesson: State should come before Prompt&lt;a class="heading-anchor" href="#the-bigger-jev-lesson-state-should-come-before-prompt" aria-label="Permalink to section: The bigger Jev lesson: State should come before Prompt"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A traditional coding agent often treats state as something like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;system prompt
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ conversation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ files read earlier
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ tool calls
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ tool outputs
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;+ compaction summary
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In other words:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;What the model knows is mostly a function of what happened earlier in this session.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That aligns naturally with KV-cache reuse.&lt;/p&gt;
+&lt;p&gt;It is not necessarily the right state model for an engineering system.&lt;/p&gt;
+&lt;p&gt;wcode already owns a lot of state that should never belong to a chat transcript in the first place:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Execution
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Worklist
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Design State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Semantic Provider State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Impact
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Verification Plan
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Reconciliation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Runtime Task
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That is the project state that matters.&lt;/p&gt;
+&lt;p&gt;A model can change.&lt;/p&gt;
+&lt;p&gt;A client can change.&lt;/p&gt;
+&lt;p&gt;A session can die.&lt;/p&gt;
+&lt;p&gt;Compaction can happen.&lt;/p&gt;
+&lt;p&gt;None of those events should erase or distort engineering state.&lt;/p&gt;
+&lt;p&gt;So the direction I want to push harder is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;The Runtime owns state. The Agent leases a task-specific view of it.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="first-turn-agent-context-into-a-context-compiler"&gt;First: turn Agent Context into a Context Compiler&lt;a class="heading-anchor" href="#first-turn-agent-context-into-a-context-compiler" aria-label="Permalink to section: First: turn Agent Context into a Context Compiler"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode already has agent_context.&lt;/p&gt;
+&lt;p&gt;It does much more than “search a few files”:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;localizes the target;&lt;/li&gt;
+&lt;li&gt;attaches the current SHA;&lt;/li&gt;
+&lt;li&gt;includes Design State;&lt;/li&gt;
+&lt;li&gt;includes verification entry points;&lt;/li&gt;
+&lt;li&gt;includes graph / semantic readiness;&lt;/li&gt;
+&lt;li&gt;includes the Worklist;&lt;/li&gt;
+&lt;li&gt;returns next actions.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;But from this new perspective, it can go further.&lt;/p&gt;
+&lt;p&gt;I want to move it from:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;“produce one edit-ready context bundle”&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;toward:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;compile the context required for this specific task.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Everything that could enter the model would first become some form of context candidate:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ContextChunk {
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; source
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; scope
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; freshness
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; sensitivity
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; cost
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; relevance
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; precision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; render_level
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then each task gets compiled again:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current goal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate chunks
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── source
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── semantic state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── design
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── worklist
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── past decisions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── runtime state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic filters
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev semantic scoring
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;render policy
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── omit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── one-line summary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── detailed summary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── full content
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;compiled context
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That differs from compaction in an important way.&lt;/p&gt;
+&lt;p&gt;Compaction asks:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;How do I compress everything that happened before?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;A Context Compiler asks:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Why does this task need to see this piece of state at all?&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I think that is the more fundamental optimization.&lt;/p&gt;
+&lt;h2 id="second-move-retrieval-from-continue-or-stop-to-reranking"&gt;Second: move Retrieval from “continue or stop” to reranking&lt;a class="heading-anchor" href="#second-move-retrieval-from-continue-or-stop-to-reranking" aria-label="Permalink to section: Second: move Retrieval from “continue or stop” to reranking"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode already asks Jev questions like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;continue_retrieval?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation_required?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The next step I want is candidate-level scoring.&lt;/p&gt;
+&lt;p&gt;Suppose search, graph traversal, experience retrieval, and design lookup produce thirty candidates:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 1
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 2
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 3
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;candidate 30
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Today it is easy to rely too much on lexical order or fixed heuristics.&lt;/p&gt;
+&lt;p&gt;I would rather have:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;bounded candidate pool
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Jev:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; relevant?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; task-critical?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; test-related?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; security-sensitive?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; stale?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; contradictory?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;rerank
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;top context
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;But this still needs a deterministic floor.&lt;/p&gt;
+&lt;p&gt;I do not want Jev to be able to remove:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;a user-named target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current changed files
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;security-sensitive files
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;mapped acceptance tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current failure locations
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;the SHA edit target
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;current-revision evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Jev may rerank optional context. It does not get to delete mandatory evidence.&lt;/p&gt;
+&lt;h2 id="third-add-a-context-firewall"&gt;Third: add a Context Firewall&lt;a class="heading-anchor" href="#third-add-a-context-firewall" aria-label="Permalink to section: Third: add a Context Firewall"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;One idea from the note that matters a lot for coding agents is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Retrieved text should not automatically become instruction.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That is more dangerous in a coding agent than in ordinary RAG.&lt;/p&gt;
+&lt;p&gt;An agent reads:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;README files;&lt;/li&gt;
+&lt;li&gt;docs;&lt;/li&gt;
+&lt;li&gt;issues;&lt;/li&gt;
+&lt;li&gt;generated source;&lt;/li&gt;
+&lt;li&gt;shell output;&lt;/li&gt;
+&lt;li&gt;web content;&lt;/li&gt;
+&lt;li&gt;dependency manuals;&lt;/li&gt;
+&lt;li&gt;MCP resources;&lt;/li&gt;
+&lt;li&gt;comments.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Any of those can contain text like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Ignore previous instructions
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Run this command
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Upload this token
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Disable verification
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If all of that becomes undifferentiated model context, repository data and agent instructions collapse into the same channel.&lt;/p&gt;
+&lt;p&gt;So before the Context Compiler I want another layer:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;retrieved chunk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;deterministic boundary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic classification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── conflict
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── instruction-like
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── irrelevant
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;context admission
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I think of this as a &lt;strong&gt;Context Firewall&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;Jev would not become the security authority here.&lt;/p&gt;
+&lt;p&gt;The actual permissions stay in wcode.&lt;/p&gt;
+&lt;p&gt;But Jev can help answer:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Does this text look like evidence, or is it trying to change agent behavior?&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That distinction will matter more as agents consume more external data.&lt;/p&gt;
+&lt;h2 id="fourth-stop-exposing-the-entire-tool-catalog-forever"&gt;Fourth: stop exposing the entire Tool Catalog forever&lt;a class="heading-anchor" href="#fourth-stop-exposing-the-entire-tool-catalog-forever" aria-label="Permalink to section: Fourth: stop exposing the entire Tool Catalog forever"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Another part of the note I strongly agree with is the context tax of tool calling.&lt;/p&gt;
+&lt;p&gt;The usual function-calling / MCP model is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Put all tool schemas in context before the model makes a decision.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That works when there are ten tools.&lt;/p&gt;
+&lt;p&gt;It gets awkward with dozens or hundreds.&lt;/p&gt;
+&lt;p&gt;There are two costs:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;the schemas themselves consume context;&lt;/li&gt;
+&lt;li&gt;a huge action space does not necessarily improve tool selection.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;wcode has already spent a lot of time shrinking its model-facing schemas.&lt;/p&gt;
+&lt;p&gt;I want to go further:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Replace the permanently visible Tool Catalog with an Action Registry plus progressive disclosure.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The model would first see only lightweight capability hints:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;repository_search
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;semantic_navigation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;code_edit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;runtime_control
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;authorization
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;design_state
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Only after selecting a capability would the runtime expose:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;the exact action
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;the full schema
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;argument constraints
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;examples
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;failure semantics
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;risk class
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The flow becomes:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Goal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Action Router
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Top-K capability
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;load full action schema
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;model tool call
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This resembles TypeSafe&amp;rsquo;s Skill Suggestion pattern:&lt;/p&gt;
+&lt;p&gt;start with short descriptions,&lt;/p&gt;
+&lt;p&gt;pick a small Top-K,&lt;/p&gt;
+&lt;p&gt;then load richer information and decide again.&lt;/p&gt;
+&lt;p&gt;If this works well, wcode can include a large number of capabilities without charging the model the full context cost on every turn.&lt;/p&gt;
+&lt;h2 id="fifth-separate-skills-tools-and-context-rules"&gt;Fifth: separate Skills, Tools, and Context Rules&lt;a class="heading-anchor" href="#fifth-separate-skills-tools-and-context-rules" aria-label="Permalink to section: Fifth: separate Skills, Tools, and Context Rules"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I increasingly think these are three different abstractions.&lt;/p&gt;
+&lt;h3 id="tool--action"&gt;Tool / Action&lt;a class="heading-anchor" href="#tool--action" aria-label="Permalink to section: Tool / Action"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;An operation that should happen now:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;run verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read file
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;find references
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;start process
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="skill--workflow"&gt;Skill / Workflow&lt;a class="heading-anchor" href="#skill--workflow" aria-label="Permalink to section: Skill / Workflow"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;How to handle a class of tasks:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;release package
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;debug frontend
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;review migration
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;repair verification failure
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="context-rule"&gt;Context Rule&lt;a class="heading-anchor" href="#context-rule" aria-label="Permalink to section: Context Rule"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Knowledge that should remain available while a condition is true:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;frontend -&amp;gt; style guide
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;src/auth -&amp;gt; auth gotchas
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Rust perf -&amp;gt; performance rules
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;writing -&amp;gt; personal style samples
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That third category is easy to miss.&lt;/p&gt;
+&lt;p&gt;It resembles AGENTS.md, but it should not require globally loading the whole file.&lt;/p&gt;
+&lt;p&gt;It should look more like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if scope == src/auth:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include auth-gotchas
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if task == frontend:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include frontend-style
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;if task == release:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; include release-policy
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;And it should support something conceptually like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sticky = true
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Not “keep this in KV cache forever.”&lt;/p&gt;
+&lt;p&gt;Instead:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;As long as the task condition remains true, the Context Compiler must keep re-including this rule.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That avoids important instructions disappearing after compaction or a model switch.&lt;/p&gt;
+&lt;h2 id="sixth-subagents-should-share-state-not-chat-history"&gt;Sixth: Subagents should share State, not chat history&lt;a class="heading-anchor" href="#sixth-subagents-should-share-state-not-chat-history" aria-label="Permalink to section: Sixth: Subagents should share State, not chat history"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The hardest part of subagents has never been “how do I call another model?”&lt;/p&gt;
+&lt;p&gt;The hard questions are:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Which parts of the main context should be passed over?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;What should be merged back?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is the subagent still reading the current revision?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;What happens when several workers write?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;How do we represent conflicts?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;If State is explicit, the abstraction can change.&lt;/p&gt;
+&lt;p&gt;A subtask can be described as:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Subgoal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; id
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; revision
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; input scope
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allowed reads
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; allowed writes
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; output schema
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;For example:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;subgoal:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; inspect auth impact
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;revision:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; R
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;read:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Semantic Provider
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; src/auth
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mapped tests
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;write:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ImpactReport only
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;It does not need a copy of the main agent&amp;rsquo;s entire session.&lt;/p&gt;
+&lt;p&gt;It needs a task-specific context view.&lt;/p&gt;
+&lt;p&gt;Its result should not be “another long conversation to paste back.”&lt;/p&gt;
+&lt;p&gt;It should be a structured artifact.&lt;/p&gt;
+&lt;p&gt;At that point a subagent looks more like a worker than another chat.&lt;/p&gt;
+&lt;h2 id="seventh-make-background-intelligence-first-class"&gt;Seventh: make Background Intelligence first-class&lt;a class="heading-anchor" href="#seventh-make-background-intelligence-first-class" aria-label="Permalink to section: Seventh: make Background Intelligence first-class"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The appendices in the note point out another pattern I find promising:&lt;/p&gt;
+&lt;p&gt;A lot of useful agent workflows are naturally background work.&lt;/p&gt;
+&lt;p&gt;Especially read-only tasks:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;security review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;architecture review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;test-gap analysis
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph refresh
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;documentation drift
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;eval generation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;performance analysis
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cross-model review
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;All of them can be modeled as:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A function of the current repository revision.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;That suggests a wcode shape like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Revision R
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Graph Builder
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Security Review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Architecture Review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Test Gap
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Docs Drift
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Eval Builder
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── Runtime Observation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Derived Engineering State
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;When the revision changes:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;R -&amp;gt; R+1
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;old derived results become stale.&lt;/p&gt;
+&lt;p&gt;This is already close to how wcode treats Evidence, Verification, graph provenance, and revision binding.&lt;/p&gt;
+&lt;p&gt;I think this is a more maintainable multi-agent architecture than “spawn many agent chats and merge their prose.”&lt;/p&gt;
+&lt;h2 id="eighth-model-routing-comes-last"&gt;Eighth: Model Routing comes last&lt;a class="heading-anchor" href="#eighth-model-routing-comes-last" aria-label="Permalink to section: Eighth: Model Routing comes last"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Why yet another agent spends time on the way KV cache can make model routing economically strange.&lt;/p&gt;
+&lt;p&gt;I agree with the problem.&lt;/p&gt;
+&lt;p&gt;But I do not want to build the model router first.&lt;/p&gt;
+&lt;p&gt;If state and context are still one giant session history, then:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A smarter router is mostly deciding which model has to ingest the giant transcript again.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The order should be reversed:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;make State explicit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;build the Context Compiler
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;build the Action Router
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;build Subgoal / Background planes
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ↓
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;then build Model Routing
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;At that point model switching becomes much more natural:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;simple task
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ compile a small Context View
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ cheap / fast model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;complex task
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ compile a richer Context View
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ stronger model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;security review
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ compile a security-specific View
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;→ independent reviewer
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The second model does not need to inherit the first model&amp;rsquo;s last half-hour of “brain state.”&lt;/p&gt;
+&lt;p&gt;It reads another view of the same Engineering State.&lt;/p&gt;
+&lt;h2 id="this-makes-the-wcode-product-boundary-clearer"&gt;This makes the wcode product boundary clearer&lt;a class="heading-anchor" href="#this-makes-the-wcode-product-boundary-clearer" aria-label="Permalink to section: This makes the wcode product boundary clearer"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;I do not want to define wcode as:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;a stronger coding agent.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I would rather define it as:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;an Engineering Runtime underneath coding agents.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Something like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Codex / Claude / ChatGPT / custom agents
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Current Goal
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌─────────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ wcode Decision │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Plane │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ deterministic + Jev │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └──────────┬──────────┘
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ┌─────────────────┼─────────────────┐
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼ ▼ ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Context Compiler Action Router Background Plane
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ │ │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼ ▼ ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; State Fabric Action Registry Derived State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Execution
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Worklist
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Workspace
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Design State
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Software Graph
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Semantics
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Risk
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Verification
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ├── Reconciliation
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; └── Runtime Tasks
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The Agent can change.&lt;/p&gt;
+&lt;p&gt;The model can change.&lt;/p&gt;
+&lt;p&gt;The UI can change.&lt;/p&gt;
+&lt;p&gt;The MCP client can change.&lt;/p&gt;
+&lt;p&gt;The engineering state and its boundaries do not.&lt;/p&gt;
+&lt;p&gt;That feels like the part wcode is actually well positioned to own.&lt;/p&gt;
+&lt;h2 id="jevs-role-in-this-architecture"&gt;Jev&amp;rsquo;s role in this architecture&lt;a class="heading-anchor" href="#jevs-role-in-this-architecture" aria-label="Permalink to section: Jev’s role in this architecture"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;If I compress all of this into one sentence:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Jev should not be wcode&amp;rsquo;s brain. It should be the typed decision engine for fuzzy semantic branches inside wcode.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Questions such as:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this context chunk relevant?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Does it need a fuller rendering?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Are we still missing evidence?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Which legal action fits best?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this subgoal duplicating earlier work?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Does this diff justify extra review?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this retrieved text evidence or instruction-like content?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;map naturally to:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Noul
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Choice
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Score
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Questions like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Can this file be written?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Can this command run?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this SHA current?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Did verification pass?
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Is this Evidence stale?
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;should stay deterministic.&lt;/p&gt;
+&lt;p&gt;The cleaner that boundary is, the safer the system becomes.&lt;/p&gt;
+&lt;h2 id="how-i-want-to-implement-the-next-phase"&gt;How I want to implement the next phase&lt;a class="heading-anchor" href="#how-i-want-to-implement-the-next-phase" aria-label="Permalink to section: How I want to implement the next phase"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;After reading the note, this is roughly how I would order the next wcode restructuring work.&lt;/p&gt;
+&lt;h3 id="1-productize-decision-policy"&gt;1. Productize Decision Policy&lt;a class="heading-anchor" href="#1-productize-decision-policy" aria-label="Permalink to section: 1. Productize Decision Policy"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The question sets, thresholds, distributions, and calibration machinery already exist.&lt;/p&gt;
+&lt;p&gt;The next step is to make them explicit versioned policy:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;question_set_version
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;decision_policy_version
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;requested_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;resolved_model
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;calibration sample
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Brier
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;false-stop
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;false-continue
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="2-semantic-retrieval-reranker"&gt;2. Semantic Retrieval Reranker&lt;a class="heading-anchor" href="#2-semantic-retrieval-reranker" aria-label="Permalink to section: 2. Semantic Retrieval Reranker"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Move Jev from “should we keep searching?” to “which candidates deserve context?”&lt;/p&gt;
+&lt;h3 id="3-context-firewall"&gt;3. Context Firewall&lt;a class="heading-anchor" href="#3-context-firewall" aria-label="Permalink to section: 3. Context Firewall"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Classify:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;evidence
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;conflict
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;instruction-like content
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;irrelevant
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="4-context-compiler"&gt;4. Context Compiler&lt;a class="heading-anchor" href="#4-context-compiler" aria-label="Permalink to section: 4. Context Compiler"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Choose a render level for each chunk:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;omit
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;summary
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;detailed
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;full
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h3 id="5-action-registry"&gt;5. Action Registry&lt;a class="heading-anchor" href="#5-action-registry" aria-label="Permalink to section: 5. Action Registry"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Show the model a lightweight capability index first, then load complete tool schemas on demand.&lt;/p&gt;
+&lt;h3 id="6-structured-skill--context-rule"&gt;6. Structured Skill / Context Rule&lt;a class="heading-anchor" href="#6-structured-skill--context-rule" aria-label="Permalink to section: 6. Structured Skill / Context Rule"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Separate workflow behavior from long-lived task context.&lt;/p&gt;
+&lt;h3 id="7-background-intelligence"&gt;7. Background Intelligence&lt;a class="heading-anchor" href="#7-background-intelligence" aria-label="Permalink to section: 7. Background Intelligence"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Turn graph refresh, review, security, eval generation, and docs drift into revision-bound derived state.&lt;/p&gt;
+&lt;h3 id="8-model-routing-last"&gt;8. Model Routing last&lt;a class="heading-anchor" href="#8-model-routing-last" aria-label="Permalink to section: 8. Model Routing last"&gt;#&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Only then should routing mean more than “switch models.”&lt;/p&gt;
+&lt;p&gt;It becomes:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Compile different cost / depth views from the same State Fabric for different models.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id="final-thought"&gt;Final thought&lt;a class="heading-anchor" href="#final-thought" aria-label="Permalink to section: Final thought"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The biggest thing Jev changed for me is not that there is a cheap model that can make small decisions for an agent.&lt;/p&gt;
+&lt;p&gt;The important idea is:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Move semantic decisions out of implicit prompt behavior and into typed, versioned, calibratable program interfaces.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Why yet another agent pushes that one step further:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;If state is explicit too, many of the complicated structures that grew around KV-cache-heavy sessions may not be fundamental at all.&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;So the next phase of wcode, for me, is moving from Repository Control Plane toward Engineering Runtime.&lt;/p&gt;
+&lt;p&gt;Not another agent.&lt;/p&gt;
+&lt;p&gt;A cleaner substrate that any agent can use:&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;State, Context, Decision, Action, Verification, Evidence, and Background Intelligence.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;If that works, I think it is a much more interesting direction than building another Claude Code clone.&lt;/p&gt;</description></item></channel></rss>
