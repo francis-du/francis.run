@@ -7,6 +7,15 @@
     - component:editorial-content
 
 - schema_version: 1
+  id: CONSTRAINT-DEFAULT-BILINGUAL-ARTICLES
+  title: New technical articles default to Chinese and English
+  statement: >-
+    Unless Francis explicitly requests a single language, every newly written or substantially rewritten technical article must be published as a Chinese/English translation pair in the same change. The two files must share one translationKey and stable counterpart routes, preserve the same technical claims and evidence, and read naturally in each language instead of using mechanical sentence-by-sentence translation. A single-language request is an explicit exception for that article only and does not change the repository default.
+  applies_to:
+    - component:editorial-content
+    - component:multilingual-site
+
+- schema_version: 1
   id: CONSTRAINT-SITE-IDENTITY-LABELS
   title: Site identity labels are user-owned copy
   statement: >-

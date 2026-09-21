@@ -1,7 +1,7 @@
 - schema_version: 1
   id: AC-CONTENT-001
-  title: Bilingual wcode introduction is published
-  statement: A natural Chinese introduction and a separately written English introduction to wcode are present at their stable language-specific routes; editorial changes remain subject to the human-voice constraint.
+  title: Technical publishing defaults to natural bilingual pairs
+  statement: Unless an article is explicitly requested in one language, new or substantially rewritten technical articles are published as natural Chinese/English counterparts with one shared translationKey and equivalent technical claims; the evergreen wcode introduction remains present at its stable language-specific routes and all editorial changes remain subject to the human-voice constraint.
   verification:
     - kind: check
       id: make-check

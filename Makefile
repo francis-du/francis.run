@@ -177,6 +177,12 @@ check:
 	test -f $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
 	grep -q 'wcode v0.8：我开始把仓库当成一个 Engineering Digital Twin' $(BUILD_DIR)/blog/wcode-v0-8/index.html
 	grep -q 'wcode 0.8: I Started Treating the Repository as an Engineering Digital Twin' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
+	test -f $(BUILD_DIR)/blog/coding-agent-without-kv-cache/index.html
+	test -f $(BUILD_DIR)/en/blog/coding-agent-without-kv-cache/index.html
+	grep -q 'wcode：用 Jev 的理念重构 Coding Agent Runtime' $(BUILD_DIR)/blog/coding-agent-without-kv-cache/index.html
+	grep -q 'wcode: Rebuilding the Coding Agent Runtime Around Jev' $(BUILD_DIR)/en/blog/coding-agent-without-kv-cache/index.html
+	grep -q 'hreflang=en-US href=$(SITE_ORIGIN)/en/blog/coding-agent-without-kv-cache/' $(BUILD_DIR)/blog/coding-agent-without-kv-cache/index.html
+	grep -q 'hreflang=zh-CN href=$(SITE_ORIGIN)/blog/coding-agent-without-kv-cache/' $(BUILD_DIR)/en/blog/coding-agent-without-kv-cache/index.html
 	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/wcode-v0-8\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/blog/wcode-v0-8/index.html
 	grep -Eq 'property="og:image" content="$(SITE_ORIGIN)/img/share/wcode-v0-8\.en\.[0-9a-f]{64}\.png"' $(BUILD_DIR)/en/blog/wcode-v0-8/index.html
 	test -f $(BUILD_DIR)/blog/jev-wcode-scopwis/index.html

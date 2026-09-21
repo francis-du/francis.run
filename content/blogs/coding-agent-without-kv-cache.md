@@ -3,6 +3,7 @@ title: "wcode：用 Jev 的理念重构 Coding Agent Runtime"
 date: 2026-09-22T02:35:00+08:00
 draft: false
 url: /blog/coding-agent-without-kv-cache/
+translationKey: wcode-jev-agent-runtime
 description: "我不想把 wcode 做成另一个 Claude Code。读完 Why yet another agent 后，我更确定应该用 Jev / TypeSafe 的理念重构 wcode：把 Context、State、Tool Routing、Verification 和 Background Intelligence 做成 Agent 下面的运行时。"
 tags:
   - wcode
