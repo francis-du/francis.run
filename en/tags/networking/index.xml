@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Networking | Francis Du</title><link>https://francis.run/en/tags/networking/</link><atom:link href="https://francis.run/en/tags/networking/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>en-US</language><copyright>© Francis Du</copyright><lastBuildDate>Wed, 23 Sep 2026 17:35:00 +0800</lastBuildDate><item><title>A Stable MCP Tunnel for wcode: Cloudflare or Tailscale Funnel</title><link>https://francis.run/en/blog/wcode-cloudflare-tunnel/</link><pubDate>Wed, 23 Sep 2026 17:35:00 +0800</pubDate><guid>https://francis.run/en/blog/wcode-cloudflare-tunnel/</guid><description>&lt;p&gt;wcode can create its own public tunnel, and for a temporary repository that is still the easiest path.&lt;/p&gt;
+&lt;p&gt;For something I use every day, I do not want the MCP address to change whenever the tunnel is recreated. A hostname change means updating the client and changing the OAuth resource origin as well.&lt;/p&gt;
+&lt;p&gt;So I now keep long-lived wcode instances behind a &lt;strong&gt;stable tunnel endpoint&lt;/strong&gt;. I use both Cloudflare Tunnel and Tailscale Funnel:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ChatGPT / Claude / other MCP client
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ stable HTTPS /mcp
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Cloudflare Tunnel / Tailscale Funnel
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; wcode
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;wcode still stays on loopback. I do not open a router port or expose the local MCP server to the LAN.&lt;/p&gt;
+&lt;p&gt;The only thing wcode needs is the stable public HTTPS origin.&lt;/p&gt;
+&lt;p&gt;That is what &lt;code&gt;&amp;ndash;public-url&lt;/code&gt; is for.&lt;/p&gt;
+&lt;h2 id="the-local-wcode-side-barely-changes"&gt;The local wcode side barely changes&lt;a class="heading-anchor" href="#the-local-wcode-side-barely-changes" aria-label="Permalink to section: The local wcode side barely changes"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;The current Remote MCP server listens on:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;by default.&lt;/p&gt;
+&lt;p&gt;If &lt;code&gt;cloudflared&lt;/code&gt; runs on the same machine, I point the Tunnel origin directly at:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I do not change wcode to &lt;code&gt;0.0.0.0&lt;/code&gt; just because I am using a tunnel. Cloudflare can reach the loopback service locally, so there is no reason to expose the MCP server to the rest of the LAN.&lt;/p&gt;
+&lt;p&gt;Assume the stable hostname is:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I start wcode with:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and configure the AI client with:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://mcp.example.com/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;&amp;ndash;public-url&lt;/code&gt; does not disable wcode&amp;rsquo;s OAuth layer. It tells wcode that an external stable entry point already exists, so wcode should use that origin instead of starting a random managed tunnel.&lt;/p&gt;
+&lt;h2 id="this-is-also-how-i-reuse-the-model-quota-i-already-have-in-chatgpt"&gt;This is also how I reuse the model quota I already have in ChatGPT&lt;a class="heading-anchor" href="#this-is-also-how-i-reuse-the-model-quota-i-already-have-in-chatgpt" aria-label="Permalink to section: This is also how I reuse the model quota I already have in ChatGPT"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;One of the practical reasons I built wcode was simple: if I am already using ChatGPT in the browser, I do not want the same coding task to require a second API bill just so the model can touch my local repository.&lt;/p&gt;
+&lt;p&gt;A stable Remote MCP path gives me this shape:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ChatGPT
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Remote MCP
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://stable-host/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;local repository
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;This is not literally free compute.&lt;/p&gt;
+&lt;p&gt;If I already pay for a ChatGPT plan or have model usage available there, the model is still being paid for through ChatGPT. What I avoid is sending the same workflow through the OpenAI API and paying separately by API token. That is the part I care about.&lt;/p&gt;
+&lt;p&gt;There is an important product limitation to keep honest.&lt;/p&gt;
+&lt;p&gt;As of &lt;strong&gt;September 23, 2026&lt;/strong&gt;, OpenAI&amp;rsquo;s public documentation says ChatGPT connects to &lt;strong&gt;remote MCP&lt;/strong&gt; servers rather than directly to a localhost endpoint. Pro users can connect MCPs with read/fetch permissions in Developer Mode, while full write/modify MCP support is still rolling out for Business, Enterprise, and Edu.&lt;/p&gt;
+&lt;p&gt;So whether ChatGPT can let wcode actually edit code depends on the current plan and workspace permissions. That matrix will change over time.&lt;/p&gt;
+&lt;p&gt;The network requirement does not: ChatGPT needs a reachable, stable Remote MCP origin.&lt;/p&gt;
+&lt;p&gt;That is the problem the tunnel solves.&lt;/p&gt;
+&lt;h2 id="i-prefer-the-cloudflare-managed-tunnel-for-this"&gt;I prefer the Cloudflare-managed tunnel for this&lt;a class="heading-anchor" href="#i-prefer-the-cloudflare-managed-tunnel-for-this" aria-label="Permalink to section: I prefer the Cloudflare-managed tunnel for this"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cloudflare currently recommends remotely-managed tunnels for most cases. The configuration lives on Cloudflare, and the machine only needs a Tunnel token to run the connector.&lt;/p&gt;
+&lt;p&gt;On macOS:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew install cloudflared
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then in the Cloudflare dashboard:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Networking
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Tunnels
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Create Tunnel
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I normally just name it &lt;code&gt;wcode&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Add a Published application route:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Hostname
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Service
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The domain must already be on Cloudflare.&lt;/p&gt;
+&lt;p&gt;One useful detail: when the hostname is added from the Tunnel&amp;rsquo;s Published application screen, Cloudflare creates the DNS routing for it. I do not need to create a second hand-written CNAME for the normal full-DNS setup.&lt;/p&gt;
+&lt;p&gt;The dashboard then gives me the connector command. It looks roughly like this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sudo cloudflared service install &amp;lt;TUNNEL_TOKEN&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The token is a credential. I do not put it in a repository, an issue, or a terminal screenshot.&lt;/p&gt;
+&lt;p&gt;Once the connector is online:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That is enough to give wcode a stable public MCP origin.&lt;/p&gt;
+&lt;h2 id="the-fully-local-config-is-still-useful"&gt;The fully local config is still useful&lt;a class="heading-anchor" href="#the-fully-local-config-is-still-useful" aria-label="Permalink to section: The fully local config is still useful"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Sometimes I want the entire Tunnel configuration on the machine, especially if the same connector publishes several local services. In that case I use a locally-managed tunnel.&lt;/p&gt;
+&lt;p&gt;Authenticate:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel login
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Create a named tunnel:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel create wcode
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That creates a Tunnel UUID and a credentials file under something like:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;~/.cloudflared/&amp;lt;TUNNEL-UUID&amp;gt;.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then I create &lt;code&gt;~/.cloudflared/config.yml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tunnel: &amp;lt;TUNNEL-UUID&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;credentials-file: /Users/your-name/.cloudflared/&amp;lt;TUNNEL-UUID&amp;gt;.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ingress:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - service: http_status:404
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The final 404 rule matters. An ingress configuration needs a catch-all rule at the end.&lt;/p&gt;
+&lt;p&gt;I validate the file before starting anything:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel ingress validate
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Create the DNS route:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel route dns wcode mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Run the tunnel:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel run wcode
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and start wcode separately:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;At that point the path is stable from the client all the way to the local runtime.&lt;/p&gt;
+&lt;h2 id="on-macos-i-let-cloudflared-stay-running"&gt;On macOS I let cloudflared stay running&lt;a class="heading-anchor" href="#on-macos-i-let-cloudflared-stay-running" aria-label="Permalink to section: On macOS I let cloudflared stay running"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A fixed hostname is less useful if I still have to remember to launch the tunnel manually.&lt;/p&gt;
+&lt;p&gt;For a locally-managed tunnel, macOS can install &lt;code&gt;cloudflared&lt;/code&gt; as a per-user LaunchAgent:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared service install
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That uses:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;~/.cloudflared/config.yml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and starts when I log in, which is usually what I want on a development machine.&lt;/p&gt;
+&lt;p&gt;There is also a boot-level LaunchDaemon:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sudo cloudflared service install
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The important difference is that the system service expects its configuration under &lt;code&gt;/etc/cloudflared&lt;/code&gt;, not the user&amp;rsquo;s home directory. This is an easy way to end up wondering why a perfectly good &lt;code&gt;~/.cloudflared/config.yml&lt;/code&gt; suddenly cannot be found after adding &lt;code&gt;sudo&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;For my laptop, the login LaunchAgent is simpler.&lt;/p&gt;
+&lt;h2 id="tailscale-funnel-is-even-less-configuration"&gt;Tailscale Funnel is even less configuration&lt;a class="heading-anchor" href="#tailscale-funnel-is-even-less-configuration" aria-label="Permalink to section: Tailscale Funnel is even less configuration"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;If the machine already runs Tailscale, Funnel is the other path I like.&lt;/p&gt;
+&lt;p&gt;Cloudflare Tunnel is better when I want my own domain. Tailscale Funnel is better when I just want a stable public HTTPS endpoint without touching DNS.&lt;/p&gt;
+&lt;p&gt;The important limitation is that Funnel does &lt;strong&gt;not&lt;/strong&gt; let me choose an arbitrary custom hostname. Its public DNS name lives under the tailnet&amp;rsquo;s &lt;code&gt;ts.net&lt;/code&gt; domain.&lt;/p&gt;
+&lt;p&gt;Once the machine is logged into Tailscale, I can publish wcode&amp;rsquo;s local port in the background:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tailscale funnel --bg 8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;That proxies:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;to a public HTTPS name similar to:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I can inspect the actual endpoint with:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tailscale funnel status
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then I start wcode with that origin:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;and give the MCP client:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://my-mac.my-tailnet.ts.net/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Tailscale describes Funnel as a way to expose a local service through a predictable, stable &lt;code&gt;ts.net&lt;/code&gt; HTTPS name. The machine and Tailscale still need to be online, but there is no separate DNS record or Cloudflare Tunnel token to manage.&lt;/p&gt;
+&lt;p&gt;On first use, the CLI may ask me to enable the tailnet requirements for Funnel, including HTTPS and the relevant Funnel permission.&lt;/p&gt;
+&lt;p&gt;Funnel is public internet access. If I only want the service reachable inside my tailnet, the right command is &lt;code&gt;tailscale serve&lt;/code&gt;, not Funnel.&lt;/p&gt;
+&lt;h2 id="i-check-healthz-before-debugging-oauth-whichever-tunnel-i-use"&gt;I check /healthz before debugging OAuth, whichever tunnel I use&lt;a class="heading-anchor" href="#i-check-healthz-before-debugging-oauth-whichever-tunnel-i-use" aria-label="Permalink to section: I check /healthz before debugging OAuth, whichever tunnel I use"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cloudflare:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -sS https://mcp.example.com/healthz | jq
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Tailscale:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -sS https://my-mac.my-tailnet.ts.net/healthz | jq
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;A healthy response includes &lt;code&gt;ok: true&lt;/code&gt; and identifies the current wcode instance.&lt;/p&gt;
+&lt;p&gt;This splits debugging into two smaller problems:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/healthz fails
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Tunnel / DNS / origin problem
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/healthz works, MCP client fails
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → OAuth / client interoperability problem
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Before OAuth is complete, this:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -i https://mcp.example.com/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;can return &lt;code&gt;401 Unauthorized&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;That does not mean the tunnel is broken. wcode&amp;rsquo;s MCP endpoint is supposed to be protected. The tunnel provides reachability; it does not bypass authentication.&lt;/p&gt;
+&lt;h2 id="one-tunnel-can-publish-more-than-wcode"&gt;One tunnel can publish more than wcode&lt;a class="heading-anchor" href="#one-tunnel-can-publish-more-than-wcode" aria-label="Permalink to section: One tunnel can publish more than wcode"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;A single Cloudflare Tunnel can route several hostnames:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ingress:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: dashboard.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:3000
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: api.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:8080
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - service: http_status:404
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;I still give wcode its own hostname instead of hiding it under a path on another application.&lt;/p&gt;
+&lt;p&gt;wcode has more than &lt;code&gt;/mcp&lt;/code&gt;: OAuth discovery and authorization endpoints, token handling, health checks, and the MCP transport all share the same public origin. A dedicated hostname removes a whole class of proxy path-rewrite problems.&lt;/p&gt;
+&lt;h2 id="the-stable-public-origin-is-the-actual-requirement"&gt;The stable public origin is the actual requirement&lt;a class="heading-anchor" href="#the-stable-public-origin-is-the-actual-requirement" aria-label="Permalink to section: The stable public origin is the actual requirement"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode does not care whether that origin comes from Cloudflare or Tailscale.&lt;/p&gt;
+&lt;p&gt;These are the two shapes I use:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Cloudflare Tunnel
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tailscale Funnel
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then I pass the matching origin to wcode:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;or:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;As long as the public origin forwards the complete wcode surface without breaking HTTPS, Host handling, OAuth metadata, or the MCP path, the rest of the runtime is the same.&lt;/p&gt;
+&lt;p&gt;Cloudflare is what I use when I want my own domain. Tailscale Funnel is what I use when the machine is already in my tailnet and I want the shortest path to a stable HTTPS address.&lt;/p&gt;
+&lt;p&gt;I still keep Quick Tunnel for disposable sessions.&lt;/p&gt;
+&lt;p&gt;For a long-lived instance, especially one connected to a browser model such as ChatGPT, I would rather configure the MCP URL once and stop touching it.&lt;/p&gt;
+&lt;h2 id="references"&gt;References&lt;a class="heading-anchor" href="#references" aria-label="Permalink to section: References"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/get-started/"&gt;Cloudflare Tunnel: Get started&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/create-local-tunnel/"&gt;Cloudflare: Create a locally-managed tunnel&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/configuration-file/"&gt;Cloudflare: Configuration file&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/as-a-service/macos/"&gt;Cloudflare: Run as a service on macOS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://tailscale.com/docs/features/tailscale-funnel"&gt;Tailscale Funnel&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://tailscale.com/docs/reference/tailscale-cli/funnel"&gt;Tailscale Funnel CLI&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt"&gt;ChatGPT: Developer mode and MCP apps&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>

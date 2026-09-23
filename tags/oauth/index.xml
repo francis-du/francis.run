@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>OAuth | Francis Du</title><link>https://francis.run/tags/oauth/</link><atom:link href="https://francis.run/tags/oauth/index.xml" rel="self" type="application/rss+xml"/><description>💻Data Engineer | 🦀 Rustacean | 📷 Photographer | 🤖Vibe Coder</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><lastBuildDate>Wed, 23 Sep 2026 17:34:00 +0800</lastBuildDate><item><title>固定隧道的 MCP：Cloudflare Tunnel、Tailscale Funnel 和 wcode</title><link>https://francis.run/blog/wcode-cloudflare-tunnel/</link><pubDate>Wed, 23 Sep 2026 17:34:00 +0800</pubDate><guid>https://francis.run/blog/wcode-cloudflare-tunnel/</guid><description>&lt;p&gt;wcode 自带 Tunnel，所以临时跑一个仓库时，我一般懒得配任何东西：启动以后拿公网 MCP 地址，丢进 ChatGPT、Claude 或其他支持 Remote MCP 的客户端就行。&lt;/p&gt;
+&lt;p&gt;真正开始长期用以后，我反而不想让 MCP 地址跟着每次 Tunnel 重启一起变。&lt;/p&gt;
+&lt;p&gt;原因很实际：地址一变，客户端配置要改，OAuth resource URL 也跟着变。对一个偶尔开的开发服务无所谓，对每天都用的本地代码入口就挺烦。&lt;/p&gt;
+&lt;p&gt;所以我现在会给常用的 wcode 留一个&lt;strong&gt;固定隧道入口&lt;/strong&gt;。Cloudflare Tunnel 和 Tailscale Funnel 我都在用，结构其实一样：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ChatGPT / Claude / other MCP client
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ stable HTTPS /mcp
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; Cloudflare Tunnel / Tailscale Funnel
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; 127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; wcode
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;本机还是只监听 loopback，不开路由器端口，也不需要把 MCP Server 暴露给整个局域网。&lt;/p&gt;
+&lt;p&gt;wcode 只需要知道外面那个稳定的 HTTPS origin 是什么。&lt;/p&gt;
+&lt;p&gt;这个就是 &lt;code&gt;&amp;ndash;public-url&lt;/code&gt;。&lt;/p&gt;
+&lt;h2 id="wcode-本地其实不用改什么"&gt;wcode 本地其实不用改什么&lt;a class="heading-anchor" href="#wcode-%e6%9c%ac%e5%9c%b0%e5%85%b6%e5%ae%9e%e4%b8%8d%e7%94%a8%e6%94%b9%e4%bb%80%e4%b9%88" aria-label="章节链接：wcode 本地其实不用改什么"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;当前 wcode 的 Remote MCP 默认监听：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以如果 &lt;code&gt;cloudflared&lt;/code&gt; 和 wcode 跑在同一台机器上，Tunnel 的 origin 直接指：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;就够了。&lt;/p&gt;
+&lt;p&gt;我反而不建议为了 Tunnel 把 wcode 改成监听 &lt;code&gt;0.0.0.0&lt;/code&gt;。Cloudflare 可以直接访问 loopback，没有必要顺手把本地 MCP Server 暴露给整个局域网。&lt;/p&gt;
+&lt;p&gt;真正需要改的是启动参数。假设最后的域名是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;启动 wcode：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;之后给 MCP Client 的地址就是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://mcp.example.com/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;&amp;ndash;public-url&lt;/code&gt; 的作用不是关掉 OAuth，也不是把一个 URL 单纯显示在 TUI 里。它告诉 wcode：这个地址是外部已经准备好的稳定入口，不要再替我启动随机的 managed tunnel，OAuth 和 MCP 对外都按这个 origin 工作。&lt;/p&gt;
+&lt;h2 id="这也是我拿-chatgpt-白嫖模型的一种方式"&gt;这也是我拿 ChatGPT “白嫖模型”的一种方式&lt;a class="heading-anchor" href="#%e8%bf%99%e4%b9%9f%e6%98%af%e6%88%91%e6%8b%bf-chatgpt-%e7%99%bd%e5%ab%96%e6%a8%a1%e5%9e%8b%e7%9a%84%e4%b8%80%e7%a7%8d%e6%96%b9%e5%bc%8f" aria-label="章节链接：这也是我拿 ChatGPT “白嫖模型”的一种方式"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;我做 wcode 最早其实就有一个很现实的动机：&lt;strong&gt;我已经在 ChatGPT Web 端用模型了，就不想为了让它碰本地代码，再单独开一份 API Token 账单。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;固定隧道把这件事变得比较顺：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ChatGPT
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │ Remote MCP
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://固定地址/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; │
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; ▼
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;本地仓库
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;严格说这当然不是真的“免费模型”。&lt;/p&gt;
+&lt;p&gt;如果我本来就在付 ChatGPT 的套餐，或者账户本来就有可用额度，那模型算力还是来自 ChatGPT；我省掉的是同一件 coding 工作再走一遍 OpenAI API、再按 API Token 计费。对我自己来说，这就是很朴素的“白嫖 Web 端模型”。&lt;/p&gt;
+&lt;p&gt;这里还有一个现在必须写清楚的限制。&lt;/p&gt;
+&lt;p&gt;截至 &lt;strong&gt;2026 年 9 月 23 日&lt;/strong&gt;，OpenAI 的公开文档写的是：ChatGPT 连接的是 &lt;strong&gt;remote MCP&lt;/strong&gt;，不能直接拿 &lt;code&gt;127.0.0.1&lt;/code&gt; 当 MCP 地址；Pro 用户在 Developer Mode 里可以接 read/fetch 权限的 MCP，而完整的 write/modify MCP 仍然主要在 Business、Enterprise 和 Edu 的 beta 范围里。&lt;/p&gt;
+&lt;p&gt;所以“ChatGPT 能不能直接让 wcode 改代码”取决于你当前的套餐和 Workspace 权限，这个产品矩阵以后也肯定还会变。&lt;/p&gt;
+&lt;p&gt;但网络这一层是一样的：&lt;strong&gt;ChatGPT 必须能稳定访问到 wcode 的 Remote MCP 地址。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这就是固定 Tunnel 真正解决的问题。&lt;/p&gt;
+&lt;h2 id="我现在会优先用-cloudflare-dashboard-管-tunnel"&gt;我现在会优先用 Cloudflare Dashboard 管 Tunnel&lt;a class="heading-anchor" href="#%e6%88%91%e7%8e%b0%e5%9c%a8%e4%bc%9a%e4%bc%98%e5%85%88%e7%94%a8-cloudflare-dashboard-%e7%ae%a1-tunnel" aria-label="章节链接：我现在会优先用 Cloudflare Dashboard 管 Tunnel"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cloudflare 目前更推荐 remotely-managed tunnel。配置存在 Cloudflare 侧，本机拿一个 Tunnel Token 跑 connector，不需要自己维护 credentials JSON 和完整的 ingress 配置。&lt;/p&gt;
+&lt;p&gt;先装 &lt;code&gt;cloudflared&lt;/code&gt;。macOS 最简单：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;brew install cloudflared
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后去 Cloudflare Dashboard：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Networking
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Tunnels
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Create Tunnel
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;名字随便，我一般会直接叫 &lt;code&gt;wcode&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;Tunnel 建好以后，加一个 Published application：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Hostname
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Service
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;域名本身要已经托管在 Cloudflare。&lt;/p&gt;
+&lt;p&gt;这里有个我第一次用 Tunnel 时容易想复杂的地方：&lt;strong&gt;不用自己再去 DNS 页面手搓一条记录。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;从 Tunnel 里添加 Published application 时，Cloudflare 会把 hostname 路由到这个 Tunnel，并建立对应的 DNS 记录。&lt;/p&gt;
+&lt;p&gt;接下来在跑 wcode 的机器上安装 connector。Dashboard 会直接给一条带 Token 的命令，形式大概是：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sudo cloudflared service install &amp;lt;TUNNEL_TOKEN&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Token 是凭据，别提交到 Git，也别顺手贴到博客、Issue 或终端截图里。&lt;/p&gt;
+&lt;p&gt;等 &lt;code&gt;cloudflared&lt;/code&gt; 连上以后，再启动：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;到这里固定地址就有了。&lt;/p&gt;
+&lt;h2 id="如果我想把-tunnel-配置留在本机"&gt;如果我想把 Tunnel 配置留在本机&lt;a class="heading-anchor" href="#%e5%a6%82%e6%9e%9c%e6%88%91%e6%83%b3%e6%8a%8a-tunnel-%e9%85%8d%e7%bd%ae%e7%95%99%e5%9c%a8%e6%9c%ac%e6%9c%ba" aria-label="章节链接：如果我想把 Tunnel 配置留在本机"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Dashboard 方式比较省心，但有时候我就是想看见完整配置，或者一台机器上还有别的本地服务需要一起挂。&lt;/p&gt;
+&lt;p&gt;这种情况我会用 locally-managed tunnel。&lt;/p&gt;
+&lt;p&gt;先登录：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel login
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;创建一个 named tunnel：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel create wcode
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它会生成一个 Tunnel UUID，以及类似下面的 credentials 文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;~/.cloudflared/&amp;lt;TUNNEL-UUID&amp;gt;.json
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后写 &lt;code&gt;~/.cloudflared/config.yml&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tunnel: &amp;lt;TUNNEL-UUID&amp;gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;credentials-file: /Users/your-name/.cloudflared/&amp;lt;TUNNEL-UUID&amp;gt;.json
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ingress:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - service: http_status:404
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;最后那个 404 不是装饰。Cloudflare 的 ingress 规则要求最后有一条 catch-all，不匹配前面 hostname 的请求就到这里结束。&lt;/p&gt;
+&lt;p&gt;先检查配置：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel ingress validate
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;再把域名路由到 Tunnel：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel route dns wcode mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后运行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared tunnel run wcode
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这时候再开另一个终端：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;固定域名这条链就完整了。&lt;/p&gt;
+&lt;h2 id="macos-上我会直接让-cloudflared-常驻"&gt;macOS 上我会直接让 cloudflared 常驻&lt;a class="heading-anchor" href="#macos-%e4%b8%8a%e6%88%91%e4%bc%9a%e7%9b%b4%e6%8e%a5%e8%ae%a9-cloudflared-%e5%b8%b8%e9%a9%bb" aria-label="章节链接：macOS 上我会直接让 cloudflared 常驻"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;如果每次都手动开一个 &lt;code&gt;cloudflared tunnel run wcode&lt;/code&gt;，固定域名是固定了，但进程还是得自己记着启动。&lt;/p&gt;
+&lt;p&gt;本地管理的 Tunnel 在 macOS 上可以直接装成 LaunchAgent：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;cloudflared service install
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种方式使用当前用户的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;~/.cloudflared/config.yml
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;登录以后自动启动，对我这种开发机最合适。&lt;/p&gt;
+&lt;p&gt;如果需要开机就跑、不依赖用户登录，也可以装成系统 LaunchDaemon：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;sudo cloudflared service install
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;但这时 Cloudflare 默认读取的是 &lt;code&gt;/etc/cloudflared&lt;/code&gt; 下的配置，不是当前用户 Home 里的那份。这个区别挺容易把自己坑一下：明明 &lt;code&gt;config.yml&lt;/code&gt; 写好了，一加 &lt;code&gt;sudo&lt;/code&gt; 就提示找不到配置。&lt;/p&gt;
+&lt;p&gt;开发机上没必要把事情搞复杂，我一般就让它跟用户登录一起起来。&lt;/p&gt;
+&lt;h2 id="tailscale-funnel-更省事固定的是-tsnet-地址"&gt;Tailscale Funnel 更省事，固定的是 ts.net 地址&lt;a class="heading-anchor" href="#tailscale-funnel-%e6%9b%b4%e7%9c%81%e4%ba%8b%e5%9b%ba%e5%ae%9a%e7%9a%84%e6%98%af-tsnet-%e5%9c%b0%e5%9d%80" aria-label="章节链接：Tailscale Funnel 更省事，固定的是 ts.net 地址"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;如果机器本来就在跑 Tailscale，我其实更喜欢 Funnel 这一条。&lt;/p&gt;
+&lt;p&gt;Cloudflare Tunnel 的优势是可以直接用自己的域名；Tailscale Funnel 的优势是基本不用碰 DNS，设备会拿到一个稳定的 &lt;code&gt;*.ts.net&lt;/code&gt; 地址。&lt;/p&gt;
+&lt;p&gt;这里要说清楚：&lt;strong&gt;Funnel 不能随便绑我自己的域名。&lt;/strong&gt; 它公开出来的 DNS 名必须在当前 tailnet 的 &lt;code&gt;ts.net&lt;/code&gt; 域下面。&lt;/p&gt;
+&lt;p&gt;先保证这台机器已经登录 Tailscale，然后直接把 wcode 的本地端口公开出去：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tailscale funnel --bg 8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;当前 Funnel CLI 会把本机的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;代理成一个公网 HTTPS 地址，大概长这样：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;看实际地址：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;tailscale funnel status
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后启动 wcode：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;MCP Client 填：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://my-mac.my-tailnet.ts.net/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;就可以了。&lt;/p&gt;
+&lt;p&gt;Tailscale 官方现在把 Funnel 的定位写得很直接：本地服务通过稳定的 HTTPS &lt;code&gt;ts.net&lt;/code&gt; 地址公开到互联网，机器在线、Tailscale 在线，Funnel 就继续工作。&lt;/p&gt;
+&lt;p&gt;第一次跑时，如果 tailnet 还没开 HTTPS、MagicDNS 或 Funnel 权限，CLI 会带你去网页确认。&lt;/p&gt;
+&lt;p&gt;这条路对我最大的好处就是少配一层东西。没有 Tunnel Token，没有 Cloudflare DNS route，也没有 &lt;code&gt;config.yml&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;代价也很明确：域名是 Tailscale 的 &lt;code&gt;ts.net&lt;/code&gt;，不是我自己的域名；而且 Funnel 是公网入口，不是只在 tailnet 里可见。只想让自己的设备访问，应该用的是 &lt;code&gt;tailscale serve&lt;/code&gt;，不是 Funnel。&lt;/p&gt;
+&lt;h2 id="不管用哪种-tunnel我都会先看-healthz"&gt;不管用哪种 Tunnel，我都会先看 /healthz&lt;a class="heading-anchor" href="#%e4%b8%8d%e7%ae%a1%e7%94%a8%e5%93%aa%e7%a7%8d-tunnel%e6%88%91%e9%83%bd%e4%bc%9a%e5%85%88%e7%9c%8b-healthz" aria-label="章节链接：不管用哪种 Tunnel，我都会先看 /healthz"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cloudflare 的例子：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -sS https://mcp.example.com/healthz | jq
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Tailscale 的例子：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -sS https://my-mac.my-tailnet.ts.net/healthz | jq
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;正常情况下能看到 &lt;code&gt;ok: true&lt;/code&gt;，同时还有当前 wcode 实例的信息。&lt;/p&gt;
+&lt;p&gt;这个检查比直接拿 MCP Client 试省事很多：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/healthz 都不通
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → Tunnel / DNS / origin 有问题
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;/healthz 正常，MCP Client 连不上
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; → 再查 OAuth / Client 兼容
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;还有一个容易误判的地方。&lt;/p&gt;
+&lt;p&gt;直接访问：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;curl -i https://mcp.example.com/mcp
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在还没完成 OAuth 时看到 &lt;code&gt;401 Unauthorized&lt;/code&gt; 不代表 Tunnel 坏了。&lt;/p&gt;
+&lt;p&gt;wcode 的 MCP endpoint 本来就受 OAuth 保护。Tunnel 只负责把请求送到本机，不会绕过认证。&lt;/p&gt;
+&lt;h2 id="一个-tunnel-可以挂多个本地服务"&gt;一个 Tunnel 可以挂多个本地服务&lt;a class="heading-anchor" href="#%e4%b8%80%e4%b8%aa-tunnel-%e5%8f%af%e4%bb%a5%e6%8c%82%e5%a4%9a%e4%b8%aa%e6%9c%ac%e5%9c%b0%e6%9c%8d%e5%8a%a1" aria-label="章节链接：一个 Tunnel 可以挂多个本地服务"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Cloudflare Tunnel 不要求一个 Tunnel 只服务一个域名。&lt;/p&gt;
+&lt;p&gt;比如同一台机器还有别的东西：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-yaml" data-lang="yaml"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;ingress:
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:8765
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: dashboard.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:3000
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - hostname: api.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; service: http://127.0.0.1:8080
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt; - service: http_status:404
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;每个 hostname 再各自建 DNS route 就行。&lt;/p&gt;
+&lt;p&gt;不过 wcode 我还是会给它单独一个 hostname，不和其他 Web App 混 path。&lt;/p&gt;
+&lt;p&gt;原因不是 Cloudflare 做不到 path routing，而是 wcode 下面还有 OAuth metadata、authorize、token、health 和 MCP endpoint。独立 hostname 少很多“为什么这个 well-known 路径被前面的代理规则吃掉了”的问题。&lt;/p&gt;
+&lt;h2 id="真正要固定的是-public-origin"&gt;真正要固定的是 public origin&lt;a class="heading-anchor" href="#%e7%9c%9f%e6%ad%a3%e8%a6%81%e5%9b%ba%e5%ae%9a%e7%9a%84%e6%98%af-public-origin" aria-label="章节链接：真正要固定的是 public origin"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode 不在乎外面到底是 Cloudflare 还是 Tailscale。&lt;/p&gt;
+&lt;p&gt;我现在常用的就是两种：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Cloudflare Tunnel
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tailscale Funnel
+&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;然后分别告诉 wcode：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://mcp.example.com
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-bash" data-lang="bash"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode --public-url https://my-mac.my-tailnet.ts.net
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;只要这个 public origin 能完整转发到本机 wcode，并且 HTTPS、Host、OAuth metadata 和 MCP 路径没被代理层改坏，后面的逻辑就是同一套。&lt;/p&gt;
+&lt;p&gt;Cloudflare 适合我想用自己域名的时候；Tailscale Funnel 适合机器本来就在 tailnet 里、我只想最快拿一个稳定 HTTPS 地址的时候。&lt;/p&gt;
+&lt;p&gt;Quick Tunnel 我也还是会留着。临时仓库一条命令拿随机地址最舒服。&lt;/p&gt;
+&lt;p&gt;但常用实例我更愿意固定下来。&lt;/p&gt;
+&lt;p&gt;尤其是当它后面接的是 ChatGPT 这种 Web 端模型时，我不想每次 wcode 重启以后再去改一次 MCP 配置。固定 Tunnel 以后，它才真的像一个长期存在的本地代码入口。&lt;/p&gt;
+&lt;h2 id="相关文档"&gt;相关文档&lt;a class="heading-anchor" href="#%e7%9b%b8%e5%85%b3%e6%96%87%e6%a1%a3" aria-label="章节链接：相关文档"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/get-started/"&gt;Cloudflare Tunnel：Get started&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/create-local-tunnel/"&gt;Cloudflare：Create a locally-managed tunnel&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/configuration-file/"&gt;Cloudflare：Configuration file&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://developers.cloudflare.com/tunnel/features/locally-managed-tunnels/as-a-service/macos/"&gt;Cloudflare：Run as a service on macOS&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://tailscale.com/docs/features/tailscale-funnel"&gt;Tailscale Funnel&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://tailscale.com/docs/reference/tailscale-cli/funnel"&gt;Tailscale Funnel CLI&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt"&gt;ChatGPT：Developer mode and MCP apps&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/francis-du/wcode"&gt;wcode&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</description></item></channel></rss>
