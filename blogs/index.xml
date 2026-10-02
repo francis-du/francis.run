@@ -23,10 +23,8 @@
 &lt;p&gt;Maris 还可以在本地运行 MusicNN，提供曲风、乐器等分析信息。它需要模型权重，识别失败或没有权重时，普通音频处理照常可用。语音降噪可以单独启用；日常听音乐不需要为了“功能全开”把它打开。&lt;/p&gt;
 &lt;p&gt;喜欢写脚本的话，可以先用 &lt;code&gt;maris --json status&lt;/code&gt; 读状态。MCP 默认只读，允许修改后也要经过设置检查，不能执行任意 Shell 或修改系统音量。原始音频不用上传到云端做识别。&lt;/p&gt;
 &lt;p&gt;项目入口是 &lt;a href="https://github.com/francis-du/maris"&gt;GitHub&lt;/a&gt;，&lt;a href="https://francis-du.github.io/maris/zh-CN/"&gt;使用文档&lt;/a&gt;里有安装和平台说明，发布包以 &lt;a href="https://github.com/francis-du/maris/releases"&gt;Releases&lt;/a&gt; 为准。先从自己常用的一副耳机、一个输出和一段熟悉的声音开始，调到愿意一直听下去，就已经用上了 Maris 最主要的部分。&lt;/p&gt;</description></item><item><title>wcode 0.9.0</title><link>https://francis.run/blog/wcode-v0-9/</link><pubDate>Fri, 02 Oct 2026 21:45:00 +0800</pubDate><guid>https://francis.run/blog/wcode-v0-9/</guid><description>&lt;p&gt;&lt;a href="https://wcode.francis.run/"&gt;&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;这篇写 wcode 0.9.0。&lt;/p&gt;
-&lt;p&gt;最近同时推进 wcode、wteam、Maris 和 Scopwis，我把活分给了几个 Agent。有的改界面，有的修后端，有的追 CI。几个项目能一起往前走，但我也得不断追问：你说完成了，代码提交了吗？测试测的是哪一版？别人后来又改过，刚才的结果还算数吗？&lt;/p&gt;
-&lt;p&gt;0.9.0 的几项主要改动，就围绕这些问题展开：任务怎么交接，当前改动怎么验收，以及人从哪里看见还没做完的事。&lt;/p&gt;
-&lt;p&gt;如果是第一次接触，wcode 是我用 Rust 做的 Coding Agent 仓库工具，通过 MCP 接到现有的编码助手上。它负责读代码、查符号、带版本检查地修改文件、运行验证和保存结果。模型仍由 Codex、Claude Code 等宿主提供。更完整的项目介绍在&lt;a href="https://francis.run/blog/what-is-wcode/"&gt;这里&lt;/a&gt;，这篇直接讲版本变化。&lt;/p&gt;
+&lt;p&gt;wcode 0.9.0 增加了多 Agent 任务领取和改动验收，重新整理了 Web 与终端工作台。任务可以分配写入范围，检查结果会绑定代码版本，失败和待处理项也有了统一入口。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://francis.run/blog/what-is-wcode/"&gt;wcode&lt;/a&gt; 是用 Rust 编写的 Coding Agent 仓库工具，通过 MCP 接入 Codex、Claude Code 等编码助手。它负责读代码、查符号、带版本检查地修改文件、运行验证和保存结果，模型由编码助手提供。&lt;/p&gt;
 &lt;h2 id="把做完了落到当前代码上"&gt;把“做完了”落到当前代码上&lt;a class="heading-anchor" href="#%e6%8a%8a%e5%81%9a%e5%ae%8c%e4%ba%86%e8%90%bd%e5%88%b0%e5%bd%93%e5%89%8d%e4%bb%a3%e7%a0%81%e4%b8%8a" aria-label="章节链接：把“做完了”落到当前代码上"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;0.9.0 增加了原生 Change Acceptance 这条流程。它把当前改动、项目要求和已经执行的检查放在同一份记录里，给出还缺什么。&lt;/p&gt;
 &lt;p&gt;例如，一个任务要求修改接口，同时通过 Rust 测试和静态检查。Agent 只跑了测试，记录里就仍然缺静态检查。检查都跑过，但代码随后又变了，也得重新判断这些结果是否适用。需要独立审查时，Worker 自己写一句“已审查”不能补上那一步。&lt;/p&gt;
@@ -36,26 +34,24 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode acceptance inspect --base &amp;lt;完整 base SHA&amp;gt; --head &amp;lt;完整 head SHA&amp;gt; --check
 &lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;wcode acceptance history --json
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;--check&lt;/code&gt; 只有在当前原生记录为 &lt;code&gt;ready&lt;/code&gt; 时才成功。新仓库如果没有启用项目 Policy，拿到的是 &lt;code&gt;incomplete&lt;/code&gt; 和 &lt;code&gt;policy_inactive&lt;/code&gt;，命令不会顺便替你启用策略。&lt;code&gt;inspect&lt;/code&gt; 用来读状态；真正执行项目要求的检查用 &lt;code&gt;acceptance verify&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;这也划清了 0.9.0 的一个范围：本地验收流程已经有实现和回归检查，团队里从 GitHub PR 到 required check 的完整交付还要做实际部署验证。开源版可以独立使用，wteam 的能力不能只靠本地测试就算上线。&lt;/p&gt;
 &lt;h2 id="几个-agent先分清谁能改哪里"&gt;几个 Agent，先分清谁能改哪里&lt;a class="heading-anchor" href="#%e5%87%a0%e4%b8%aa-agent%e5%85%88%e5%88%86%e6%b8%85%e8%b0%81%e8%83%bd%e6%94%b9%e5%93%aa%e9%87%8c" aria-label="章节链接：几个 Agent，先分清谁能改哪里"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;p&gt;原来把需求拆成几个任务，仍然可能撞在同一个文件上。说“你写实现，他补测试”不够精确：两个人都可能顺手改入口、配置和依赖。&lt;/p&gt;
 &lt;p&gt;Worklist 现在可以给任务声明 &lt;code&gt;write_paths&lt;/code&gt;。主 Agent 拆任务时，把要写的目录一起分出去；纯审查任务传空数组。Worker 用 &lt;code&gt;worklist_claim&lt;/code&gt; 领取，拿到独立令牌和交接上下文。另一个有效领取占着重叠的写入范围，新的领取就会被拒绝。任务依赖没完成、版本不匹配，也不能直接开工。&lt;/p&gt;
 &lt;p&gt;领取有 15 分钟租约，长任务要续租。中途换了模型或会话，接手者至少能从持久状态里找到任务、范围和已有结果，不必只靠翻聊天记录猜。完成后，Worker 用 &lt;code&gt;worklist_submit&lt;/code&gt; 交回结果和已有的 Evidence ID，主 Agent 再检查汇总。&lt;/p&gt;
 &lt;p&gt;这里保留了两层检查：领取管理协作，写文件还要核对 SHA，执行命令也仍受原来的权限控制。直接用别的工具改仓库的会话，不会被 Worklist 锁住；遇到这种变化，旧 SHA 会让后续编辑失败，Agent 必须重新读取。它能减少协作冲突，不能替一个任意写文件的外部进程兜底。&lt;/p&gt;
-&lt;p&gt;各路任务交回来以后，还要验一次合起来的当前版本。我这次做几个项目时，这一步很具体：两个分支各自通过，合并后保留下来的边界检查仍可能和另一边的新实现冲突。光把两份通过记录摆在一起，回答不了这个问题。&lt;/p&gt;
+&lt;p&gt;各路任务交回来以后，还要检查合并后的版本。两个分支各自通过测试，不代表组合起来也通过；验收记录需要对应合并后的代码。&lt;/p&gt;
 &lt;h2 id="工作台重做以后先看问题"&gt;工作台重做以后，先看问题&lt;a class="heading-anchor" href="#%e5%b7%a5%e4%bd%9c%e5%8f%b0%e9%87%8d%e5%81%9a%e4%bb%a5%e5%90%8e%e5%85%88%e7%9c%8b%e9%97%ae%e9%a2%98" aria-label="章节链接：工作台重做以后，先看问题"&gt;#&lt;/a&gt;&lt;/h2&gt;
 &lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-v0-9-overview_hu_ad8969a85bbd604d.webp" alt="wcode 0.9.0 工作台"loading="lazy" decoding="async" srcset="https://francis.run/img/wcode/wcode-v0-9-overview_hu_ad8969a85bbd604d.webp 960w, https://francis.run/img/wcode/wcode-v0-9-overview_hu_8fea555cedd7ceb2.webp 1440w" sizes="(max-width: 900px) calc(100vw - 32px), 900px" width="1440" height="1000"&gt;&lt;/figure&gt;&lt;p&gt;&lt;em&gt;0.9.0 的实际界面，图中使用演示项目数据。&lt;/em&gt;&lt;/p&gt;
 &lt;p&gt;Web 工作台和终端观测台都重新整理了。现在打开以后，当前失败、缺少的验证、互相矛盾的证据、设计映射缺口和需要检查的大模块，会进入共用的问题列表。点一项，可以继续看对应的源码、任务或验证结果。&lt;/p&gt;
 &lt;p&gt;以前页面里已经有不少信息，但人要自己来回拼。现在七个 Web 页面都保留工作区、代码版本和快照状态，切页面以后仍然知道自己在看什么。终端里也能直接切换问题、任务、Provider 和 Agent；小窗口保留帮助与停止操作。&lt;/p&gt;
 &lt;p&gt;源码查看器这次也补齐了一个容易忽略的细节。文件按行分页，每页带读取时的 SHA。假设第一页刚看完，另一个会话改了文件，第二页会要求重新读取。这样屏幕上就不会拼出半份旧代码、半份新代码。切换项目以后才返回的旧请求，同样不能覆盖新项目的页面。&lt;/p&gt;
-&lt;p&gt;这些都是普通编辑器里很自然的要求。放到 Agent 的观测界面里，也得逐项处理。&lt;/p&gt;
 &lt;h2 id="还有几个不显眼的修正"&gt;还有几个不显眼的修正&lt;a class="heading-anchor" href="#%e8%bf%98%e6%9c%89%e5%87%a0%e4%b8%aa%e4%b8%8d%e6%98%be%e7%9c%bc%e7%9a%84%e4%bf%ae%e6%ad%a3" aria-label="章节链接：还有几个不显眼的修正"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;一个是跨工作区的等待。工程日志和失败记录改成按工作区使用锁，一个仓库的记录写入不该占住另一个仓库的访问。相同验证请求的重复执行也做了合并。这些改动有针对性的并发回归检查；至于真实任务能快多少，要按任务测，不能从少了几次调用直接推出来。&lt;/p&gt;
+&lt;p&gt;一个是跨工作区的等待。工程日志和失败记录改成按工作区使用锁，写入一个仓库的记录时，其他仓库不再等同一把锁。相同的验证请求也可以共用一次执行，减少重复检查。&lt;/p&gt;
 &lt;p&gt;另一个是单仓库验收。Rust 工作区会自动发现下面的 crate，旧判断把这些子包也算成用户选择的工作区，结果明明只选了一个仓库，验收命令却报“只能选择一个工作区”。现在按用户实际配置的根目录判断；显式选择两个独立仓库，仍然拒绝混在同一次验收里。&lt;/p&gt;
 &lt;p&gt;Setup 的复制按钮也修了一个小竞态。点复制以后，浏览器可能过一会儿才回结果。如果期间切了工作区或换了命令，旧请求不能给新内容显示“复制成功”。这类问题很小，却会让人按着错误的反馈继续操作。&lt;/p&gt;
-&lt;p&gt;上下文方面，0.9.0 减少了交接包里可重新取得的路由说明和重复指引，保留源码正文、SHA、检查和失败信息。能接着工作的有效上下文就复用，过期或缺失的部分再补。我没有拿字节数估算去宣称模型账单省了多少；模型实际收到什么、缓存是否命中，还得看 Provider 的计量。&lt;/p&gt;
+&lt;p&gt;上下文方面，0.9.0 减少了交接包里可重新取得的路由说明和重复指引，保留源码正文、SHA、检查和失败信息。有效上下文继续复用，过期或缺失的部分再补。&lt;/p&gt;
 &lt;p&gt;拿到 0.9.0 后，在项目目录运行 &lt;code&gt;wcode setup&lt;/code&gt; 完成 MCP 接入，重连编码助手即可。需要终端工作台时运行 &lt;code&gt;wcode&lt;/code&gt;；里面的 &lt;strong&gt;W&lt;/strong&gt; 打开项目状态页，&lt;strong&gt;O&lt;/strong&gt; 打开 Setup。&lt;/p&gt;
-&lt;p&gt;安装包与校验和在 &lt;a href="https://github.com/francis-du/wcode/releases"&gt;GitHub Releases&lt;/a&gt;，完整变化和命令说明在 &lt;a href="https://wcode.francis.run/zh/docs/releases/v0.9.0/"&gt;0.9.0 文档&lt;/a&gt;。这一版我最在意的结果很直接：换一个 Agent 继续做，它能找到剩下的活；人准备合并时，能看见当前代码究竟验过什么。&lt;/p&gt;</description></item><item><title>固定隧道的 MCP：Cloudflare Tunnel、Tailscale Funnel 和 wcode</title><link>https://francis.run/blog/wcode-cloudflare-tunnel/</link><pubDate>Wed, 23 Sep 2026 17:34:00 +0800</pubDate><guid>https://francis.run/blog/wcode-cloudflare-tunnel/</guid><description>&lt;p&gt;wcode 自带 Tunnel，所以临时跑一个仓库时，我一般懒得配任何东西：启动以后拿公网 MCP 地址，丢进 ChatGPT、Claude 或其他支持 Remote MCP 的客户端就行。&lt;/p&gt;
+&lt;p&gt;安装包与校验和在 &lt;a href="https://github.com/francis-du/wcode/releases/tag/v0.9.0"&gt;GitHub Releases&lt;/a&gt;，完整变化和命令说明在 &lt;a href="https://wcode.francis.run/zh/docs/releases/v0.9.0/"&gt;0.9.0 文档&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>固定隧道的 MCP：Cloudflare Tunnel、Tailscale Funnel 和 wcode</title><link>https://francis.run/blog/wcode-cloudflare-tunnel/</link><pubDate>Wed, 23 Sep 2026 17:34:00 +0800</pubDate><guid>https://francis.run/blog/wcode-cloudflare-tunnel/</guid><description>&lt;p&gt;wcode 自带 Tunnel，所以临时跑一个仓库时，我一般懒得配任何东西：启动以后拿公网 MCP 地址，丢进 ChatGPT、Claude 或其他支持 Remote MCP 的客户端就行。&lt;/p&gt;
 &lt;p&gt;真正开始长期用以后，我反而不想让 MCP 地址跟着每次 Tunnel 重启一起变。&lt;/p&gt;
 &lt;p&gt;原因很实际：地址一变，客户端配置要改，OAuth resource URL 也跟着变。对一个偶尔开的开发服务无所谓，对每天都用的本地代码入口就挺烦。&lt;/p&gt;
 &lt;p&gt;所以我现在会给常用的 wcode 留一个&lt;strong&gt;固定隧道入口&lt;/strong&gt;。Cloudflare Tunnel 和 Tailscale Funnel 我都在用，结构其实一样：&lt;/p&gt;
