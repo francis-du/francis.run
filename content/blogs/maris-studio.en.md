@@ -40,7 +40,7 @@ The backends share settings and processing logic, but routing remains platform-s
 
 ![The Maris Studio interface](/img/maris/maris-studio-en.svg)
 
-*This is the actual TUI rendered with generated test audio. It is not a hardware listening-session capture.*
+*This image uses [the current TUI code](https://github.com/francis-du/maris/commit/afa26e853304a2a17a4871977fef44bab539e7cd), rendered with generated test audio. It is not a hardware listening-session capture.*
 
 The analyzer, calculated EQ curve, and stereo levels occupy the center. Spectrum data comes from audio analysis. The EQ curve comes from the current settings; it must not look like a measured headphone response.
 
