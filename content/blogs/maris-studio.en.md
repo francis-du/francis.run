@@ -1,81 +1,70 @@
 ---
-title: "Maris: building an audio console I would want to use"
+title: "Maris: tune your computer's sound to your taste"
 date: 2026-10-02T21:46:00+08:00
 draft: false
 url: blog/maris-studio/
 images: ["/img/share/maris-studio.en.png"]
 translationKey: maris-studio
 image: /img/maris/maris-wordmark.svg
-description: "Maris is a local audio tool I am building. This round is about making its interface as considered as its device correction, sound controls, and mixer."
+description: "Maris is a system audio tool I am building: separate settings for headphones and speakers, sound controls across applications, and a mixer for multiple outputs."
 tags:
   - Maris
   - Rust
   - Audio
-  - TUI
 ---
 
 [![Maris](/img/maris/maris-wordmark.svg)](https://github.com/francis-du/maris)
 
-[Source](https://github.com/francis-du/maris) · [Project and documentation](https://github.com/francis-du/maris#maris)
+Maris is a system audio tool. It processes sound playing on your computer, with separate settings for headphones and speakers, headphone correction, and controls for bass, treble, stereo width, and dynamics.
 
-The spectrum is an easy distraction when working on Maris.
+A player's equalizer only affects that player. Move to a video in the browser or music in another app, and you often need another setup. Maris works at the system audio layer, so one device configuration can serve different applications. Headphones and speakers can each have their own saved settings.
 
-Make a set of bars move with the sound, add some color and stereo meters, and a terminal starts to feel like audio equipment. But I still need to know which output is in use, which correction is active, and whether the parameter I just changed has reached the audio processor.
+I want it to be an everyday tool: adjust the sound once, keep using it, and still be able to see exactly what you are changing when you want a closer look.
 
-Those details deserve as much attention as the moving bars. That is what I want to address in this round of interface work.
+## Start with the headphones and speakers
 
-Maris is still in development. A public application release has not been completed. The [repository's release notes](https://github.com/francis-du/maris#release-policy) track the remaining native, packaging, and device checks. This article describes the current implementation and direction; it does not offer an installer for a release that is not available yet.
+The same track can have different bass, vocals, and space on different headphones. Speakers have their own characteristics too. One set of parameters will rarely suit everything.
 
-## Start with one pair of headphones and one pair of speakers
+Maris handles device correction and personal listening preferences separately.
 
-Maris processes audio playing on the computer. It can keep settings for different outputs, apply headphone correction, and adjust bass, treble, stereo width, and compression.
+Headphone correction uses AutoEq parameter profiles. With a matching model, its profile can adjust the relevant frequency bands. Those settings come from existing measurements; Maris does not measure your headphones, fit, or room itself.
 
-Device correction and listening preferences are separate. Correction has a source and a device it applies to; preferences describe how I want to listen. After switching outputs, the interface must not leave me guessing whether the previous device's settings are still active.
+Then you can adjust the result to your taste: a little more bass, more forward vocals, or less sharp treble. Save the parameters for that device and use them again.
 
-The native capture paths differ. macOS 14.2 and later use CoreAudio system capture. Windows uses WASAPI application capture. Linux connects to a local PulseAudio service, including PipeWire's PulseAudio compatibility layer.
+I prefer being able to hear individual changes and return to earlier settings. That makes it easier to find a result I actually want to keep.
 
-The backends share settings and processing logic, but routing remains platform-specific. The normal macOS system-audio path does not require BlackHole. Application selection and mixer routing have their own confirmation and recovery steps. The [architecture document](https://github.com/francis-du/maris/blob/main/docs/reference/architecture.md) describes those differences.
+## See the adjustment and listen to the result
 
-## Give the main screen a proper workbench
+![The Maris sound workbench](/img/maris/maris-studio-en.svg)
 
-![The Maris Studio interface](/img/maris/maris-studio-en.svg)
+*The current TUI rendered with generated test audio, showing its layout and controls.*
 
-*This image uses [the current TUI code](https://github.com/francis-du/maris/commit/afa26e853304a2a17a4871977fef44bab539e7cd), rendered with generated test audio. It is not a hardware listening-session capture.*
+Maris currently has a terminal workbench and a native menu-bar entry. The main view shows the output device, correction profile, spectrum, EQ curve, and stereo levels, with common controls alongside them.
 
-The analyzer, calculated EQ curve, and stereo levels occupy the center. Spectrum data comes from audio analysis. The EQ curve comes from the current settings; it must not look like a measured headphone response.
+If your headphones sound light on bass, select the bass control and adjust it a step at a time. Press **B** for reference comparison. Keep the result if you like it, or use **U** to undo. A group of changes in the settings page stays in a draft until you apply it.
 
-Output, correction, and processing state need stable locations. Sound controls have visible selection and adjustment targets. Output choice, presets, settings, comparison, and undo are reachable from the main screen.
+The EQ curve shows the changes made by the processing settings. The spectrum shows frequency energy in the incoming sound. One helps you follow your adjustments; the other helps you observe the content playing. Listening is still the final part.
 
-I want some visual character here. Real audio already provides good material for it. There is no need to animate invented measurements just to keep the screen lively. Color and highlights should follow genuine state; missing measurements should leave a quiet display.
+Beyond EQ, Maris includes dynamic frequency processing, compression, optional virtual bass, and stereo-width controls. Compression can reduce large changes in level. Virtual bass may be useful on a small device with limited low-frequency output. The result depends on the device and content, and there is no need to enable every processor.
 
-Terminals vary, too. Some support true color, others only a small palette. Reducing motion should preserve numbers, labels, and controls. A console intended for regular use has to work beyond one screenshot size and one terminal emulator.
+The menu bar is for quick output selection, scene changes, and stopping processing. The terminal workbench lays out the controls for closer adjustment. Both use the same settings and distinguish saved changes waiting to be applied from changes acknowledged by the audio thread.
 
-## Moving the cursor should not change the sound
+## Give applications their own channels
 
-One particularly unsettling interaction is browsing a control and finding that the sound has already changed.
+You can begin with one output. For more detailed routing, Maris has a mixer.
 
-The Maris settings page separates current values from an unapplied draft. Arrows and scrolling browse. Adjustment controls edit the draft. Apply or Cancel finishes the edit. Presets also show their content before confirmation.
+Multiple applications or audio inputs can become separate channels, with volume, pan, mute, solo, EQ, and compression. Channels can feed two independent outputs.
 
-A preview cannot remain valid if the device or relevant settings change before application. The device shown in the preview must be the device the confirmed change will affect.
+With headphones and speakers connected, for example, you can route music to one output and another application to the other. Selected applications can also be processed individually. Application selection and route restoration depend on the platform backend.
 
-Saving is different from applying. Writing the settings does not mean the audio thread has received and acted on them. The interface needs to show that pending state so the listener can understand what is currently audible.
+The current native paths use CoreAudio system capture on macOS 14.2 and later, WASAPI on Windows, and a local PulseAudio service on Linux, including PipeWire's PulseAudio compatibility layer. Device compatibility still needs individual acceptance checks.
 
-A/B comparison estimates the relative loudness and attenuates the louder branch to reduce volume bias. It is not instrument-calibrated loudness matching. Undo belongs to the relevant changes on the current device; it should not roll another device's settings back along with them.
+## Analyze locally while playback continues
 
-## Music recognition must not interrupt playback
+Maris also supports local MusicNN analysis for information such as genres and instruments, as a reference while tuning. It needs the corresponding model weights. Ordinary playback and processing remain available without them or when recognition cannot produce a useful result.
 
-Maris also has local MusicNN analysis for some genre and instrument information. Its weights are handled by the corresponding build workflow. An ordinary `cargo build --release` does not automatically embed them.
+Analysis runs locally without sending raw audio to a cloud recognition service. Speech noise reduction can be enabled separately on channels that need it.
 
-Normal processing remains available when a model is missing, fails to load, or produces uncertain results. Listening suggestions can use measured signal information, such as spectrum and peaks. If reliable semantic information is unavailable, the interface should not invent a genre to fill the space.
+A JSON CLI and MCP interface are available for automation. Programs can read status and, with write access enabled, adjust settings through the same checks and undo used by the interface. That makes it possible to use Maris in scripts or an agent workflow too.
 
-Raw audio does not need to be uploaded to a music-recognition service. Speech denoising has a separate purpose and is explicitly enabled per channel; it is not a default music-enhancement control.
-
-For more involved setups, the mixer accepts multiple applications or inputs. Each strip has gain, pan, mute, solo, EQ, and compression, with two independent outputs. The TUI, CLI, menu bar, and MCP share settings validation. MCP starts read-only and requires explicit write enablement; it does not provide another route around confirmation.
-
-## The release work includes less visible details
-
-This round also exposed installer and audit issues. A native Windows test encountered a script-path representation problem. A large dependency tree made a `grep -q` pipeline close early and miss a security finding. Neither is visible in the spectrum, but both matter to a functioning release package.
-
-Offline DSP tests, model execution, native CI, device recovery, and listening checks establish different things. The limiter constrains digital sample peaks; that is not a hearing-protection claim.
-
-If I eventually ask people to pay for Maris, I want to hand them a tool they can understand: what changed, what is still pending, and what cannot currently be confirmed. The analyzer should look good. The Stop control should remain easy to find.
+Maris is still in development, with no public application package yet. Source, current capabilities, and documentation are on [GitHub](https://github.com/francis-du/maris). I am continuing to work on device switching, menu-bar controls, and everyday listening operations, then check them on each supported platform.

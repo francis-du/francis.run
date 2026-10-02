@@ -93,7 +93,11 @@ func fittedTitleFont(for title: String, maxWidth: CGFloat, maxHeight: CGFloat) -
             with: NSSize(width: maxWidth, height: 1000),
             options: [.usesLineFragmentOrigin, .usesFontLeading]
         )
-        if box.height <= maxHeight { return font }
+        let explicitLines = title.components(separatedBy: "\n")
+        let widestLine = explicitLines.map {
+            NSAttributedString(string: $0, attributes: textAttributes(font: font, color: .white, kern: -1.0)).size().width
+        }.max() ?? 0
+        if box.height <= maxHeight && (explicitLines.count == 1 || widestLine <= maxWidth) { return font }
         size -= 2
     }
     return NSFont.systemFont(ofSize: 44, weight: .bold)
@@ -162,9 +166,13 @@ func drawCard(_ article: Article, to url: URL) throws {
         kern: 2.4
     )
 
-    let titleFont = fittedTitleFont(for: article.title, maxWidth: 1010, maxHeight: 250)
+    var displayTitle = article.title
+    if let separator = displayTitle.range(of: article.isEnglish ? ": " : "：") {
+        displayTitle.replaceSubrange(separator, with: article.isEnglish ? ":\n" : "：\n")
+    }
+    let titleFont = fittedTitleFont(for: displayTitle, maxWidth: 1010, maxHeight: 250)
     drawText(
-        article.title,
+        displayTitle,
         in: NSRect(x: 72, y: 222, width: 1010, height: 250),
         font: titleFont,
         color: NSColor(calibratedWhite: 0.985, alpha: 1),
