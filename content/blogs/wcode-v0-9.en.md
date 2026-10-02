@@ -1,13 +1,14 @@
 ---
-title: "wcode 0.9.0: getting multi-agent work organized"
+title: "wcode 0.9.0"
 date: 2026-10-02T21:45:00+08:00
+lastmod: 2026-10-03T01:01:33+08:00
 draft: false
 url: blog/wcode-v0-9/
 aliases: ["/blog/wcode-parallel-work/"]
 images: ["/img/share/wcode-v0-9.en.png"]
 translationKey: wcode-v0-9
 image: /img/wcode/wcode-logo.svg
-description: "Scoped task claims, reusable handoffs, and a workbench that connects current problems to source and checks: what I am building in wcode 0.9.0."
+description: "Task claims, native change acceptance, a rebuilt workbench, and fixes from working on several repositories at once."
 tags:
   - wcode
   - Rust
@@ -17,74 +18,70 @@ tags:
 
 [![wcode](/img/wcode/wcode-logo.svg)](https://wcode.francis.run/)
 
-I have been working on several projects in parallel, with agents handling backend fixes, interface work, and PR review. Splitting the work helps. Bringing it back together takes care: which files did each agent change, which results are still useful, and has anyone checked the combined version?
+This post is about wcode 0.9.0.
 
-That is much of what I am working on in wcode 0.9.0.
+I have been working on wcode, wteam, Maris, and Scopwis in parallel, with agents handling interfaces, backend changes, and CI. Splitting the work lets the projects move together. It also leaves me asking the same questions: is the code committed? Which revision did the tests run against? Someone has changed the files since then—does that result still apply?
 
-For anyone new to the project, wcode is a set of repository tools I am building in Rust. It connects to an existing coding assistant through MCP and helps it read source, find code, edit files, and run checks. Tasks, file revisions, and verification results stay with the repository workflow, so another model can pick up from them.
+The main changes in 0.9.0 concern those questions: handing off tasks, checking the current changes, and making unfinished work visible.
 
-[Version 0.8](/en/blog/wcode-v0-8/) organized code graphs, architecture, and evidence. In 0.9, I want to make the daily work easier to coordinate and follow.
+If you are new to wcode, it is a repository tool I am building in Rust. Through MCP, it gives coding assistants tools to read source, find symbols, edit with revision checks, run verification, and keep the results. Codex, Claude Code, or another host still supplies the model. There is a longer [project introduction here](/en/blog/what-is-wcode/); this post covers the release.
 
-## Assign the files along with the task
+## What does “done” mean for this revision?
 
-Giving three agents implementation, tests, and documentation sounds clear enough. They may still all end up editing the same file.
+Version 0.9.0 adds a native Change Acceptance workflow. A record brings together the current change, the project's requirements, and the checks that actually ran. It can then show what is missing.
 
-In 0.9, Worklist tasks can declare their write scope. An interface task might own `src/ui/`, a backend task `src/runtime/`, and a review task an empty `write_paths` array for read-only work. Claims check dependencies and the current revision. If another active claim has an overlapping write scope, the new claim is rejected.
+Suppose a task requires an API change, Rust tests, and static analysis. Running the tests alone leaves static analysis outstanding. If both pass and the code changes afterward, their results need another look. Where an independent review is required, the worker cannot fill that gap by writing “reviewed” in its own report.
 
-A worker calls `worklist_claim` to receive its own claim token and handoff package. Claims have a 15-minute lease that longer tasks must renew. Workers use `worklist_submit` to return bounded results and references to evidence they have already produced, giving the lead agent something concrete to collect.
+The record binds Git's base, head, tree, index, and working-tree state. It also keeps the design revision, check plan, and individual results. An absent check, a failed command, an outdated result, and a pending review remain separate states: they require different next steps.
 
-The host still launches the agents. Codex or Claude Code can use its own model and worker support; wcode keeps the coordination state.
+You can inspect this directly from the CLI:
 
-A claim also keeps the existing file and command checks. Owning a task for `src/ui/` does not remove SHA preconditions or grant command access. If another session changes a file, the worker has to read it again before editing.
+```text
+wcode acceptance inspect --base <full base SHA> --head <full head SHA> --json
+wcode acceptance inspect --base <full base SHA> --head <full head SHA> --check
+wcode acceptance history --json
+```
 
-This becomes useful when several sessions are active in one repository. The assignment, conflict, and revision being handed back are all visible.
+`--check` succeeds only when the current native record is `ready`. A repository without an active project policy gets `incomplete` and `policy_inactive`; inspecting it does not enable a policy. `inspect` reads the state. `acceptance verify` runs the required checks.
 
-## Open the workbench and see what needs attention
+That is also a boundary of this release. The local acceptance workflow has an implementation and regression coverage. The complete team path from a GitHub PR to a required check still needs deployment acceptance. The open-source workflow can run independently; local tests alone cannot establish that wteam is live.
 
-wcode already had architecture, code relationships, tasks, and verification views. Deciding what to do next still meant moving between them.
+## Assign a write scope with each task
 
-Version 0.9 brings current problems into one attention list: failed checks, unfinished verification, conflicting evidence, missing design mappings, and risks needing another look. Each item leads into the relevant task, source, or verification view.
+Splitting a request into tasks does not stop two agents from editing the same file. “You implement it; someone else writes the tests” still leaves both free to adjust entry points, configuration, and dependencies.
 
-![The wcode 0.9.0 project workbench](/img/wcode/wcode-v0-9-overview.png)
+Worklist tasks can now declare `write_paths`. The lead agent assigns directories along with the work; a review task can use an empty array. A worker calls `worklist_claim` to obtain its own token and handoff context. A claim is rejected if another active claim holds an overlapping write scope. Unfinished dependencies and revision mismatches also prevent a claim from proceeding.
 
-*The 0.9.0 development interface, shown with demonstration project data.*
+Claims have a 15-minute lease, which longer tasks must renew. After a model or session change, the next worker can find the task, scope, and existing results in persistent state. On completion, `worklist_submit` returns its result and existing Evidence IDs for the lead agent to review.
 
-I want the first screen to make a few things easy to find: what is blocked, who is working on it, and which result should I open? The complete graph, history, and detailed metrics are there when I follow a problem further.
+File edits still check their SHA, and commands retain their permission checks. Worklist coordinates participating workers; an outside process using another tool can still write to the repository. The stale SHA will reject a subsequent guarded edit and require a fresh read. A claim is not an operating-system file lock.
 
-The workspace, source revision, and snapshot state stay visible across pages. A refreshing cache or unavailable provider is shown as such, so I can tell what the page actually knows.
+Once the work comes back, the combined current revision needs verification. I ran into this while integrating the projects: two branches can each pass, yet a boundary check retained from one branch can conflict with the other's new implementation. Putting their old passing reports next to each other does not test that combination.
 
-The terminal observatory also has overview, attention, task, provider, and agent navigation. Smaller windows prioritize tasks and recovery controls, with details available separately. Those are the things I want to notice when the terminal stays open beside my work.
+## Start the workbench with the problems
 
-## Read source without mixing revisions
+![The wcode 0.9.0 workbench](/img/wcode/wcode-v0-9-overview.png)
 
-Some questions eventually need the code itself.
+*The actual 0.9.0 interface, populated with demonstration project data.*
 
-The file tree and large-module entries can open actual source with bounded line paging. Pages are tied to the original source SHA. If the file changes before the next page, the viewer requires a fresh read.
+The web workbench and terminal observatory have both been reorganized. Failed checks, missing verification, conflicting evidence, missing design mappings, and large modules needing review feed a shared attention list. An item leads to the relevant source, task, or verification result.
 
-Suppose I am inspecting a function while another agent changes the second half of its file. The next page must not silently append the new revision. That would look like one complete file while combining two different moments.
+There was already plenty of information in these pages. Finding the next step meant piecing it together. All seven web pages now keep the workspace, source revision, and snapshot state visible. The terminal has navigation for attention, tasks, providers, and agents, with help and stop controls retained in smaller windows.
 
-Changing the workspace or query also invalidates old responses. A request arriving late cannot overwrite the view I have just opened. The source viewer needs to take revisions as seriously as editing does.
+The source viewer also fixes a detail that matters when another session is working nearby. Source is paged by line and bound to the SHA of the original read. If another agent edits the file between pages, the viewer requires a new read. It cannot assemble half an old file and half a new one. A response arriving after a workspace switch cannot overwrite the newly selected workspace either.
 
-## Repeat less context during handoffs
+These are ordinary expectations for an editor. They need explicit handling in an agent observatory too.
 
-Another cost of multiple agents is explaining the same repository repeatedly.
+## A few less visible fixes
 
-Starting each worker with another scan, another introduction, and another tool search spends context on information already collected. The 0.9 handoff can reuse valid task context and fetch only what is missing or stale.
+Journal and failure-memory locks are now scoped by workspace, so writing one repository's records does not hold another repository's access. Identical verification requests can share an execution. There are focused concurrency regressions for these changes; their effect on a real task's duration still needs to be measured on that task.
 
-Tool information has been trimmed too. Standard tool names and necessary arguments remain; reconstructible routing information and repeated default-workspace guidance need fewer copies. Source bodies, SHAs, relevant checks, and failures stay available.
+Single-repository acceptance had another bug. Rust workspace discovery finds child crates automatically. The CLI counted those children as separately selected workspaces, then refused acceptance because it appeared to have more than one repository. It now checks the roots the user actually configured. Explicitly selecting two independent repositories still fails.
 
-The useful question is whether an agent can get back to work with that package. Removing fields only to make it ask another question and reread the file saves little.
+The Setup copy button had a smaller race. A clipboard operation can finish after the workspace or displayed command changes. Its old response must not show “copied” against the new content. A misleading success message is enough to send someone to the next step with the wrong command.
 
-This round also addresses waiting under concurrency. Identical verification work can share an execution, while record-store contention is isolated by workspace. Writing one repository's records should not hold up another repository's query.
+Handoffs also carry fewer repeated instructions and reconstructible routing details, while retaining source bodies, SHAs, checks, and failures. Valid context can be reused, with stale or missing parts fetched again. I have not turned a byte-count estimate into a claim about lower model bills: actual input and cache usage need provider-side measurement.
 
-## Check the version that comes back together
+With 0.9.0 installed, run `wcode setup` in the project directory to configure MCP, then reconnect the coding assistant. Run `wcode` for the terminal workbench; **W** opens project status and **O** opens Setup.
 
-Collecting completed worker reports leaves one more job.
-
-Each task tested its own version. Another worker may subsequently have changed related files. The lead agent needs to review and verify the combined current code. Earlier passing results are useful references, but cannot approve that new version.
-
-Change Acceptance is being developed into a readable record of the current Git revision, project requirements, checks actually run, and what is still missing. The implemented local workflow can report concrete blockers. Team workflows and remote merge integration still need deployment acceptance.
-
-When a change is ready to merge, I want to follow its record to the checks behind that decision, without asking every worker once more whether it is really finished.
-
-The source version is now **0.9.0**. The latest public package is still **0.8.5**, and 0.9.0 remains under pre-release verification. Follow progress on [GitHub](https://github.com/francis-du/wcode), find setup instructions on the [project website](https://wcode.francis.run/), or read the [0.9.0 feature notes](https://wcode.francis.run/docs/releases/v0.9.0/).
+Packages and checksums are available through [GitHub Releases](https://github.com/francis-du/wcode/releases). The [0.9.0 documentation](https://wcode.francis.run/docs/releases/v0.9.0/) covers the commands and changes in detail. What I want from this version is fairly concrete: a replacement worker can find the remaining work, and the person merging it can see what was checked against the code they have now.
