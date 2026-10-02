@@ -1,4 +1,66 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Francis 的技术文章、项目记录与随笔。</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><item><title>固定隧道的 MCP：Cloudflare Tunnel、Tailscale Funnel 和 wcode</title><link>https://francis.run/blog/wcode-cloudflare-tunnel/</link><pubDate>Wed, 23 Sep 2026 17:34:00 +0800</pubDate><guid>https://francis.run/blog/wcode-cloudflare-tunnel/</guid><description>&lt;p&gt;wcode 自带 Tunnel，所以临时跑一个仓库时，我一般懒得配任何东西：启动以后拿公网 MCP 地址，丢进 ChatGPT、Claude 或其他支持 Remote MCP 的客户端就行。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Blogs | Francis Du</title><link>https://francis.run/blogs/</link><atom:link href="https://francis.run/blogs/index.xml" rel="self" type="application/rss+xml"/><description>Francis 的技术文章、项目记录与随笔。</description><generator>Hugo 0.166.0</generator><language>zh-CN</language><copyright>© Francis Du</copyright><item><title>Maris：我想把终端里的声音控制台做好</title><link>https://francis.run/blog/maris-studio/</link><pubDate>Fri, 02 Oct 2026 21:46:00 +0800</pubDate><guid>https://francis.run/blog/maris-studio/</guid><description>&lt;p&gt;&lt;a href="https://github.com/francis-du/maris"&gt;&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/maris/maris-wordmark.svg" alt="Maris"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/francis-du/maris"&gt;源码&lt;/a&gt; · &lt;a href="https://github.com/francis-du/maris#maris"&gt;项目说明与文档入口&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;做 Maris 的时候，频谱很容易吸引我的注意。&lt;/p&gt;
+&lt;p&gt;一组柱子跟着声音跳起来，再配上颜色和左右声道电平，终端马上就有了音频设备的感觉。但再看一眼，我还是得知道声音送到了哪台设备，用了哪份校正，刚才那个参数到底有没有生效。&lt;/p&gt;
+&lt;p&gt;这些事不应该藏在漂亮的柱子后面。这一轮做界面，我想把它们一起处理好。&lt;/p&gt;
+&lt;p&gt;Maris 目前仍是开发中的项目，公开应用发布还没有完成。原生路径、打包和实机检查的进度以&lt;a href="https://github.com/francis-du/maris#release-policy"&gt;仓库说明&lt;/a&gt;为准。下面写的是现在的产品方向和实现，先不放一个还用不了的安装命令。&lt;/p&gt;
+&lt;h2 id="先把一副耳机一对音箱管明白"&gt;先把一副耳机、一对音箱管明白&lt;a class="heading-anchor" href="#%e5%85%88%e6%8a%8a%e4%b8%80%e5%89%af%e8%80%b3%e6%9c%ba%e4%b8%80%e5%af%b9%e9%9f%b3%e7%ae%b1%e7%ae%a1%e6%98%8e%e7%99%bd" aria-label="章节链接：先把一副耳机、一对音箱管明白"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Maris 处理电脑上正在播放的音频。可以为不同输出保存设置，应用耳机校正，再按自己的需要调整低音、高音、立体声宽度和压缩。&lt;/p&gt;
+&lt;p&gt;我把设备校正和听音偏好分开了。校正有它的来源和适用设备；偏好是自己想怎么听。切换一台输出以后，不能只沿用上一台的名字和参数，让人猜现在到底用了什么。&lt;/p&gt;
+&lt;p&gt;不同平台接入系统音频的方式也不一样。macOS 14.2 以后使用 CoreAudio 系统音频捕获；Windows 使用 WASAPI 应用音频捕获；Linux 接入本地 PulseAudio 服务，也支持 PipeWire 的 PulseAudio 兼容层。&lt;/p&gt;
+&lt;p&gt;这几个后端共享设置和处理逻辑，原生路由仍然各自实现。普通 macOS 系统音频路径不需要先装 BlackHole；应用选择和混音涉及的路由变化，则有自己的确认和恢复步骤。具体行为都留在&lt;a href="https://github.com/francis-du/maris/blob/main/docs/reference/architecture.md"&gt;架构文档&lt;/a&gt;里。&lt;/p&gt;
+&lt;h2 id="主界面要有工作台的样子"&gt;主界面要有工作台的样子&lt;a class="heading-anchor" href="#%e4%b8%bb%e7%95%8c%e9%9d%a2%e8%a6%81%e6%9c%89%e5%b7%a5%e4%bd%9c%e5%8f%b0%e7%9a%84%e6%a0%b7%e5%ad%90" aria-label="章节链接：主界面要有工作台的样子"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/maris/maris-studio-zh-CN.svg" alt="Maris 的中文工作台"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;p&gt;&lt;em&gt;图由&lt;a href="https://github.com/francis-du/maris/commit/afa26e853304a2a17a4871977fef44bab539e7cd"&gt;这轮的 TUI 代码&lt;/a&gt;使用生成的测试音频渲染，不是连接某副耳机后的实机截图。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;主界面的中心是频谱、均衡曲线和左右声道电平。频谱来自音频分析，均衡曲线根据当前设置计算；它不能被画得像一条已经测过的耳机频响。&lt;/p&gt;
+&lt;p&gt;设备、校正和处理状态放在容易找到的位置。音色参数有固定的选择和加减目标。输出选择、预设、设置、对比和撤销都能从主界面直接到达。&lt;/p&gt;
+&lt;p&gt;我希望它有一点炫酷的感觉。音频信号本身已经提供了很好的视觉素材，没必要再造一组假数据来让页面热闹。渐变和亮点应该跟着真实状态走，没测到信号时就安静下来。&lt;/p&gt;
+&lt;p&gt;终端条件也要考虑。有的环境能显示真彩色，有的只能显示少量颜色。减少动态以后，数值、标签和操作还应该完整。一个需要一直盯着的控制台，不能只在某个截图尺寸和某款终端里好看。&lt;/p&gt;
+&lt;h2 id="动了光标不等于要改声音"&gt;动了光标，不等于要改声音&lt;a class="heading-anchor" href="#%e5%8a%a8%e4%ba%86%e5%85%89%e6%a0%87%e4%b8%8d%e7%ad%89%e4%ba%8e%e8%a6%81%e6%94%b9%e5%a3%b0%e9%9f%b3" aria-label="章节链接：动了光标，不等于要改声音"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;声音控制有一个挺容易让人不放心的地方：我只是想浏览一下参数，怎么就变了？&lt;/p&gt;
+&lt;p&gt;Maris 的设置页把当前值和待应用的草稿分开。方向键、滚轮用于浏览；加减操作修改草稿；应用和取消才结束这次编辑。选择预设也是先看内容，再确认。&lt;/p&gt;
+&lt;p&gt;设备或设置在预览之后发生变化，原来的预览不能继续拿来应用。否则界面展示的是一台设备，确认时改的却可能是另一台。&lt;/p&gt;
+&lt;p&gt;保存和生效也有区别。控制端把设置写下来了，不代表音频线程已经收到并执行。界面要把“等待生效”说清楚，这样用户才能判断自己现在听到的是什么。&lt;/p&gt;
+&lt;p&gt;A/B 对比会估算并降低较响的一侧，尽量减少音量差带来的判断偏差。它不是经过声学仪器校准的响度匹配。撤销则针对当前设备的相关修改，不能把别台设备的设置一起倒回去。&lt;/p&gt;
+&lt;h2 id="识别音乐不能挡着音乐播放"&gt;识别音乐，不能挡着音乐播放&lt;a class="heading-anchor" href="#%e8%af%86%e5%88%ab%e9%9f%b3%e4%b9%90%e4%b8%8d%e8%83%bd%e6%8c%a1%e7%9d%80%e9%9f%b3%e4%b9%90%e6%92%ad%e6%94%be" aria-label="章节链接：识别音乐，不能挡着音乐播放"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;Maris 里还有本地 MusicNN 分析，用来提供部分曲风和乐器信息。模型的权重由相应构建流程处理，普通 &lt;code&gt;cargo build --release&lt;/code&gt; 不会自动包含它们。&lt;/p&gt;
+&lt;p&gt;模型没准备好、加载失败，或者结果不确定时，普通音频处理仍然应该可用。调音建议可以继续参考已经测到的频谱、峰值等信息；没有可靠识别结果，就不要编一个曲风填上去。&lt;/p&gt;
+&lt;p&gt;原始音频不需要上传给音乐识别服务。语音降噪另有自己的用途，逐声道明确开启；它也不该被当成默认的音乐增强按钮。&lt;/p&gt;
+&lt;p&gt;更复杂的使用可以进混音器：多个应用或输入，独立声道的音量、声像、静音、独奏、均衡和压缩，再送到两路输出。TUI、CLI、菜单栏和 MCP 共用设置检查。MCP 默认只读，修改权限需要显式打开，不另外开一条绕过确认的调音通道。&lt;/p&gt;
+&lt;h2 id="发布前还得做一些不显眼的事"&gt;发布前还得做一些不显眼的事&lt;a class="heading-anchor" href="#%e5%8f%91%e5%b8%83%e5%89%8d%e8%bf%98%e5%be%97%e5%81%9a%e4%b8%80%e4%ba%9b%e4%b8%8d%e6%98%be%e7%9c%bc%e7%9a%84%e4%ba%8b" aria-label="章节链接：发布前还得做一些不显眼的事"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这轮也修了安装和审计里的小问题。Windows 原生测试碰到了一种脚本路径表示；大型依赖树又让一个 &lt;code&gt;grep -q&lt;/code&gt; 检查因为管道提前关闭而漏报。这些都不会出现在主界面的频谱上，但发布包需要它们真正工作。&lt;/p&gt;
+&lt;p&gt;离线 DSP 测试、模型执行、原生 CI、设备恢复和实际听感，回答的是不同的问题。信号处理代码的峰值限制也只约束数字样本峰值，不能被说成听力保护。&lt;/p&gt;
+&lt;p&gt;如果以后让用户为 Maris 付费，我希望自己能交付一件说得清楚的工具：有好看的界面，也知道自己改了什么、什么还没生效、哪些状态暂时不能确认。频谱要好看，停止按钮也要一直找得到。&lt;/p&gt;</description></item><item><title>把 wcode 放到并行工作里，几个小问题就暴露了</title><link>https://francis.run/blog/wcode-parallel-work/</link><pubDate>Fri, 02 Oct 2026 21:45:00 +0800</pubDate><guid>https://francis.run/blog/wcode-parallel-work/</guid><description>&lt;p&gt;&lt;a href="https://wcode.francis.run/"&gt;&lt;figure class="content-image"&gt;&lt;img src="https://francis.run/img/wcode/wcode-logo.svg" alt="wcode"loading="lazy" decoding="async"&gt;&lt;/figure&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://wcode.francis.run/"&gt;项目网站&lt;/a&gt; · &lt;a href="https://github.com/francis-du/wcode"&gt;GitHub&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;最近我把几个 Rust 项目一起放进了并行迭代。一个 Agent 看一个项目，修已有 PR，补回归，跑对抗检查，再继续处理没做完的东西。&lt;/p&gt;
+&lt;p&gt;这种用法对 wcode 挺合适，也挺不客气。&lt;/p&gt;
+&lt;p&gt;单个请求能顺利完成的时候，一些问题很难看出来。等几个 Agent 同时读上下文、找验证工具、检查缓存，线程池和锁之间的关系就开始变得很具体。用户看到的可能只是一个转了很久的加载状态，底下却有好几层等待。&lt;/p&gt;
+&lt;p&gt;这轮有三个地方值得单独记一下。相关修改都在 &lt;a href="https://github.com/francis-du/wcode/pull/4"&gt;PR #4&lt;/a&gt;。&lt;/p&gt;
+&lt;h2 id="等验证的人也会占着资源"&gt;等验证的人，也会占着资源&lt;a class="heading-anchor" href="#%e7%ad%89%e9%aa%8c%e8%af%81%e7%9a%84%e4%ba%ba%e4%b9%9f%e4%bc%9a%e5%8d%a0%e7%9d%80%e8%b5%84%e6%ba%90" aria-label="章节链接：等验证的人，也会占着资源"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;wcode 会合并同一个项目的一些验证工作，避免几个请求同时把相同的构建再跑一遍。这本来是个很自然的优化。&lt;/p&gt;
+&lt;p&gt;麻烦在等待者身上。它可能已经拿到了一个工具执行名额，然后等另一位调用者完成验证。持有验证锁的那位又可能暂时挂在别的线程池工作里。只看各自那段代码，很容易觉得“等一下就好了”。&lt;/p&gt;
+&lt;p&gt;我现在给普通原生调用者的等待设了五秒上限。超时就明确返回 busy，让调用者稍后再试。处在 Rayon worker 上时，则直接拒绝继续等待，避免把线程池里本来就有限的工人一起堵住。&lt;/p&gt;
+&lt;p&gt;这里不能顺手把真正执行验证的锁解掉。它还在干活，也还需要自己的执行名额。等待者退出，只能释放等待者自己的资源；当前验证是否成功，仍然由实际执行结果决定。&lt;/p&gt;
+&lt;p&gt;这部分代码在 &lt;a href="https://github.com/francis-du/wcode/blob/4bccc0ca443a6d392dae903841d55fb890eabe15/src/runtime/harness/cache_flight.rs"&gt;&lt;code&gt;cache_flight.rs&lt;/code&gt;&lt;/a&gt;。我给它留下了拥塞下的回归，检查等待者退出以后，后面的请求还能正常进来。&lt;/p&gt;
+&lt;h2 id="readme-太热闹真正的测试反而被漏掉了"&gt;README 太热闹，真正的测试反而被漏掉了&lt;a class="heading-anchor" href="#readme-%e5%a4%aa%e7%83%ad%e9%97%b9%e7%9c%9f%e6%ad%a3%e7%9a%84%e6%b5%8b%e8%af%95%e5%8f%8d%e8%80%8c%e8%a2%ab%e6%bc%8f%e6%8e%89%e4%ba%86" aria-label="章节链接：README 太热闹，真正的测试反而被漏掉了"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;另一个问题比锁更普通。&lt;/p&gt;
+&lt;p&gt;wcode 会在仓库里找 &lt;code&gt;proptest&lt;/code&gt;、&lt;code&gt;hypothesis&lt;/code&gt;、&lt;code&gt;quickcheck&lt;/code&gt; 这些框架的使用迹象，配合依赖声明决定哪些高级验证可以运行。早先这里复用了文本搜索的结果列表，最多取一千条。&lt;/p&gt;
+&lt;p&gt;我做了一个很小的仓库：前面的 Markdown 重复写了 1,100 行框架名，后面的 Rust、Python 文件才真的引用测试框架。结果，文档把那一千条名额吃完了，真正的源码使用证据没能进入发现结果。&lt;/p&gt;
+&lt;p&gt;还有一种更隐蔽的情况：同一个名字出现在两种语言里。Rust 文件里的 &lt;code&gt;quickcheck&lt;/code&gt; 很多，R 文件里的 &lt;code&gt;quickcheck&lt;/code&gt; 很少。按匹配行数截断，也会把后者挤掉。&lt;/p&gt;
+&lt;p&gt;这次我把框架发现需要的信息收窄了。它只记“这个查询在这种源码语言里出现过”，不再保留一大串重复文本。普通搜索仍然提供原来的分页结果；发现验证工具时，才走这条按查询和语言保留证据的路径。&lt;/p&gt;
+&lt;p&gt;扫描也放到独立的有界 I/O 池里。回归会先占满全局 Rayon 池，再检查框架发现能不能自己完成。只要它又偷偷依赖回全局池，测试就会卡住并失败。&lt;/p&gt;
+&lt;p&gt;这个改动的消融很直接：换回旧实现，那份 1,100 行文档的用例会失败；恢复新实现，同样的用例通过。比单独写一个“搜到了 proptest”的测试有用得多。&lt;/p&gt;
+&lt;h2 id="根目录已经查过就别再查一遍"&gt;根目录已经查过，就别再查一遍&lt;a class="heading-anchor" href="#%e6%a0%b9%e7%9b%ae%e5%bd%95%e5%b7%b2%e7%bb%8f%e6%9f%a5%e8%bf%87%e5%b0%b1%e5%88%ab%e5%86%8d%e6%9f%a5%e4%b8%80%e9%81%8d" aria-label="章节链接：根目录已经查过，就别再查一遍"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;项目里同时有 Rust、Python、Node 时，wcode 还要知道验证工具属于哪个项目根。否则一个子项目装了工具，另一个子项目也可能被误写成能运行。&lt;/p&gt;
+&lt;p&gt;这里我又找到了一个重复。先查整个 workspace，再处理根目录 &lt;code&gt;.&lt;/code&gt; 时，会重新做一次相同的工具发现。重复声明两个 &lt;code&gt;.&lt;/code&gt;，同一个请求里就会查三次。&lt;/p&gt;
+&lt;p&gt;我把本次请求已经取得的根目录结果留下，子项目仍然单独查。回归除了数调用次数，还比较 provider、缺口和截断状态，防止为了少扫一次把信息丢掉。两个重复根声明的例子，现在只查一次。&lt;/p&gt;
+&lt;p&gt;我没有把这份结果做成跨请求的长缓存。工具可能刚装好，manifest 也可能刚改过。把一个请求里的重复工作去掉就够了，没必要再引入一份难解释的新鲜度。&lt;/p&gt;
+&lt;h2 id="windows-帮我抓到了另一种路径"&gt;Windows 帮我抓到了另一种路径&lt;a class="heading-anchor" href="#windows-%e5%b8%ae%e6%88%91%e6%8a%93%e5%88%b0%e4%ba%86%e5%8f%a6%e4%b8%80%e7%a7%8d%e8%b7%af%e5%be%84" aria-label="章节链接：Windows 帮我抓到了另一种路径"&gt;#&lt;/a&gt;&lt;/h2&gt;
+&lt;p&gt;这轮 CI 还碰到了 Windows 的规范化路径问题。&lt;/p&gt;
+&lt;p&gt;OSS 源码归属检查会把编译目标做 canonicalize，再确认它仍然在 checkout 里。目标和 checkout 如果不是同一种路径表示，合法的仓库内文件也会被拒绝。现在两边都先规范化，再做边界判断，仓库外的源码仍然要拒绝。&lt;/p&gt;
+&lt;p&gt;后面又碰到一个更小的差异：&lt;code&gt;cargo package --list&lt;/code&gt; 在 Windows 上给出了反斜杠路径，测试却拿它和 &lt;code&gt;src/lib.rs&lt;/code&gt; 比较。包已经正常生成，检查仍然报缺文件。这次只在列表成员比较时统一分隔符，源码边界检查照常保留。修正放在&lt;a href="https://github.com/francis-du/wcode/commit/cee9059e701655c55cae9c47520f7c7c9c14b2e8"&gt;这一笔提交&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;并发回归的压力也保留了：每类操作 16 个请求，混合请求的原有 40 秒期限没有因为失败而往后挪。测试失败时，我希望先看到等待发生在哪里。&lt;/p&gt;
+&lt;p&gt;这轮并发修复在 macOS 上跑完了 1,863 项库测试，另有 7 项原本就需要手动运行的测试被忽略。Linux、macOS、Windows 和 OSS 打包还有各自的 CI，状态可以直接看 PR。这里记录的是一次发布前的修正，不把本地通过写成所有平台都已经验收。&lt;/p&gt;
+&lt;p&gt;做完这些，我对并行工作有了一个更实际的要求：几个 Agent 同时进来时，界面应该一直说得清楚，谁在执行、谁在等、谁需要重试。否则再多几个并发名额，也只是多几个人一起盯着加载图标。&lt;/p&gt;</description></item><item><title>固定隧道的 MCP：Cloudflare Tunnel、Tailscale Funnel 和 wcode</title><link>https://francis.run/blog/wcode-cloudflare-tunnel/</link><pubDate>Wed, 23 Sep 2026 17:34:00 +0800</pubDate><guid>https://francis.run/blog/wcode-cloudflare-tunnel/</guid><description>&lt;p&gt;wcode 自带 Tunnel，所以临时跑一个仓库时，我一般懒得配任何东西：启动以后拿公网 MCP 地址，丢进 ChatGPT、Claude 或其他支持 Remote MCP 的客户端就行。&lt;/p&gt;
 &lt;p&gt;真正开始长期用以后，我反而不想让 MCP 地址跟着每次 Tunnel 重启一起变。&lt;/p&gt;
 &lt;p&gt;原因很实际：地址一变，客户端配置要改，OAuth resource URL 也跟着变。对一个偶尔开的开发服务无所谓，对每天都用的本地代码入口就挺烦。&lt;/p&gt;
 &lt;p&gt;所以我现在会给常用的 wcode 留一个&lt;strong&gt;固定隧道入口&lt;/strong&gt;。Cloudflare Tunnel 和 Tailscale Funnel 我都在用，结构其实一样：&lt;/p&gt;
@@ -3904,151 +3966,4 @@ Human observability
 &lt;p&gt;Git 里我想保留代码和 Design State。每跑一次测试都改仓库，只会制造一堆没必要的 Commit / Artifact 噪音。&lt;/p&gt;
 &lt;p&gt;模型断开或者 wcode 重启以后，这些状态还能重新加载。&lt;/p&gt;
 &lt;p&gt;这也是我后来开始做 Reconciliation 的前提：如果验证结果本身都只活在聊天里，那“换一个模型继续做”其实没有稳定交接面。&lt;/p&gt;
-&lt;p&gt;Evidence 能留下来以后，长任务才有可能真正跨 Session 继续。也就是从这里，我开始认真做 &lt;a href="https://francis.run/blog/wcode-reconciliation/"&gt;Reconciliation&lt;/a&gt;。&lt;/p&gt;</description></item><item><title>wcode：Git Diff 之外，我还想知道什么</title><link>https://francis.run/blog/wcode-traceability/</link><pubDate>Wed, 26 Aug 2026 03:13:00 +0800</pubDate><guid>https://francis.run/blog/wcode-traceability/</guid><description>&lt;p&gt;我做 Code Review 时很少只看 Diff。&lt;/p&gt;
-&lt;p&gt;Diff 只是入口。&lt;/p&gt;
-&lt;p&gt;看到一个函数被改，我脑子里会自动继续问：谁在调用它？这个模块原来为什么这么写？有没有对应测试？它是不是安全边界？这次只是重构，还是已经改变了设计？&lt;/p&gt;
-&lt;p&gt;这些问题以前都靠人自己补。&lt;/p&gt;
-&lt;p&gt;Agent 也一样，只不过它能补多少，很看这一次上下文有没有给够。&lt;/p&gt;
-&lt;p&gt;所以做完 Design State 和 Software Graph 以后，我开始把其中一部分变成 wcode 可以直接算的东西。&lt;/p&gt;
-&lt;h2 id="traceability-先回答最笨的问题"&gt;Traceability 先回答最笨的问题&lt;a class="heading-anchor" href="#traceability-%e5%85%88%e5%9b%9e%e7%ad%94%e6%9c%80%e7%ac%a8%e7%9a%84%e9%97%ae%e9%a2%98" aria-label="章节链接：Traceability 先回答最笨的问题"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;&lt;code&gt;traceability_status&lt;/code&gt; 主要看几条链有没有断：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement → Component
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component → Implementation
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance Criterion → Verification
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我一开始考虑过做一个总 Coverage。&lt;/p&gt;
-&lt;p&gt;比如：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;87%
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;后来觉得没什么用。&lt;/p&gt;
-&lt;p&gt;如果丢的是一个低优先级页面的 Acceptance，和丢的是 Workspace Root Isolation 的测试，显然不是同一件事。把它们平均成一个百分比，信息反而少了。&lt;/p&gt;
-&lt;p&gt;所以现在直接分开报。&lt;/p&gt;
-&lt;p&gt;我更想看到这种东西：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Requirement 还在
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Component 还在
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;但原来映射的 Symbol 已经搬走了
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;或者：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Acceptance 还指着一个已经改名的 test
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这种错误没有多高级，但特别常见。&lt;/p&gt;
-&lt;h2 id="product-scope-解决别把整个仓库都拖进来"&gt;Product Scope 解决“别把整个仓库都拖进来”&lt;a class="heading-anchor" href="#product-scope-%e8%a7%a3%e5%86%b3%e5%88%ab%e6%8a%8a%e6%95%b4%e4%b8%aa%e4%bb%93%e5%ba%93%e9%83%bd%e6%8b%96%e8%bf%9b%e6%9d%a5" aria-label="章节链接：Product Scope 解决“别把整个仓库都拖进来”"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;wcode 后来又加了 Product Scope，因为只靠 Requirement 还不够。&lt;/p&gt;
-&lt;p&gt;项目一大，Context 很容易横跨一堆不相关目录。&lt;/p&gt;
-&lt;p&gt;现在我通常先跑 &lt;code&gt;scope_status&lt;/code&gt;，看看源码是怎么落在各个 Scope 里的，还有没有没归类的文件。真正做任务时，&lt;code&gt;software_context(scopes=...)&lt;/code&gt; 会把源码导航收窄到指定范围。&lt;/p&gt;
-&lt;p&gt;例如我只在 &lt;code&gt;workspace&lt;/code&gt; / &lt;code&gt;risk&lt;/code&gt; 一类 Scope 里查，就不会顺手把 UI、Connector、Release 相关东西一起塞进来。&lt;/p&gt;
-&lt;p&gt;这个功能对模型没有那么“惊艳”，但对长期项目很实用。Context 少一点，误判也少一点。&lt;/p&gt;
-&lt;h2 id="drift-不是报错更像提醒"&gt;Drift 不是报错，更像提醒&lt;a class="heading-anchor" href="#drift-%e4%b8%8d%e6%98%af%e6%8a%a5%e9%94%99%e6%9b%b4%e5%83%8f%e6%8f%90%e9%86%92" aria-label="章节链接：Drift 不是报错，更像提醒"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Traceability 看的是“关系还通不通”，Drift 看的是“变化之后，两边是不是开始不一致”。&lt;/p&gt;
-&lt;p&gt;现在大致有两类。&lt;/p&gt;
-&lt;p&gt;一种是 Implementation Drift。&lt;/p&gt;
-&lt;p&gt;Design 变了，代码没跟；或者原来声明的实现、验证链现在断了。&lt;/p&gt;
-&lt;p&gt;另一种是 Design Drift。&lt;/p&gt;
-&lt;p&gt;某个已经有 Design 身份的实现被改了，但这次 Design State 完全没动。&lt;/p&gt;
-&lt;p&gt;第二种不能理解成“改代码必须改 YAML”。&lt;/p&gt;
-&lt;p&gt;很多重构当然不需要改设计。&lt;/p&gt;
-&lt;p&gt;所以它更像一句提醒：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;这个地方在 Design State 里是有名字的，现在代码变了，确认一下原来的描述还成立。&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;我不想把这种 heuristic 叫 formal verification。它没那么聪明。&lt;/p&gt;
-&lt;h2 id="impact-是我真正天天想看的东西"&gt;Impact 是我真正天天想看的东西&lt;a class="heading-anchor" href="#impact-%e6%98%af%e6%88%91%e7%9c%9f%e6%ad%a3%e5%a4%a9%e5%a4%a9%e6%83%b3%e7%9c%8b%e7%9a%84%e4%b8%9c%e8%a5%bf" aria-label="章节链接：Impact 是我真正天天想看的东西"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Git 能给 Changed Paths，但 Review 时我通常还想看：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;碰到了哪些 Component
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;关联哪些 Requirement
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;哪些 Acceptance 需要重新验证
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;调用方有哪些
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;有没有 Public API 信号
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;有没有 Security Boundary
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;code&gt;impact_analysis&lt;/code&gt; 会从 Working Tree 开始，再沿 Composite Software Graph 往调用方扩。&lt;/p&gt;
-&lt;p&gt;现在主要看 &lt;code&gt;Calls&lt;/code&gt; / &lt;code&gt;RuntimeCalls&lt;/code&gt; 这类关系。&lt;/p&gt;
-&lt;p&gt;有 fresh LSP / Runtime Provider 就用更高精度的关系；没有就退到 Tree-sitter Syntax Edge。结果里会保留 Provider 和 Precision，不把不同来源混成一句“确定会影响”。&lt;/p&gt;
-&lt;p&gt;这也是为什么前面 Software Graph 那篇我一直强调 provenance。&lt;/p&gt;
-&lt;p&gt;没有 provenance，Impact 最后只剩一个很自信的列表，但没人知道它为什么这么判断。&lt;/p&gt;
-&lt;h2 id="transitive-analysis-一定得有刹车"&gt;Transitive Analysis 一定得有刹车&lt;a class="heading-anchor" href="#transitive-analysis-%e4%b8%80%e5%ae%9a%e5%be%97%e6%9c%89%e5%88%b9%e8%bd%a6" aria-label="章节链接：Transitive Analysis 一定得有刹车"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;调用图特别容易爆。&lt;/p&gt;
-&lt;p&gt;一个底层 helper 可能被几百个地方用。如果“所有调用方的调用方再递归展开”没有上限，最后返回的 Context 比直接把仓库读一遍还离谱。&lt;/p&gt;
-&lt;p&gt;所以 wcode 这类 Query 都是 bounded 的。&lt;/p&gt;
-&lt;p&gt;到上限就明确返回：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;truncated = true
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我宁愿看到一个“这里没展开完”，也不要看到一份看起来完整、其实只是因为上下文被截断而少东西的结果。&lt;/p&gt;
-&lt;h2 id="review-里现在还会看代码是不是开始长歪"&gt;Review 里现在还会看代码是不是开始长歪&lt;a class="heading-anchor" href="#review-%e9%87%8c%e7%8e%b0%e5%9c%a8%e8%bf%98%e4%bc%9a%e7%9c%8b%e4%bb%a3%e7%a0%81%e6%98%af%e4%b8%8d%e6%98%af%e5%bc%80%e5%a7%8b%e9%95%bf%e6%ad%aa" aria-label="章节链接：Review 里现在还会看代码是不是开始长歪"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;最近 &lt;code&gt;review_changes&lt;/code&gt; 又加了一些结构信号。&lt;/p&gt;
-&lt;p&gt;例如：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一个源码文件从 1,000 行以下跨到 1,000 行以上
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;大量净新增集中在一个文件
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;一次大改横跨多个 Product Scope
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这些不会直接判“代码质量差”。&lt;/p&gt;
-&lt;p&gt;它们只是进入 Risk，让后面的 Verification 决定是不是要增加 Maintainability Review。&lt;/p&gt;
-&lt;p&gt;这个区别我觉得挺重要。&lt;/p&gt;
-&lt;p&gt;工具可以很容易数行数，但“抽象是不是多余”“是不是出现了重复的 canonical helper”“是不是为了兼容又堆了一层 wrapper”，这些还是要 Review。&lt;/p&gt;
-&lt;p&gt;所以确定性信号负责发现值得看一眼的地方，Reviewer 再判断是不是问题。&lt;/p&gt;
-&lt;p&gt;现在 Project Observatory 也会把 Requirement、实现、Verification、Git Change 和依赖关系放在一起。我平时打开它，基本就是为了回答这篇文章标题那个问题：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;Diff 之外，这次到底动了什么。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;Impact 算出来只是知道该看哪里，最后还是要落到“怎么证明这次改动真的可以”。Verification 和 Evidence 我放在 &lt;a href="https://francis.run/blog/wcode-verification/"&gt;测试通过以后，我还想留下什么&lt;/a&gt; 里。&lt;/p&gt;</description></item><item><title>wcode 的 Software Graph：先承认自己不知道</title><link>https://francis.run/blog/wcode-software-graph/</link><pubDate>Wed, 26 Aug 2026 03:12:00 +0800</pubDate><guid>https://francis.run/blog/wcode-software-graph/</guid><description>&lt;p&gt;最早写 wcode 的代码索引时，我没想过要做什么 Software Graph。&lt;/p&gt;
-&lt;p&gt;当时的问题很直接：模型一进大文件就喜欢整份读，几百上千行源码一股脑塞进上下文。于是我先做了 Tree-sitter，给它几个更小的入口：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;file_outline
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;find_symbol
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;symbol_context
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这套东西到现在都还在，而且是我最喜欢的一层。便宜、稳定，不用启动项目。&lt;/p&gt;
-&lt;p&gt;后来开始做 Impact，我才发现“临时查一下 Symbol”不够了。&lt;/p&gt;
-&lt;p&gt;我需要知道 A 和 B 的关系，还需要知道这条关系是谁告诉我的、什么时候算出来的、源码变了以后还能不能信。&lt;/p&gt;
-&lt;p&gt;这才有了 Software Graph。&lt;/p&gt;
-&lt;h2 id="tree-sitter-知道的没有想象中那么多"&gt;Tree-sitter 知道的没有想象中那么多&lt;a class="heading-anchor" href="#tree-sitter-%e7%9f%a5%e9%81%93%e7%9a%84%e6%b2%a1%e6%9c%89%e6%83%b3%e8%b1%a1%e4%b8%ad%e9%82%a3%e4%b9%88%e5%a4%9a" aria-label="章节链接：Tree-sitter 知道的没有想象中那么多"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Tree-sitter 很适合做结构分析。&lt;/p&gt;
-&lt;p&gt;定义在哪里、Range 是多少、Qualified Name 是什么，这些都比较稳。一些语法上能明确判断的调用关系，也可以抽出来。&lt;/p&gt;
-&lt;p&gt;但它没有编译器的类型系统，也不会替我做宏展开、重载选择和动态分派。&lt;/p&gt;
-&lt;p&gt;所以 Tree-sitter 产生的关系一直带着：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider = tree-sitter
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;precision = syntax
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;我后来越来越在意 &lt;code&gt;precision&lt;/code&gt; 这个词。&lt;/p&gt;
-&lt;p&gt;做 Agent 工具时，很容易为了让返回结果“看起来更聪明”，把一个启发式结果包装得像确定事实。短期体验会很好，后面做 Impact、Risk 时却很危险，因为上层已经不知道底下到底有多靠谱。&lt;/p&gt;
-&lt;p&gt;所以这里干脆先承认自己不知道。&lt;/p&gt;
-&lt;h2 id="lsp-也不是装了就算-semantic"&gt;LSP 也不是装了就算 semantic&lt;a class="heading-anchor" href="#lsp-%e4%b9%9f%e4%b8%8d%e6%98%af%e8%a3%85%e4%ba%86%e5%b0%b1%e7%ae%97-semantic" aria-label="章节链接：LSP 也不是装了就算 semantic"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;现在 wcode 有一套第一方 Semantic Provider，会探测 rust-analyzer、gopls、clangd、typescript-language-server、pyright 这些 Language Server。&lt;/p&gt;
-&lt;p&gt;但“机器上有这个二进制”和“当前结果是 semantic”是两回事。&lt;/p&gt;
-&lt;p&gt;只有 Language Server 真正启动、返回 Document Symbol / Call Hierarchy / Implementation，这些结果才进入 Graph，并标成：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;precision = semantic
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Repository-aware Language Server 也不是默认无条件执行。&lt;/p&gt;
-&lt;p&gt;它可能加载项目配置、Build Metadata、插件，甚至间接执行仓库里的东西。现在有两种授权方式：启动 wcode 时直接用 &lt;code&gt;--allow-risky-exec&lt;/code&gt; 做进程级放行；或者让具体 Refresh 先触发本地 Authorization Request，我在 TUI 里批准这个操作后再重试。&lt;/p&gt;
-&lt;p&gt;后者是我后来补的，因为很多时候我只想临时跑一次 rust-analyzer，不想顺便把整个 Runtime 后面的高风险执行都放开。&lt;/p&gt;
-&lt;h2 id="stale-semantic-比没有-semantic-更糟"&gt;stale semantic 比没有 semantic 更糟&lt;a class="heading-anchor" href="#stale-semantic-%e6%af%94%e6%b2%a1%e6%9c%89-semantic-%e6%9b%b4%e7%b3%9f" aria-label="章节链接：stale semantic 比没有 semantic 更糟"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;这里有个很容易忽略的问题。&lt;/p&gt;
-&lt;p&gt;假设上午跑过 rust-analyzer，拿到一组 Call Hierarchy；下午我已经把源码改了一大轮。如果 Impact 还拿上午的结果继续推导，它会表现得很“精准”，实际上精准地错了。&lt;/p&gt;
-&lt;p&gt;所以第一方 LSP Fact 会带 &lt;code&gt;source_sha256&lt;/code&gt;。&lt;/p&gt;
-&lt;p&gt;源码对不上，这个 Provider Revision 就会 stale。stale 的关系不会再进新的 Software Graph，也不会继续参与 &lt;code&gt;software_context&lt;/code&gt; 和 Impact。&lt;/p&gt;
-&lt;p&gt;要用就重新 Refresh。&lt;/p&gt;
-&lt;p&gt;这点比“自动保持 semantic 数据永远最新”笨一点，但边界清楚。&lt;/p&gt;
-&lt;h2 id="同一条关系可以有几个答案"&gt;同一条关系可以有几个答案&lt;a class="heading-anchor" href="#%e5%90%8c%e4%b8%80%e6%9d%a1%e5%85%b3%e7%b3%bb%e5%8f%af%e4%bb%a5%e6%9c%89%e5%87%a0%e4%b8%aa%e7%ad%94%e6%a1%88" aria-label="章节链接：同一条关系可以有几个答案"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Software Graph 没有试图把所有来源揉成一个最终真相。&lt;/p&gt;
-&lt;p&gt;一条 Edge 会保留自己的：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;provider
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;precision
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;revision
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;attributes
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;所以同一个 &lt;code&gt;A -&amp;gt; B&lt;/code&gt; 完全可能同时有：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Tree-sitter syntax call
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;LSP semantic call
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;Runtime observed call
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;它们不互相覆盖。&lt;/p&gt;
-&lt;p&gt;如果以后接 SCIP、Compiler Index 或 Runtime Trace，也还是走同一个 provider-neutral contract。&lt;/p&gt;
-&lt;p&gt;这样做的好处是，上层可以自己决定信谁。&lt;/p&gt;
-&lt;p&gt;Impact 遇到真实 Runtime Edge，可以用真实运行关系；只有 Syntax Edge 也能继续工作，只是结果需要更保守。&lt;/p&gt;
-&lt;h2 id="graph-history-解决的是另一个问题"&gt;Graph History 解决的是另一个问题&lt;a class="heading-anchor" href="#graph-history-%e8%a7%a3%e5%86%b3%e7%9a%84%e6%98%af%e5%8f%a6%e4%b8%80%e4%b8%aa%e9%97%ae%e9%a2%98" aria-label="章节链接：Graph History 解决的是另一个问题"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;当 Graph 开始被拿来做分析以后，我还想看结构到底怎么变的。&lt;/p&gt;
-&lt;p&gt;于是加了：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph_history
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph_query
-&lt;/span&gt;&lt;/span&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;graph_diff
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;这里没有每查询一次就存一份快照。图内容没变，就不制造历史噪音。&lt;/p&gt;
-&lt;p&gt;Node 用稳定 ID 对齐。Edge 则按：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"&gt;&lt;code class="language-text" data-lang="text"&gt;&lt;span style="display:flex;"&gt;&lt;span&gt;from + to + kind + provider + precision
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;先找身份。&lt;/p&gt;
-&lt;p&gt;如果只是 Revision 或 Attributes 变了，就算 &lt;code&gt;changed&lt;/code&gt;，而不是先删一条再新增一条。&lt;/p&gt;
-&lt;p&gt;这类实现细节平时没什么存在感，但图一旦有几十版历史，没有稳定身份很快就看不下去了。&lt;/p&gt;
-&lt;h2 id="我后来把-webui-的球图降级了"&gt;我后来把 WebUI 的球图降级了&lt;a class="heading-anchor" href="#%e6%88%91%e5%90%8e%e6%9d%a5%e6%8a%8a-webui-%e7%9a%84%e7%90%83%e5%9b%be%e9%99%8d%e7%ba%a7%e4%ba%86" aria-label="章节链接：我后来把 WebUI 的球图降级了"&gt;#&lt;/a&gt;&lt;/h2&gt;
-&lt;p&gt;Software Graph 做完后，我也走过一个很自然的弯路：既然已经有图，那就在 WebUI 里画出来。&lt;/p&gt;
-&lt;p&gt;于是有过一个能缩放、拖拽、点 Node 看 provenance 的 Graph Canvas。&lt;/p&gt;
-&lt;p&gt;我自己打开几次以后发现，它更像 Debug Tool，不像项目管理页面。&lt;/p&gt;
-&lt;p&gt;我真正想查的是某个 Requirement 现在由谁实现、Acceptance 在哪、设计依赖和代码依赖有没有分叉、最近改动碰到什么，而不是盯着几十个圆点猜哪条线比较重要。&lt;/p&gt;
-&lt;p&gt;所以现在主 UI 已经改成 Project Observatory，按 Requirement 往下看 Feature、Component、Implementation、Verification 和 Git Change。&lt;/p&gt;
-&lt;p&gt;低层 Graph 没消失。&lt;/p&gt;
-&lt;p&gt;它仍然是 Context、Impact、历史 Diff 的数据来源，只是不再承担“解释整个项目”的视觉任务。&lt;/p&gt;
-&lt;p&gt;做到这里我才确定一件事：底层有 Graph，不代表 UI 也应该是一团 Graph。&lt;/p&gt;
-&lt;p&gt;Graph 到这里还只是底层事实。真正拿它去做 Review 时，问题会变成另一句：Diff 之外，这次到底动了什么。那部分我放在 &lt;a href="https://francis.run/blog/wcode-traceability/"&gt;Git Diff 之外，我还想知道什么&lt;/a&gt; 里。&lt;/p&gt;</description></item></channel></rss>
+&lt;p&gt;Evidence 能留下来以后，长任务才有可能真正跨 Session 继续。也就是从这里，我开始认真做 &lt;a href="https://francis.run/blog/wcode-reconciliation/"&gt;Reconciliation&lt;/a&gt;。&lt;/p&gt;</description></item></channel></rss>
