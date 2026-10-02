@@ -51,7 +51,7 @@ func parseFrontMatter(_ url: URL) throws -> Article? {
 
     let name = url.deletingPathExtension().lastPathComponent
     let isEnglish = name.hasSuffix(".en")
-    guard name.lowercased().contains("wcode") else { return nil }
+    guard name.lowercased().contains("wcode") || name.lowercased().hasPrefix("maris-") else { return nil }
 
     return Article(
         source: url,
@@ -102,7 +102,7 @@ func fittedTitleFont(for title: String, maxWidth: CGFloat, maxHeight: CGFloat) -
 func pill(_ text: String, x: CGFloat, y: CGFloat) -> CGFloat {
     let font = NSFont.systemFont(ofSize: 16, weight: .semibold)
     let attrs = textAttributes(font: font, color: NSColor(calibratedRed: 0.90, green: 0.86, blue: 0.94, alpha: 1))
-    let width = ceil(NSAttributedString(string: text, attributes: attrs).size().width) + 34
+    let width = ceil(NSAttributedString(string: text.uppercased(), attributes: attrs).size().width) + 38
     let rect = NSRect(x: x, y: y, width: width, height: 42)
     let path = NSBezierPath(roundedRect: rect, xRadius: 13, yRadius: 13)
     NSColor(calibratedRed: 0.13, green: 0.10, blue: 0.17, alpha: 1).setFill()
@@ -110,7 +110,7 @@ func pill(_ text: String, x: CGFloat, y: CGFloat) -> CGFloat {
     NSColor(calibratedRed: 0.30, green: 0.23, blue: 0.37, alpha: 1).setStroke()
     path.lineWidth = 1
     path.stroke()
-    drawText(text.uppercased(), in: NSRect(x: x + 17, y: y + 10, width: width - 34, height: 24), font: font, color: NSColor(calibratedRed: 0.90, green: 0.86, blue: 0.94, alpha: 1), kern: 0.2)
+    drawText(text.uppercased(), in: NSRect(x: x + 17, y: y + 6, width: width - 34, height: 30), font: font, color: NSColor(calibratedRed: 0.90, green: 0.86, blue: 0.94, alpha: 1), kern: 0.2)
     return width
 }
 
@@ -155,7 +155,7 @@ func drawCard(_ article: Article, to url: URL) throws {
     ])!.draw(in: accent, angle: 0)
 
     drawText(
-        "FRANCIS.RUN / WCODE",
+        article.outputName.hasPrefix("maris-") ? "FRANCIS.RUN / MARIS" : "FRANCIS.RUN / WCODE",
         in: NSRect(x: 72, y: 492, width: 600, height: 34),
         font: NSFont.systemFont(ofSize: 21, weight: .bold),
         color: NSColor(calibratedRed: 0.79, green: 0.73, blue: 1.0, alpha: 1),
