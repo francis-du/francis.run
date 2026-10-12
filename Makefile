@@ -272,34 +272,7 @@ check:
 	grep -q 'DataFusion Python' $(BUILD_DIR)/en/about/index.html
 	! grep -qi 'wiki-graph' $(BUILD_DIR)/about/index.html
 	! grep -qi 'wiki-graph' $(BUILD_DIR)/en/about/index.html
-	grep -q 'class=gallery-page' $(BUILD_DIR)/gallery/index.html
-	grep -q '/css/gallery.min.' $(BUILD_DIR)/gallery/index.html
-	! grep -q '/css/gallery.min.' $(BUILD_DIR)/index.html
-	! grep -q '/js/gallery.js' $(BUILD_DIR)/gallery/index.html
-	grep -q 'data-rel=gallery-' $(BUILD_DIR)/gallery/index.html
-	grep -q 'data-cfasync=false src=/shortcode-gallery/jquery-3.7.1.min.js' $(BUILD_DIR)/gallery/index.html
-	grep -q 'data-cfasync=false src=/shortcode-gallery/swipebox/js/jquery.swipebox.min.js' $(BUILD_DIR)/gallery/index.html
-	grep -q 'fetchpriority=high' $(BUILD_DIR)/gallery/index.html
-	grep -q 'loading=lazy decoding=async' $(BUILD_DIR)/gallery/index.html
-	grep -q 'PEN-F' $(BUILD_DIR)/gallery/index.html
-	test "$$(grep -o 'class=galleryImg' $(BUILD_DIR)/gallery/index.html | wc -l | tr -d ' ')" -eq 175
-	for chapter in 1 2 3 4 5; do grep -q "id=chapter-$$chapter" $(BUILD_DIR)/gallery/index.html || exit 1; done
-	! grep -q 'images/xilinhot/\|images/yunnan/' $(BUILD_DIR)/gallery/index.html
-	grep -q 'width=540 height=720' $(BUILD_DIR)/gallery/index.html
-	! grep -q '251773/37217mm' $(BUILD_DIR)/gallery/index.html
-	! test -d $(BUILD_DIR)/gallery/images/xilinhot
-	! test -d $(BUILD_DIR)/gallery/images/yunnan
-	test -z "$$(find $(BUILD_DIR)/gallery/images/monochrome -type f -name '*.jpg' -print -quit)"
-	! grep -q '<style>.jg-entry img' $(BUILD_DIR)/gallery/index.html
-	grep -q 'shortcode-gallery/justified_gallery/jquery.justifiedGallery.min.js' $(BUILD_DIR)/gallery/index.html
-	test -f $(BUILD_DIR)/shortcode-gallery/justified_gallery/jquery.justifiedGallery.min.js
-	! test -f $(BUILD_DIR)/shortcode-gallery/justified_gallery/jquery.justifiedGallery.js
-	! test -f $(BUILD_DIR)/shortcode-gallery/lazy/jquery.lazy.js
-	! test -f $(BUILD_DIR)/shortcode-gallery/lazy/jquery.lazy.min.js
-	! grep -q 'jquery.lazy.min.js' $(BUILD_DIR)/gallery/index.html
-	! test -f $(BUILD_DIR)/shortcode-gallery/swipebox/js/jquery.swipebox.js
-	! grep -q 'id=share-buttons' $(BUILD_DIR)/gallery/index.html
-	! grep -q 'related-posts' $(BUILD_DIR)/gallery/index.html
+	python3 tools/check_exhibition.py $(BUILD_DIR)
 	test "$$(find $(BUILD_DIR) -type f | wc -l | tr -d ' ')" -le "$(CLOUDFLARE_FILE_LIMIT)"
 	test -z "$$(find $(BUILD_DIR) -type f -size +$(CLOUDFLARE_MAX_FILE_BYTES)c -print -quit)"
 

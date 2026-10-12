@@ -1,0 +1,12 @@
+{{ $work := index .data.works (string .id) }}
+{{ $source := .owner.Resources.GetMatch $work.file }}
+{{ if not $source }}{{ errorf "Missing exhibition image %s" $work.file }}{{ end }}
+{{ $large := $source.Fit "1920x1920 webp q85" }}
+{{ $size := cond .catalogue "480x480 webp q78" "1600x1600 webp q85" }}
+{{ $image := $source.Fit $size }}
+{{ $caption := $work.exif }}
+<figure class="{{ if .catalogue }}ex-catalogue-work{{ else }}ex-work{{ end }}" data-work-id="{{ .id }}">
+<a class="ex-photo" href="{{ $large.RelPermalink }}" data-viewer data-caption="{{ $caption }}" data-alt="{{ index $work.alt .lang }}">
+<img src="{{ $image.RelPermalink }}" width="{{ $image.Width }}" height="{{ $image.Height }}" alt="{{ index $work.alt .lang }}" loading="lazy" decoding="async">
+</a>
+</figure>
