@@ -5,6 +5,32 @@
 .gallery-page .markdown { font-size: 1rem; }
 .gallery-page .markdown > p:first-child { font-size: inherit; }
 .gallery-page .gallery-wrapper { margin-bottom: 56px; }
+.gallery-page .artist-statement {
+    max-width: 680px;
+    margin: 38px 0 48px;
+    color: var(--text-soft);
+    line-height: 2.1;
+}
+.gallery-page .artist-statement p { margin: 0; }
+.gallery-page .markdown > h2 {
+    margin-top: 72px;
+    scroll-margin-top: 32px;
+    font-size: clamp(1.25rem, 3.5vw, 1.65rem);
+    line-height: 1.6;
+}
+.gallery-page .markdown > h2 + p {
+    max-width: 640px;
+    margin-bottom: 28px;
+    color: var(--text-soft);
+    line-height: 1.9;
+}
+.gallery-page .markdown > h2 + p + .gallery-wrapper .jg-entry {
+    border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+    .gallery-page .jg-entry img { transition: none !important; }
+    .gallery-page .jg-entry img:hover { transform: none; }
+}
 .gallery-page .justified-gallery a.galleryImg { background-image: none; }
 .gallery-page .justified-gallery > .jg-entry { border-radius: 8px; }
 .gallery-page .jg-entry img { transition: transform .25s ease-in-out !important; }
