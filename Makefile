@@ -281,12 +281,15 @@ check:
 	grep -q 'data-cfasync=false src=/shortcode-gallery/swipebox/js/jquery.swipebox.min.js' $(BUILD_DIR)/gallery/index.html
 	grep -q 'fetchpriority=high' $(BUILD_DIR)/gallery/index.html
 	grep -q 'loading=lazy decoding=async' $(BUILD_DIR)/gallery/index.html
-	grep -q 'E-M1MarkIII' $(BUILD_DIR)/gallery/index.html
-	grep -q 'iPhone 16 Pro' $(BUILD_DIR)/gallery/index.html
-	grep -q '03CA6601-3101-4025-9EC7-04118AF9A746' $(BUILD_DIR)/gallery/index.html
+	grep -q 'PEN-F' $(BUILD_DIR)/gallery/index.html
+	test "$$(grep -o 'class=galleryImg' $(BUILD_DIR)/gallery/index.html | wc -l | tr -d ' ')" -eq 175
+	for chapter in 1 2 3 4 5; do grep -q "id=chapter-$$chapter" $(BUILD_DIR)/gallery/index.html || exit 1; done
+	! grep -q 'images/xilinhot/\|images/yunnan/' $(BUILD_DIR)/gallery/index.html
 	grep -q 'width=540 height=720' $(BUILD_DIR)/gallery/index.html
 	! grep -q '251773/37217mm' $(BUILD_DIR)/gallery/index.html
-	! test -f $(BUILD_DIR)/gallery/images/xilinhot/P7050002.jpg
+	! test -d $(BUILD_DIR)/gallery/images/xilinhot
+	! test -d $(BUILD_DIR)/gallery/images/yunnan
+	test -z "$$(find $(BUILD_DIR)/gallery/images/monochrome -type f -name '*.jpg' -print -quit)"
 	! grep -q '<style>.jg-entry img' $(BUILD_DIR)/gallery/index.html
 	grep -q 'shortcode-gallery/justified_gallery/jquery.justifiedGallery.min.js' $(BUILD_DIR)/gallery/index.html
 	test -f $(BUILD_DIR)/shortcode-gallery/justified_gallery/jquery.justifiedGallery.min.js

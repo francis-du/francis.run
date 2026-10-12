@@ -47,19 +47,3 @@ tag:
 人走后，椅子空着。船停着，水上的光还在变化。那一刻会过去，我曾在场。
 
 {{< gallery match="images/monochrome/05-having-been/*.jpg" sortOrder="asc" rowHeight="260" lastRow="nojustify" >}}
-
----
-
-## 旅途存档 {#journeys}
-
-### 锡林浩特 · 锡林郭勒
-
-> Inner Mongolia · Xilin Hot · Xilin Gol · 2025-08
-
-{{< gallery match="images/xilinhot/*" sortOrder="asc">}}
-
-### 云南 · 梅里 · 雨崩 · 丽江 · 大理
-
-> Yunnan · Meili · Yubeng · Lijiang · Dali · 2025-05
-
-{{< gallery match="images/yunnan/*" sortOrder="asc">}}
