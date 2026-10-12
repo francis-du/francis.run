@@ -154,8 +154,8 @@ name = "Francis Du"
         weight = 3
 
         [[languages.zh-cn.menus.main]]
-        name = "摄影展"
-        pageRef = "/gallery"
+        name = "摄影"
+        pageRef = "/photography"
         weight = 4
 
         [[languages.zh-cn.menus.main]]
@@ -196,8 +196,8 @@ name = "Francis Du"
         weight = 3
 
         [[languages.en.menus.main]]
-        name = "Exhibition"
-        pageRef = "/gallery"
+        name = "Photography"
+        pageRef = "/photography"
         weight = 4
 
         [[languages.en.menus.main]]

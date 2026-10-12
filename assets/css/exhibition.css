@@ -116,6 +116,7 @@ body.exhibition { font-size: 18px; --muted: #55554f; }
 .ex-enter, .ex-textlink { font-size: 16px; }
 .ex-enter { padding: 18px 0; }
 .ex-prologue { padding-top: 70px; padding-bottom: 75px; }
+.ex-guide-text { font-size: 20px; line-height: 2.1; }
 .ex-credit { font-size: 14px; color: #55554f; }
 .ex-credit a { text-decoration: underline; text-underline-offset: 4px; }
 .ex-map-section { background: transparent; max-width: 760px; margin: auto; padding: 40px 28px 70px; }
@@ -130,7 +131,7 @@ body.exhibition { font-size: 18px; --muted: #55554f; }
 .ex-statement p { font-size: 18px; line-height: 2.1; }
 .ex-room-intro { padding-top: 45px; padding-bottom: 50px; }
 .ex-room-intro .ex-kicker { margin-top: 35px; }
-.ex-room-intro blockquote { font-size: 23px; }
+.ex-room-intro blockquote { font-size: 23px; white-space: pre-line; }
 .ex-work figcaption { text-align: left; color: #55554f; font-size: 14px; margin-top: 20px; }
 .ex-wall-label { font-size: 17px; gap: 20px; }
 .ex-wall-label span { font-size: 14px; color: #55554f; }
@@ -150,6 +151,7 @@ body.exhibition { font-size: 18px; --muted: #55554f; }
  .ex-enter { max-width: none; margin-top: 25px; min-height: 48px; }
  .ex-reading { padding-left: 24px; padding-right: 24px; }
  .ex-prologue { padding-top: 40px; padding-bottom: 45px; }
+ .ex-guide-text { font-size: 18px; }
  .exhibition blockquote { font-size: 23px; line-height: 1.95; }
  .ex-map-section { padding-top: 20px; padding-bottom: 40px; }
  .ex-door { min-height: 70px; padding: 18px 0; }
@@ -187,10 +189,26 @@ body.exhibition { font-size: 18px; --muted: #55554f; }
  .ex-wall { padding: 25px 14px; }
  .ex-hanging.ex-diptych { gap: 50px; }
  .ex-diptych .ex-work { max-width: 100%; }
- .ex-work { max-width: 100%; }
- .ex-work .ex-photo { padding: 14px; }
- .ex-work img { max-height: none; }
+ .ex-work { width: 100%; max-width: 100%; }
+ .ex-work .ex-photo { width: 100%; padding: 14px; }
+ .ex-work img { width: 100%; max-height: none; }
  .ex-room-intro h1 { font-size: 36px; }
  #ex-viewer { padding: 12px; }
  #ex-viewer-caption { line-height: 1.8; text-align: center; }
+}
+
+/* Collections remain a cover-led index; each collection owns its exhibition. */
+.ex-collections { max-width: 1180px; margin: auto; padding: 60px 5vw 100px; }
+.ex-collections > h1 { font-size: clamp(32px, 4vw, 48px); margin: 0 0 50px; }
+.ex-collections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 480px)); gap: 65px 60px; align-items: start; }
+.ex-collection-card { display: block; min-width: 0; }
+.ex-collection-card .ex-cover { transform: none; padding: 20px; }
+.ex-collection-card h2 { font-size: 30px; line-height: 1.5; margin: 22px 0 8px; }
+.ex-collection-card p { font-size: 16px; color: var(--muted); margin: 0; }
+@media (max-width: 600px) {
+ .ex-collections { padding: 35px 20px 65px; }
+ .ex-collections > h1 { margin-bottom: 30px; }
+ .ex-collections-grid { grid-template-columns: minmax(0, 1fr); gap: 45px; }
+ .ex-collection-card .ex-cover { max-width: none; padding: 14px; }
+ .ex-collection-card h2 { font-size: 27px; margin-top: 18px; }
 }

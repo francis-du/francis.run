@@ -1,6 +1,9 @@
 ---
 title: "我，这群人"
-description: "生命、自我，与一次在场。Francis Du 个人摄影展。"
+description: "生命、自我，与一次在场。弗朗摩斯个人摄影展。"
+url: /gallery/i-a-multitude/
+collection: i_a_multitude
+subtitle: "生命、自我，与一次在场。"
 type: gallery
 layout: exhibition
 exhibition: true

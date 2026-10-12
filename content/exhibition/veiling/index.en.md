@@ -1,9 +1,11 @@
 ---
-title: "Together in Stillness"
-description: "Before we meet, how far apart are the world and I?"
+title: "Silence Reveals Me"
+description: "Silence Reveals Me. I, a Multitude, a photography exhibition by Francis Du."
+url: /en/gallery/i-a-multitude/veiling/
 type: gallery
 layout: exhibition
 exhibition: true
+collection: i_a_multitude
 room: veiling
 hidden: true
 build:

@@ -1,6 +1,9 @@
 ---
 title: "I, a Multitude"
 description: "Life, the self, and a moment of being here. A photographic exhibition by Francis Du."
+url: /en/gallery/i-a-multitude/
+collection: i_a_multitude
+subtitle: "Life, the self, and a moment of being here."
 type: gallery
 layout: exhibition
 exhibition: true

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="{{ .Site.Language.Locale }}">
+{{ partial "exhibition-head.html" . }}
+{{ $en := eq .Site.Language.Lang "en" }}
+{{ $author := cond $en "Francis Du" "弗朗摩斯" }}
+<body class="exhibition">
+<a class="ex-skip" href="#main-content">{{ if $en }}Skip to collections{{ else }}跳至影集{{ end }}</a>
+<header class="ex-mast">
+<a href="{{ "/" | relLangURL }}">← {{ if $en }}Journal{{ else }}博客{{ end }}</a>
+<a class="ex-brand" href="{{ .RelPermalink }}">{{ .Title }} <span>{{ $author }}</span></a>
+<nav aria-label="{{ if $en }}Language{{ else }}语言{{ end }}">{{ range .Translations }}<a href="{{ .RelPermalink }}" lang="{{ .Language.Lang }}">{{ .Language.Label }}</a>{{ end }}</nav>
+</header>
+<main id="main-content" class="ex-collections">
+<h1>{{ .Title }}</h1>
+<div class="ex-collections-grid">
+{{ range $i, $collection := hugo.Data.photography.collections }}
+{{ $owner := $.Site.GetPage $collection.page }}
+{{ $cover := ($owner.Resources.GetMatch $collection.cover).Resize "1200x webp q88" }}
+<a class="ex-collection-card" href="{{ $owner.RelPermalink }}">
+<div class="ex-cover"><img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="{{ $owner.Title }} — {{ $author }}"{{ if eq $i 0 }} fetchpriority="high"{{ else }} loading="lazy" decoding="async"{{ end }}></div>
+<h2>{{ $owner.Title }}</h2>
+<p>{{ $author }}</p>
+</a>
+{{ end }}
+</div>
+</main>
+<footer class="ex-footer"><span>© {{ $author }}</span><a href="{{ "/" | relLangURL }}">{{ if $en }}Journal{{ else }}博客{{ end }}</a></footer>
+</body></html>

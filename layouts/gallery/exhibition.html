@@ -3,67 +3,70 @@
 {{ partial "exhibition-head.html" . }}
 {{ $lang := cond (eq .Site.Language.Lang "en") "en" "zh" }}
 {{ $en := eq $lang "en" }}
-{{ $data := hugo.Data.photography }}
-{{ $owner := .Site.GetPage "/gallery" }}
+{{ $data := index hugo.Data.photography .Params.collection }}
+{{ $collection := index (where hugo.Data.photography.collections "data_key" .Params.collection) 0 }}
+{{ $owner := .Site.GetPage $collection.page }}
+{{ $author := cond $en "Francis Du" "弗朗摩斯" }}
 <body class="exhibition">
 <a class="ex-skip" href="#main-content">{{ if $en }}Skip to exhibition{{ else }}跳至展览{{ end }}</a>
 <header class="ex-mast">
-<a href="{{ "/" | relLangURL }}">← {{ if $en }}Journal{{ else }}博客{{ end }}</a>
-<a class="ex-brand" href="{{ "/gallery/" | relLangURL }}">{{ if $en }}I, a Multitude{{ else }}我，这群人{{ end }} <span>Francis Du</span></a>
+<a href="{{ "/gallery/" | relLangURL }}">← {{ if $en }}Collections{{ else }}影集{{ end }}</a>
+<a class="ex-brand" href="{{ $owner.RelPermalink }}">{{ $owner.Title }} <span>{{ $author }}</span></a>
 <nav aria-label="{{ if $en }}Language{{ else }}语言{{ end }}">{{ range .Translations }}<a href="{{ .RelPermalink }}" lang="{{ .Language.Lang }}">{{ .Language.Label }}</a>{{ end }}</nav>
 </header>
 <main id="main-content">
 {{ if not .Params.room }}
+{{ $firstRoom := index $data.rooms 0 }}
 <section class="ex-entrance">
-{{ $cover := ($owner.Resources.GetMatch "cover.png").Resize "1200x webp q88" }}
-<div class="ex-cover"><img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="{{ if $en }}I, a Multitude — original cover artwork by Francis Du{{ else }}我，这群人——Francis Du 的原始封面作品{{ end }}" fetchpriority="high"></div>
+{{ $cover := ($owner.Resources.GetMatch $collection.cover).Resize "1200x webp q88" }}
+<div class="ex-cover"><img src="{{ $cover.RelPermalink }}" width="{{ $cover.Width }}" height="{{ $cover.Height }}" alt="{{ $owner.Title }} — {{ $author }}" fetchpriority="high"></div>
 <div class="ex-invitation">
-<p class="ex-kicker">Francis Du · {{ if $en }}Photography{{ else }}摄影{{ end }}</p>
-<h1>{{ if $en }}I, a<br>Multitude{{ else }}我，<br>这群人{{ end }}</h1>
-<p class="ex-subtitle">{{ if $en }}Life, the self, and a moment of being here.{{ else }}生命、自我，与一次在场。{{ end }}</p>
-<a class="ex-enter" href="{{ "/exhibition/veiling/" | relLangURL }}">{{ if $en }}Enter the exhibition{{ else }}进入展览{{ end }} <span aria-hidden="true">↗</span></a>
+<p class="ex-kicker">{{ $author }} · {{ if $en }}Photography{{ else }}摄影{{ end }}</p>
+<h1>{{ $owner.Title }}</h1>
+<p class="ex-subtitle">{{ $owner.Params.subtitle | default $owner.Description }}</p>
+<a class="ex-enter" href="{{ printf "%s%s/" $owner.RelPermalink $firstRoom.id }}">{{ if $en }}Enter the exhibition{{ else }}进入展览{{ end }} <span aria-hidden="true">↗</span></a>
 <a class="ex-textlink" href="#floorplan">{{ if $en }}Explore the rooms{{ else }}查看展室导览{{ end }} ↓</a>
 </div>
 </section>
-<section id="prologue" class="ex-prologue ex-reading">
-<p class="ex-kicker">00 / {{ if $en }}Before looking{{ else }}观看之前{{ end }}</p>
-<blockquote>{{ index $data.guide $lang }}</blockquote>
-<p class="ex-credit">— Francis Du · {{ if $en }}Entrance text{{ else }}导览词{{ end }}</p>
-
+<section id="statement" class="ex-prologue ex-reading">
+<span id="prologue" aria-hidden="true"></span>
+<p class="ex-kicker">{{ if $en }}Exhibition guide · Yubeng{{ else }}总导览 · 雨崩{{ end }}</p>
+<div class="ex-guide-text">{{ .Content }}</div>
+<p class="ex-credit">— {{ $author }}</p>
+<p class="ex-credit">{{ if $en }}Curated by Francis Du × Chat GPT 6.1 Sol{{ else }}策展：弗朗摩斯 × Chat GPT 6.1 Sol{{ end }}</p>
 </section>
 <section id="floorplan" class="ex-map-section">
 <div class="ex-section-heading"><p class="ex-kicker">{{ if $en }}Plan your visit{{ else }}展室导览{{ end }}</p><h2>{{ if $en }}Choose a room{{ else }}选择一间展室{{ end }}</h2></div>
 <nav class="ex-floorplan" aria-label="{{ if $en }}Exhibition floor plan{{ else }}展览平面导览{{ end }}">
-{{ range $data.rooms }}<a class="ex-door" href="{{ printf "/exhibition/%s/" .id | relLangURL }}"><span class="ex-room-number">{{ .number }}</span><h3>{{ index .title $lang }}</h3><span aria-hidden="true">↗</span></a>{{ end }}
+{{ range $data.rooms }}<a class="ex-door" href="{{ printf "%s%s/" $owner.RelPermalink .id }}"><span class="ex-room-number">{{ .number }}</span><h3>{{ index .title $lang }}</h3><span aria-hidden="true">↗</span></a>{{ end }}
 </nav>
 
 </section>
-<section id="statement" class="ex-reading ex-statement"><p class="ex-kicker">{{ if $en }}Artist's statement · Yubeng{{ else }}作者手记 · 雨崩{{ end }}</p>{{ .Content }}</section>
 {{ else }}
 {{ range $data.rooms }}{{ if eq .id $.Params.room }}
 {{ $room := . }}
-<section class="ex-room-intro ex-reading"><a class="ex-textlink" href="{{ "/gallery/#floorplan" | relLangURL }}">← {{ if $en }}All rooms{{ else }}展室导览{{ end }}</a><p class="ex-kicker">{{ if $en }}Room{{ else }}展室{{ end }} {{ .number }} / {{ printf "%02d" (len $data.rooms) }}</p><h1>{{ index .title $lang }}</h1><p class="ex-question">{{ index .question $lang }}</p><blockquote>{{ index .quote.text $lang }}</blockquote>
-{{ $url := .quote.url }}{{ if hasPrefix $url "/" }}{{ $url = $url | relLangURL }}{{ end }}
-<p class="ex-credit"><a href="{{ $url }}">{{ index .quote.source $lang }} ↗</a>{{ if and $en (eq .id "proximity") }} · Exhibition translation{{ end }}{{ if and $en (eq .id "veiling") }} · Exhibition translation{{ end }}</p></section>
+<section class="ex-room-intro ex-reading"><a class="ex-textlink" href="{{ printf "%s#floorplan" $owner.RelPermalink }}">← {{ if $en }}All rooms{{ else }}展室导览{{ end }}</a><p class="ex-kicker">{{ if $en }}Room{{ else }}展室{{ end }} {{ .number }} / {{ printf "%02d" (len $data.rooms) }}</p><h1>{{ index .title $lang }}</h1>{{ with .quote }}<blockquote>{{ index .text $lang }}</blockquote>
+{{ $url := .url }}{{ if eq $url "/gallery/#statement" }}{{ $url = "#statement" }}{{ end }}{{ if hasPrefix $url "#" }}{{ $url = printf "%s%s" $owner.RelPermalink $url }}{{ else if hasPrefix $url "/" }}{{ $url = $url | relLangURL }}{{ end }}
+<p class="ex-credit">{{ if $url }}<a href="{{ $url }}">{{ index .source $lang }} ↗</a>{{ else }}{{ index .source $lang }}{{ end }}</p>{{ end }}</section>
 <div class="ex-walls">
 {{ range $i, $panel := .hang }}
 <section class="ex-wall" aria-label="{{ if $en }}Wall{{ else }}悬挂{{ end }} {{ add $i 1 }}">
 <div class="ex-hanging{{ if gt (len .ids) 1 }} ex-diptych{{ end }}">
-{{ range .ids }}{{ partial "exhibition-work.html" (dict "owner" $owner "data" $data "id" . "lang" $lang "catalogue" false) }}{{ end }}
+{{ range .ids }}{{ partial "exhibition-work.html" (dict "owner" $owner "data" $data "id" . "lang" $lang "catalogue" false "paired" (gt (len $panel.ids) 1)) }}{{ end }}
 </div>
 </section>
 {{ end }}
 </div>
 
 <nav class="ex-room-route" aria-label="{{ if $en }}Continue your visit{{ else }}继续逛展{{ end }}">
-{{ $n := sub (int .number) 1 }}{{ if gt $n 0 }}{{ $prev := index $data.rooms (sub $n 1) }}<a href="{{ printf "/exhibition/%s/" $prev.id | relLangURL }}">← {{ index $prev.title $lang }}</a>{{ else }}<a href="{{ "/gallery/" | relLangURL }}">← {{ if $en }}Entrance{{ else }}入口{{ end }}</a>{{ end }}
-<a href="{{ "/gallery/#floorplan" | relLangURL }}">{{ if $en }}Floor plan{{ else }}导览图{{ end }}</a>
-{{ if lt $n (sub (len $data.rooms) 1) }}{{ $next := index $data.rooms (add $n 1) }}<a href="{{ printf "/exhibition/%s/" $next.id | relLangURL }}">{{ index $next.title $lang }} →</a>{{ else }}<a href="{{ "/gallery/#statement" | relLangURL }}">{{ if $en }}Artist's statement{{ else }}作者手记{{ end }} →</a>{{ end }}
+{{ $n := sub (int .number) 1 }}{{ if gt $n 0 }}{{ $prev := index $data.rooms (sub $n 1) }}<a href="{{ printf "%s%s/" $owner.RelPermalink $prev.id }}">← {{ index $prev.title $lang }}</a>{{ else }}<a href="{{ $owner.RelPermalink }}">← {{ if $en }}Entrance{{ else }}入口{{ end }}</a>{{ end }}
+<a href="{{ printf "%s#floorplan" $owner.RelPermalink }}">{{ if $en }}Floor plan{{ else }}导览图{{ end }}</a>
+{{ if lt $n (sub (len $data.rooms) 1) }}{{ $next := index $data.rooms (add $n 1) }}<a href="{{ printf "%s%s/" $owner.RelPermalink $next.id }}">{{ index $next.title $lang }} →</a>{{ else }}<a href="{{ printf "%s#statement" $owner.RelPermalink }}">{{ if $en }}Exhibition guide{{ else }}总导览{{ end }} →</a>{{ end }}
 </nav>
 {{ end }}{{ end }}
 {{ end }}
 </main>
-<footer class="ex-footer"><span>© Francis Du</span><a href="{{ "/gallery/" | relLangURL }}">{{ if $en }}I, a Multitude · Photography{{ else }}我，这群人 · 摄影展{{ end }}</a></footer>
+<footer class="ex-footer"><span>© {{ $author }}</span><a href="{{ $owner.RelPermalink }}">{{ $owner.Title }} · {{ if $en }}Photography{{ else }}摄影展{{ end }}</a></footer>
 <dialog id="ex-viewer" aria-label="{{ if $en }}Photograph viewer{{ else }}作品近看{{ end }}">
 <div class="ex-viewer-tools"><button type="button" data-prev aria-label="{{ if $en }}Previous photograph{{ else }}上一件作品{{ end }}">←</button><p id="ex-viewer-count" aria-live="polite"></p><button type="button" data-next aria-label="{{ if $en }}Next photograph{{ else }}下一件作品{{ end }}">→</button><button type="button" data-close>{{ if $en }}Close{{ else }}关闭{{ end }} ×</button></div><img id="ex-viewer-image" alt=""><p id="ex-viewer-caption"></p>
 </dialog>

@@ -1,9 +1,11 @@
 ---
-title: "既是我，也不是我"
-description: "当分界松动，谁仍站在这里？"
+title: "把我还给无尽"
+description: "把我还给无尽。《我，这群人》摄影展，弗朗摩斯。"
+url: /gallery/i-a-multitude/boundless/
 type: gallery
 layout: exhibition
 exhibition: true
+collection: i_a_multitude
 room: boundless
 hidden: true
 build:
