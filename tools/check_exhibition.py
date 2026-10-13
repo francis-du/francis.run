@@ -194,7 +194,7 @@ def check_i_a_multitude(data):
     assert reviewed_duplicates.items() <= duplicate_of.items(), (
         "Keep omitted near-duplicates mapped directly to an exhibited counterpart"
     )
-    water_sequence = [144, 76, 77, 87, 85, 82, 91, 25, 1]
+    water_sequence = [139, 144, 23, 22, 28, 76, 77, 87, 85, 82, 91, 25, 1]
     mountain_sequence = [162, 30, 72, 93, 35, 75, 134, 130]
     life_sequence = [
         12, 24, 11, 10, 8, 9, 127, 78, 128, 36, 155, 156,
@@ -215,8 +215,8 @@ def check_i_a_multitude(data):
             119, 120, 123, 124, 125, 136, 137, 138, 140, 142, 143,
             145, 146, 147, 148, 149, 164, 165, 166, 167, 168, 169, 170,
             171, 172, 174, 175,
-        } | {14, 22, 23, 28, 67, 68, 70, 71, 107, 111, 118, 121, 122,
-             139, 141, 150, 151, 154, 173}) - {4, 19, 20, 109, 142},
+        } | {14, 67, 68, 70, 71, 107, 111, 118, 121, 122,
+             141, 150, 151, 154, 173}) - {4, 19, 20, 109, 142},
         "boundless": set(water_sequence + mountain_sequence),
         "half-alive": set(life_sequence + forest_sequence + body_sequence),
     }
