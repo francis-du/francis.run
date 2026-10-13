@@ -203,8 +203,8 @@ def check_i_a_multitude(data):
     body = [179, 181, 183, 180, 182, 73, 101, 102]
     life = [12, 24, 8, 9, 127, 78, 128, 36, 155, 115, 163]
     forest = [
-        2, 152, 153, 55, 56, 61, 40, 38, 42, 43, 48, 49, 52, 53, 54, 44,
-        57, 58, 59, 60, 64, 177, 62,
+        62, 2, 152, 153, 55, 56, 61, 40, 177, 38, 57, 58, 64, 42, 43, 48,
+        49, 52, 53, 54, 59, 60, 44,
     ]
     water = [144, 23, 22, 28, 76, 77, 87, 85, 82, 91, 25, 1]
     distant = [11, 10, 156, 161]
@@ -226,7 +226,10 @@ def check_i_a_multitude(data):
     assert [panel["ids"] for panel in pain["hang"][-5:]] == [
         [179, 181], [183, 180], [182], [73], [101, 102]
     ], "Keep the body portraits and the cover together in the struggle chapter"
-    assert mortality["ids"][-1] == 62 and peaceful["ids"][-1] == 162
+    assert mortality["ids"][-3:] == [59, 60, 44] and peaceful["ids"][-1] == 162
+    assert all(work_id not in mortality["ids"][-3:] for work_id in (64, 177, 62)), (
+        "The stump clearing, blurred bark, and new branch belong within the forest sequence"
+    )
     assert "寂静" not in peaceful["title"]["zh"]
     assert all(len(panel["ids"]) == 1 for panel in peaceful["hang"]), (
         "Distant figures and landscapes need a complete, single hanging"
