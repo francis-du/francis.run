@@ -1,6 +1,6 @@
 ---
-title: "把我还给无尽"
-description: "把我还给无尽。《我，这群人》摄影展，弗朗摩斯。"
+title: "寂静比我辽阔"
+description: "寂静比我辽阔。《我，这群人》摄影展，弗朗摩斯。"
 url: /gallery/i-a-multitude/boundless/
 aliases:
   - /gallery/i-a-multitude/veiling/

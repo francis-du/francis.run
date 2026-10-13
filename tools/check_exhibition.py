@@ -205,7 +205,7 @@ def check_i_a_multitude(data):
         42, 43, 48, 49, 52, 53, 54, 44, 57, 58, 59, 60,
         64, 62, 177,
     ]
-    body_sequence = [179, 181, 183, 180, 182, 101, 102, 73, 151]
+    body_sequence = [179, 181, 183, 180, 182, 73, 101, 102]
     # These subject boundaries were checked against the actual photographs.
     reviewed_subjects = {
         "proximity": ({
@@ -216,7 +216,7 @@ def check_i_a_multitude(data):
             145, 146, 147, 148, 149, 164, 165, 166, 167, 168, 169, 170,
             171, 172, 174, 175,
         } | {14, 22, 23, 28, 67, 68, 70, 71, 107, 111, 118, 121, 122,
-             139, 141, 150, 154, 173}) - {4, 19, 20, 109, 142},
+             139, 141, 150, 151, 154, 173}) - {4, 19, 20, 109, 142},
         "boundless": set(water_sequence + mountain_sequence),
         "half-alive": set(life_sequence + forest_sequence + body_sequence),
     }
@@ -224,6 +224,9 @@ def check_i_a_multitude(data):
         assert set(room["ids"]) == reviewed_subjects[room["id"]], (
             f"Recheck the subjects assigned to room {room['id']}; do not mix unrelated photographs"
         )
+    assert rooms[0]["ids"].index(151) == rooms[0]["ids"].index(149) + 1, (
+        "Keep the dancer beside the solitary moving figure in the opening room"
+    )
     landscape = rooms[1]
     assert landscape["ids"] == water_sequence + mountain_sequence, (
         "The merged landscape room must move continuously from water to mountains"
@@ -241,17 +244,17 @@ def check_i_a_multitude(data):
     assert final["ids"] == life_sequence + forest_sequence + body_sequence, (
         "Keep life, forest, and the concluding body sequence in continuous, separate blocks"
     )
-    assert [panel["ids"] for panel in final["hang"][-6:]] == [
-        [179, 181], [183, 180], [182], [101, 102], [73], [151]
-    ], "Keep the floral portraits together before the blurred faces, cover, and reaching figure"
+    assert [panel["ids"] for panel in final["hang"][-5:]] == [
+        [179, 181], [183, 180], [182], [73], [101, 102]
+    ], "Keep the floral portraits before the cover and close on the dissolving faces"
     assert final["quote"]["text"] == {
         "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
     }, "Preserve the artist's Half Alive questions as the final room guide"
 
-    desire = [panel for panel in final["hang"] if panel.get("guide")]
+    desire = [panel for panel in final["hang"] if panel.get("anchor") == "desire"]
     assert len(desire) == 1 and desire[0]["ids"] == [73], (
-        "Place The Worm at the cover portrait, after the blurred faces and before the reaching figure"
+        "Place The Worm at the cover portrait, before the final clear-to-blurred faces"
     )
     assert desire[0]["anchor"] == "desire"
     worm = Path("content/blogs/蠕虫.md").read_text().rsplit("\n---\n", 1)[-1]
@@ -300,7 +303,7 @@ for prefix, language, lang, author, other_author in languages:
         entrance = Page(published_page(collection_url, prefix))
         entrance.exhibition_shell(language, author, other_author)
         if entry["id"] == "i-a-multitude":
-            assert f"{author} × Chat GPT 6.1 Sol" in entrance.visible_text, "Missing curation credit"
+            assert f"{author} × ChatGPT Sol" in entrance.visible_text, "Missing curation credit"
         covers = entrance.matching("img", "fetchpriority", "high")
         assert len(covers) == 1 and author in covers[0]["alt"]
         assert not entrance.classed("figure", "ex-work"), "Keep photographs in their own rooms"

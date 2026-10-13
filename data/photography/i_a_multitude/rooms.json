@@ -69,6 +69,7 @@
       138,
       136,
       149,
+      151,
       97,
       104,
       103,
@@ -353,6 +354,11 @@
       },
       {
         "ids": [
+          151
+        ]
+      },
+      {
+        "ids": [
           97,
           104
         ]
@@ -415,13 +421,24 @@
           164
         ]
       }
-    ]
+    ],
+    "quote": {
+      "text": {
+        "zh": "我向众生伸出手，触到的却是自己的陌生。\n我与我隔着一生，又在同一次呼吸里重逢。",
+        "en": "I reach toward the living and touch the strangeness of myself.\nA lifetime lies between me and myself; we meet again in a single breath."
+      },
+      "source": {
+        "zh": "策展札记",
+        "en": "Curatorial note"
+      },
+      "url": ""
+    }
   },
   {
     "id": "boundless",
     "title": {
-      "zh": "把我还给无尽",
-      "en": "Return Me to the Infinite"
+      "zh": "寂静比我辽阔",
+      "en": "A Silence Vaster Than Me"
     },
     "ids": [
       144,
@@ -594,10 +611,9 @@
       183,
       180,
       182,
-      101,
-      102,
       73,
-      151
+      101,
+      102
     ],
     "quote": {
       "text": {
@@ -803,7 +819,19 @@
         "ids": [
           179,
           181
-        ]
+        ],
+        "guide": {
+          "text": {
+            "zh": "我在万物里认出我，也在万物里失去我。\n此刻，生与死借同一副身体相拥。",
+            "en": "In all things I recognise myself, and in all things I lose myself.\nHere, life and death borrow the same body for their embrace."
+          },
+          "source": {
+            "zh": "策展札记",
+            "en": "Curatorial note"
+          },
+          "url": ""
+        },
+        "anchor": "embodiment"
       },
       {
         "ids": [
@@ -814,12 +842,6 @@
       {
         "ids": [
           182
-        ]
-      },
-      {
-        "ids": [
-          101,
-          102
         ]
       },
       {
@@ -841,7 +863,8 @@
       },
       {
         "ids": [
-          151
+          101,
+          102
         ]
       }
     ]
