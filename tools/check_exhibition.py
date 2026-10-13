@@ -205,7 +205,7 @@ def check_i_a_multitude(data):
         42, 43, 48, 49, 52, 53, 54, 44, 57, 58, 59, 60,
         64, 62, 177,
     ]
-    body_sequence = [101, 102, 73, 179, 183, 180, 181, 182, 151]
+    body_sequence = [179, 181, 183, 180, 182, 101, 102, 73, 151]
     # These subject boundaries were checked against the actual photographs.
     reviewed_subjects = {
         "proximity": ({
@@ -241,7 +241,9 @@ def check_i_a_multitude(data):
     assert final["ids"] == life_sequence + forest_sequence + body_sequence, (
         "Keep life, forest, and the concluding body sequence in continuous, separate blocks"
     )
-    assert final["hang"][-1]["ids"] == [151], "The reaching figure must close on its own"
+    assert [panel["ids"] for panel in final["hang"][-6:]] == [
+        [179, 181], [183, 180], [182], [101, 102], [73], [151]
+    ], "Keep the floral portraits together before the blurred faces, cover, and reaching figure"
     assert final["quote"]["text"] == {
         "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
@@ -249,7 +251,7 @@ def check_i_a_multitude(data):
 
     desire = [panel for panel in final["hang"] if panel.get("guide")]
     assert len(desire) == 1 and desire[0]["ids"] == [73], (
-        "Place The Worm at the cover portrait, after the blurred faces and before the body sequence"
+        "Place The Worm at the cover portrait, after the blurred faces and before the reaching figure"
     )
     assert desire[0]["anchor"] == "desire"
     worm = Path("content/blogs/蠕虫.md").read_text().rsplit("\n---\n", 1)[-1]
