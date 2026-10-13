@@ -2,6 +2,8 @@
 title: "Return Me to the Infinite"
 description: "Return Me to the Infinite. I, a Multitude, a photography exhibition by Francis Du."
 url: /en/gallery/i-a-multitude/boundless/
+aliases:
+  - /gallery/i-a-multitude/veiling/
 type: gallery
 layout: exhibition
 exhibition: true

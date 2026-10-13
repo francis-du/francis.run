@@ -10,7 +10,7 @@
 {{ if .paired }}{{ $sizes = "(max-width: 600px) calc(100vw - 58px), (max-width: 1400px) calc(45vw - 80px), 600px" }}{{ end }}
 {{ $caption := $work.exif }}
 {{ if not $caption }}{{ $caption = cond (eq .lang "en") "No EXIF data in the original file." "原文件未包含 EXIF 信息" }}{{ end }}
-<figure class="{{ if .catalogue }}ex-catalogue-work{{ else }}ex-work{{ end }}" data-work-id="{{ .id }}">
+<figure class="{{ if .catalogue }}ex-catalogue-work{{ else }}ex-work{{ end }}" data-work-id="{{ .id }}" style="--photo-ratio: {{ div (float $image.Width) (float $image.Height) }};">
 <a class="ex-photo" href="{{ $large.RelPermalink }}" data-viewer data-caption="{{ $caption }}" data-alt="{{ index $work.alt .lang }}">
 <img src="{{ $image.RelPermalink }}" srcset="{{ $small.RelPermalink }} {{ $small.Width }}w, {{ $medium.RelPermalink }} {{ $medium.Width }}w, {{ $image.RelPermalink }} {{ $image.Width }}w" sizes="{{ $sizes }}" width="{{ $image.Width }}" height="{{ $image.Height }}" alt="{{ index $work.alt .lang }}" loading="lazy" decoding="async">
 </a>

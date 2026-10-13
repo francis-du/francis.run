@@ -50,6 +50,12 @@
 <p class="ex-credit">{{ if $url }}<a href="{{ $url }}">{{ index .source $lang }} ↗</a>{{ else }}{{ index .source $lang }}{{ end }}</p>{{ end }}</section>
 <div class="ex-walls">
 {{ range $i, $panel := .hang }}
+{{ with .guide }}
+<section class="ex-reading ex-room-intro"{{ with $panel.anchor }} id="{{ . }}"{{ end }}>
+<blockquote>{{ index .text $lang }}</blockquote>
+<p class="ex-credit">{{ index .source $lang }}</p>
+</section>
+{{ end }}
 <section class="ex-wall" aria-label="{{ if $en }}Wall{{ else }}悬挂{{ end }} {{ add $i 1 }}">
 <div class="ex-hanging{{ if gt (len .ids) 1 }} ex-diptych{{ end }}">
 {{ range .ids }}{{ partial "exhibition-work.html" (dict "owner" $owner "data" $data "id" . "lang" $lang "catalogue" false "paired" (gt (len $panel.ids) 1)) }}{{ end }}

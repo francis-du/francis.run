@@ -179,10 +179,10 @@ body.exhibition { font-size: 18px; --muted: #55554f; }
 .ex-wall { min-height: 0; padding: 55px 5vw; border-top: 0; }
 .ex-wall:nth-child(even) { background: transparent; }
 .ex-hanging { max-width: 1350px; gap: 35px; }
-.ex-work { max-width: 1150px; }
-.ex-work .ex-photo { padding: clamp(20px, 2.7vw, 40px); }
-.ex-work img { max-height: 78vh; }
-.ex-diptych .ex-work { max-width: calc(50% - 18px); }
+.ex-work { width: 100%; max-width: min(1150px, calc(78vh * var(--photo-ratio) + clamp(40px, 5.4vw, 80px))); }
+.ex-work .ex-photo { width: 100%; padding: clamp(20px, 2.7vw, 40px); }
+.ex-work img { width: 100%; max-height: none; }
+.ex-diptych .ex-work { max-width: min(calc(50% - 18px), calc(78vh * var(--photo-ratio) + clamp(36px, 4vw, 60px))); }
 .ex-diptych .ex-photo { padding: clamp(18px, 2vw, 30px); }
 .ex-walls { padding-bottom: 40px; }
 @media (max-width: 600px) {

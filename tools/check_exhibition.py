@@ -151,10 +151,15 @@ def check_collection_data(entry):
         ], "Hanging order must match the room sequence"
         for lang in ("zh", "en"):
             assert room["title"][lang].strip(), "Missing translated room title"
-        if room.get("quote"):
+        guides = ([room["quote"]] if room.get("quote") else []) + [
+            panel["guide"] for panel in room["hang"] if panel.get("guide")
+        ]
+        for guide in guides:
             for lang in ("zh", "en"):
-                assert room["quote"]["text"][lang].strip()
-                assert room["quote"]["source"][lang].strip()
+                assert guide["text"][lang].strip()
+                assert guide["source"][lang].strip()
+        anchors = [panel["anchor"] for panel in room["hang"] if panel.get("guide")]
+        assert len(anchors) == len(set(anchors)), "Transition guides need unique anchors"
     data["_statement"] = {}
     for lang in ("zh", "en"):
         filename = "index.en.md" if lang == "en" else "index.md"
@@ -165,7 +170,7 @@ def check_collection_data(entry):
 
 
 def check_i_a_multitude(data):
-    """Protect the original inventory and the artist's current emotional sequence."""
+    """Protect the artist's reviewed selection, subject boundaries, and visit order."""
     rooms, works = data["rooms"], data["works"]
     inventory = {int(work_id) for work_id in works}
     assert set(range(1, 176)) <= inventory, "Preserve the original 175-work inventory"
@@ -173,48 +178,62 @@ def check_i_a_multitude(data):
         "Keep the complete source inventory when appending photographs"
     )
     assert [room["id"] for room in rooms] == [
-        "proximity", "boundless", "veiling", "half-alive"
-    ], "The exhibition's emotional sequence changed"
+        "proximity", "boundless", "half-alive"
+    ], "Keep the three-act emotional sequence"
     duplicate_of = data["selection"]["duplicate_of"]
     assert sum(len(room["ids"]) for room in rooms) == len(works) - len(duplicate_of)
     reviewed_duplicates = {
         "31": 30, "33": 35, "34": 35, "39": 38, "51": 52,
-        "81": 82, "83": 82, "89": 88, "113": 112,
-        "126": 127, "131": 132, "157": 156, "176": 164, "178": 155,
+        "81": 82, "83": 82, "89": 85, "113": 112,
+        "126": 127, "131": 130, "157": 156, "176": 164, "178": 155,
+        "4": 5, "19": 18, "20": 18, "142": 143, "109": 108,
+        "29": 28, "88": 85, "86": 85, "84": 82, "90": 91,
+        "32": 30, "74": 75, "133": 134, "135": 134, "132": 130,
+        "158": 156, "159": 161, "160": 161, "45": 44, "50": 49, "129": 128,
     }
     assert reviewed_duplicates.items() <= duplicate_of.items(), (
-        "Preserve the reviewed duplicate counterparts when extending the inventory"
+        "Keep omitted near-duplicates mapped directly to an exhibited counterpart"
     )
+    water_sequence = [144, 76, 77, 87, 85, 82, 91, 25, 1]
+    mountain_sequence = [162, 30, 72, 93, 35, 75, 134, 130]
     life_sequence = [
-        12, 24, 11, 10, 8, 9, 127, 78, 128, 129, 36, 155, 156, 158,
-        159, 160, 161, 115, 163,
+        12, 24, 11, 10, 8, 9, 127, 78, 128, 36, 155, 156,
+        161, 115, 163,
     ]
     forest_sequence = [
         2, 152, 153, 55, 56, 61, 41, 40, 37, 63, 46, 47, 38,
-        42, 43, 48, 49, 50, 52, 53, 54, 44, 45, 57, 58, 59, 60,
+        42, 43, 48, 49, 52, 53, 54, 44, 57, 58, 59, 60,
         64, 62, 177,
     ]
     body_sequence = [101, 102, 179, 183, 180, 181, 182, 151, 73]
-    # Subject boundaries come from the visual review; their hanging order can vary.
+    # These subject boundaries were checked against the actual photographs.
     reviewed_subjects = {
-        "proximity": {
+        "proximity": ({
             3, 4, 5, 6, 7, 13, 15, 16, 17, 18, 19, 20, 21, 26, 27,
             65, 66, 69, 79, 80, 92, 94, 95, 96, 97, 98, 99, 100,
             103, 104, 105, 106, 108, 109, 110, 112, 114, 116, 117,
             119, 120, 123, 124, 125, 136, 137, 138, 140, 142, 143,
             145, 146, 147, 148, 149, 164, 165, 166, 167, 168, 169, 170,
             171, 172, 174, 175,
-        } | {14, 67, 68, 70, 71, 107, 111, 118, 121, 122,
-             139, 141, 150, 154, 173},
-        "boundless": {1, 22, 23, 25, 28, 29, 76, 77, 82, 84, 85,
-                      86, 87, 88, 90, 91, 144},
-        "veiling": {30, 32, 35, 72, 74, 75, 93, 130, 132, 133, 134, 135, 162},
+        } | {14, 22, 23, 28, 67, 68, 70, 71, 107, 111, 118, 121, 122,
+             139, 141, 150, 154, 173}) - {4, 19, 20, 109, 142},
+        "boundless": set(water_sequence + mountain_sequence),
         "half-alive": set(life_sequence + forest_sequence + body_sequence),
     }
     for room in rooms:
         assert set(room["ids"]) == reviewed_subjects[room["id"]], (
             f"Recheck the subjects assigned to room {room['id']}; do not mix unrelated photographs"
         )
+    landscape = rooms[1]
+    assert landscape["ids"] == water_sequence + mountain_sequence, (
+        "The merged landscape room must move continuously from water to mountains"
+    )
+    transitions = [panel for panel in landscape["hang"] if panel.get("guide")]
+    assert len(transitions) == 1 and transitions[0]["ids"][0] == mountain_sequence[0]
+    assert transitions[0]["anchor"] == "mountains"
+    assert transitions[0]["guide"]["text"] == data["guide"], (
+        "Keep the mountain guide at the transition into mountain photographs"
+    )
     final = rooms[-1]
     assert final["title"] == {
         "zh": "一半活着，一半已经死去", "en": "Half Alive, Half Already Dead"
@@ -227,6 +246,7 @@ def check_i_a_multitude(data):
         "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
     }, "Preserve the artist's Half Alive questions as the final room guide"
+
 
 datasets = {entry["id"]: check_collection_data(entry) for entry in registry}
 for entry in registry:
@@ -306,10 +326,28 @@ for prefix, language, lang, author, other_author in languages:
                     quote_url = localized(quote_url, prefix)
                 if quote_url:
                     assert any(unquote(a.get("href", "")) == quote_url for a in page.matching("a"))
+            wall_guides = [panel["guide"] for panel in room["hang"] if panel.get("guide")]
+            for n, panel in enumerate(room["hang"]):
+                if not panel.get("guide"):
+                    continue
+                assert normalized(panel["guide"]["text"][lang]) in page.visible_text
+                assert normalized(panel["guide"]["source"][lang]) in page.visible_text
+                guide_position = next(i for i, (tag, attrs) in enumerate(page.tags)
+                                      if tag == "section" and attrs.get("id") == panel["anchor"])
+                first_image = next(i for i, (tag, attrs) in enumerate(page.tags)
+                                   if tag == "figure" and attrs.get("data-work-id") == str(panel["ids"][0]))
+                assert guide_position < first_image, "Place the guide before its subject block"
+                if n:
+                    previous_image = next(i for i, (tag, attrs) in enumerate(page.tags)
+                                          if tag == "figure" and attrs.get("data-work-id") ==
+                                          str(room["hang"][n - 1]["ids"][-1]))
+                    assert previous_image < guide_position, "Keep the transition after the previous block"
             if mountain_guide:
-                assert page.visible_text.count(mountain_guide) == (
-                    1 if room.get("quote", {}).get("text", {}).get(lang) == data["guide"][lang] else 0
-                ), "The mountain guide must appear only in its own room"
+                all_guides = ([room["quote"]] if room.get("quote") else []) + wall_guides
+                expected_guides = sum(guide["text"][lang] == data["guide"][lang] for guide in all_guides)
+                assert page.visible_text.count(mountain_guide) == expected_guides, (
+                    "The mountain guide must appear only at the mountain photographs"
+                )
             links = page.matching("a", "data-viewer")
             assert len(links) == len(selected)
             for work_id, link in zip(selected, links):
@@ -326,6 +364,14 @@ for prefix, language, lang, author, other_author in languages:
             assert localized(expected_previous, prefix) in hrefs, "Missing route back"
             assert localized(expected_next, prefix) in hrefs, "Missing route onward"
             assert localized(collection_url + "#floorplan", prefix) in hrefs
+        if entry["id"] == "i-a-multitude":
+            legacy_mountain = Page(published_page(collection_url + "veiling/", prefix))
+            canonical = legacy_mountain.matching("link", "rel", "canonical")[0]["href"]
+            assert urlsplit(canonical).path == localized(collection_url + "boundless/", prefix)
+            assert any(canonical in attrs.get("content", "")
+                       for attrs in legacy_mountain.matching("meta", "http-equiv", "refresh")), (
+                "Preserve the old mountain-room URL as a redirect into the merged landscape room"
+            )
         for resource_url in (entry["page"], collection_url):
             resource_root = root / resource_url.strip("/")
             for work in data["works"].values():
