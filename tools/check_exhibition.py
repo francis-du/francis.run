@@ -186,22 +186,22 @@ def check_i_a_multitude(data):
         "4": 5, "19": 18, "20": 18, "142": 143, "109": 108,
         "29": 28, "88": 85, "86": 85, "84": 82, "90": 91,
         "32": 30, "74": 75, "133": 134, "135": 134, "132": 130,
-        "158": 156, "159": 161, "160": 161, "45": 44, "50": 49, "129": 128,
+        "158": 156, "159": 161, "160": 161, "45": 44, "50": 49,
         "139": 144,
     }
     assert duplicate_of == reviewed_duplicates, "Keep reviewed omissions and their retained counterparts"
-    assert sum(len(room["ids"]) for room in rooms) == 147
+    assert sum(len(room["ids"]) for room in rooms) == 148
 
     # Subject boundaries were reviewed from the actual images, not filenames.
     encounters = [
         14, 141, 171, 172, 175, 169, 170, 116, 117, 119, 173, 121, 13, 7, 174,
         15, 16, 118, 123, 26, 147, 124, 125, 17, 18, 21, 3, 120, 70, 122, 154,
         148, 71, 65, 66, 145, 151, 67, 68, 69, 165, 166, 167, 168, 140, 143,
-        146, 27, 79, 80, 92, 112, 114, 110, 108, 107, 137, 138, 95, 96, 94, 101, 102,
+        146, 27, 79, 80, 92, 112, 114, 110, 108, 107, 137, 138, 95, 96, 94, 101, 102, 73,
     ]
     street = [5, 6, 106, 105, 136, 149, 97, 104, 103, 99, 100, 98, 111, 150, 164]
-    body = [73, 179, 181, 183, 180, 182]
-    life = [12, 24, 8, 9, 127, 78, 128, 36, 155, 115, 163]
+    body = [179, 181, 183, 180, 182]
+    life = [12, 24, 8, 9, 127, 78, 128, 129, 36, 155, 115, 163]
     forest = [
         2, 152, 153, 55, 56, 61, 40, 38, 42, 43, 48, 49, 52, 53, 54, 44,
         57, 58, 59, 60, 64, 177, 62,
@@ -223,15 +223,22 @@ def check_i_a_multitude(data):
         "The dancer belongs with the people in the opening chapter"
     )
     assert pain["title"] == {"zh": "我与我之间", "en": "Between Me and Myself"}
-    assert [panel["ids"] for panel in first["hang"][-4:]] == [
-        [95], [96], [94], [101, 102]
-    ], "Keep the carriage portraits together in the opening chapter"
-    assert [panel["ids"] for panel in pain["hang"][-4:]] == [
-        [73], [179, 181], [183, 180], [182]
-    ], "Introduce the body sequence with the cover and close with the floral series"
-    assert not {94, 101, 102}.intersection(pain["ids"]), (
-        "Carriage portraits must not interrupt the floral body sequence"
+    assert [panel["ids"] for panel in first["hang"][-5:]] == [
+        [95], [96], [94], [101, 102], [73]
+    ], "Keep the carriage portraits together and close the first chapter with the cover original"
+    assert first["ids"][-1] == 73 and not first["hang"][-1].get("guide"), (
+        "The cover original closes chapter one; The Worm stays in chapter two"
     )
+    assert [panel["ids"] for panel in pain["hang"][-3:]] == [
+        [179, 181], [183, 180], [182]
+    ], "Close chapter two with the continuous floral body series"
+    assert not {73, 94, 101, 102}.intersection(pain["ids"]), (
+        "The cover and carriage portraits belong in the first chapter"
+    )
+    assert [128, 129] in [panel["ids"] for panel in mortality["hang"]], (
+        "Both distinct cat photographs must be exhibited together as a diptych"
+    )
+    assert "129" not in duplicate_of, "Do not omit the cat reaching toward the hand"
     assert mortality["ids"][-1] == 62 and peaceful["ids"][-1] == 162
     assert "寂静" not in peaceful["title"]["zh"]
     assert all(len(panel["ids"]) == 1 for panel in peaceful["hang"]), (
@@ -252,7 +259,7 @@ def check_i_a_multitude(data):
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
     }, "Preserve Half Alive in the life-and-death chapter"
     desire = [panel for panel in pain["hang"] if panel.get("anchor") == "desire"]
-    assert len(desire) == 1 and desire[0]["ids"] == [73]
+    assert len(desire) == 1 and desire[0]["ids"] == [179, 181]
     worm = Path("content/blogs/蠕虫.md").read_text().rsplit("\n---\n", 1)[-1]
     assert normalized(desire[0]["guide"]["text"]["zh"]) == normalized(worm), (
         "Keep the artist's final stanza of The Worm intact in the desire chapter"
