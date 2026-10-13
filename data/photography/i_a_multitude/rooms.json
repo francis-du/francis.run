@@ -808,7 +808,19 @@
       {
         "ids": [
           73
-        ]
+        ],
+        "guide": {
+          "text": {
+            "zh": "蛹化成了蝶\n抖动 抖动\n一直抖,\n一直动\n凤翅而舞\n望这旖旎风月\n尽然，\n装不下这\n一丝尘土",
+            "en": "The chrysalis became a butterfly\nTrembling, trembling\nStill trembling,\nstill moving\nDancing on phoenix wings\nBehold this world of sensual beauty\nand yet,\nit cannot hold\na single speck of dust"
+          },
+          "source": {
+            "zh": "弗朗摩斯 · 《蠕虫》（节选）",
+            "en": "Francis Du · The Worm (excerpt)"
+          },
+          "url": ""
+        },
+        "anchor": "desire"
       },
       {
         "ids": [

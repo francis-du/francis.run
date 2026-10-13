@@ -247,6 +247,19 @@ def check_i_a_multitude(data):
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
     }, "Preserve the artist's Half Alive questions as the final room guide"
 
+    desire = [panel for panel in final["hang"] if panel.get("guide")]
+    assert len(desire) == 1 and desire[0]["ids"] == [73], (
+        "Place The Worm at the cover portrait, after the blurred faces and before the body sequence"
+    )
+    assert desire[0]["anchor"] == "desire"
+    worm = Path("content/blogs/蠕虫.md").read_text().rsplit("\n---\n", 1)[-1]
+    assert normalized(desire[0]["guide"]["text"]["zh"]) == normalized(worm), (
+        "Preserve the artist's final stanza of The Worm without rewriting the poem"
+    )
+    assert desire[0]["guide"]["source"] == {
+        "zh": "弗朗摩斯 · 《蠕虫》（节选）", "en": "Francis Du · The Worm (excerpt)"
+    }, "Credit the desire guide to The Worm, separately from Half Alive"
+
 
 datasets = {entry["id"]: check_collection_data(entry) for entry in registry}
 for entry in registry:
