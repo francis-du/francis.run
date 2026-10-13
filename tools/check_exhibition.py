@@ -197,14 +197,14 @@ def check_i_a_multitude(data):
         14, 141, 171, 172, 175, 169, 170, 116, 117, 119, 173, 121, 13, 7, 174,
         15, 16, 118, 123, 26, 147, 124, 125, 17, 18, 21, 3, 120, 70, 122, 154,
         148, 71, 65, 66, 145, 151, 67, 68, 69, 165, 166, 167, 168, 140, 143,
-        146, 27, 79, 80, 92, 112, 114, 110, 108, 107, 137, 138, 95, 96,
+        146, 27, 79, 80, 92, 112, 114, 110, 108, 107, 137, 138, 95, 96, 94, 101, 102,
     ]
-    street = [5, 6, 106, 105, 136, 149, 97, 104, 103, 99, 100, 98, 111, 150, 164, 94]
-    body = [179, 181, 183, 180, 182, 73, 101, 102]
+    street = [5, 6, 106, 105, 136, 149, 97, 104, 103, 99, 100, 98, 111, 150, 164]
+    body = [73, 179, 181, 183, 180, 182]
     life = [12, 24, 8, 9, 127, 78, 128, 36, 155, 115, 163]
     forest = [
-        62, 2, 152, 153, 55, 56, 61, 40, 177, 38, 57, 58, 64, 42, 43, 48,
-        49, 52, 53, 54, 59, 60, 44,
+        2, 152, 153, 55, 56, 61, 40, 38, 42, 43, 48, 49, 52, 53, 54, 44,
+        57, 58, 59, 60, 64, 177, 62,
     ]
     water = [144, 23, 22, 28, 76, 77, 87, 85, 82, 91, 25, 1]
     distant = [11, 10, 156, 161]
@@ -223,13 +223,16 @@ def check_i_a_multitude(data):
         "The dancer belongs with the people in the opening chapter"
     )
     assert pain["title"] == {"zh": "我与我之间", "en": "Between Me and Myself"}
-    assert [panel["ids"] for panel in pain["hang"][-5:]] == [
-        [179, 181], [183, 180], [182], [73], [101, 102]
-    ], "Keep the body portraits and the cover together in the struggle chapter"
-    assert mortality["ids"][-3:] == [59, 60, 44] and peaceful["ids"][-1] == 162
-    assert all(work_id not in mortality["ids"][-3:] for work_id in (64, 177, 62)), (
-        "The stump clearing, blurred bark, and new branch belong within the forest sequence"
+    assert [panel["ids"] for panel in first["hang"][-4:]] == [
+        [95], [96], [94], [101, 102]
+    ], "Keep the carriage portraits together in the opening chapter"
+    assert [panel["ids"] for panel in pain["hang"][-4:]] == [
+        [73], [179, 181], [183, 180], [182]
+    ], "Introduce the body sequence with the cover and close with the floral series"
+    assert not {94, 101, 102}.intersection(pain["ids"]), (
+        "Carriage portraits must not interrupt the floral body sequence"
     )
+    assert mortality["ids"][-1] == 62 and peaceful["ids"][-1] == 162
     assert "寂静" not in peaceful["title"]["zh"]
     assert all(len(panel["ids"]) == 1 for panel in peaceful["hang"]), (
         "Distant figures and landscapes need a complete, single hanging"
@@ -249,7 +252,7 @@ def check_i_a_multitude(data):
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
     }, "Preserve Half Alive in the life-and-death chapter"
     desire = [panel for panel in pain["hang"] if panel.get("anchor") == "desire"]
-    assert len(desire) == 1 and desire[0]["ids"] == [179, 181]
+    assert len(desire) == 1 and desire[0]["ids"] == [73]
     worm = Path("content/blogs/蠕虫.md").read_text().rsplit("\n---\n", 1)[-1]
     assert normalized(desire[0]["guide"]["text"]["zh"]) == normalized(worm), (
         "Keep the artist's final stanza of The Worm intact in the desire chapter"
