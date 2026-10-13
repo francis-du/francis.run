@@ -4,7 +4,7 @@
 {{ $en := eq .Site.Language.Lang "en" }}
 {{ $author := cond $en "Francis Du" "弗朗摩斯" }}
 <body class="exhibition">
-<a class="ex-skip" href="#main-content">{{ if $en }}Skip to collections{{ else }}跳至影集{{ end }}</a>
+<a class="ex-skip" href="#main-content">{{ if $en }}Skip to exhibitions{{ else }}跳至展览{{ end }}</a>
 <header class="ex-mast">
 <a href="{{ "/" | relLangURL }}">← {{ if $en }}Journal{{ else }}博客{{ end }}</a>
 <a class="ex-brand" href="{{ .RelPermalink }}">{{ .Title }} <span>{{ $author }}</span></a>

@@ -170,18 +170,15 @@ def check_collection_data(entry):
 
 
 def check_i_a_multitude(data):
-    """Protect the artist's reviewed selection, subject boundaries, and visit order."""
+    """Protect the artist's reviewed subjects, omissions, and four-act visit."""
     rooms, works = data["rooms"], data["works"]
-    inventory = {int(work_id) for work_id in works}
-    assert set(range(1, 176)) <= inventory, "Preserve the original 175-work inventory"
-    assert set(works) == {str(i) for i in range(1, max(inventory) + 1)}, (
-        "Keep the complete source inventory when appending photographs"
+    assert set(works) == {str(i) for i in range(1, 184)}, (
+        "Preserve all 183 source photographs, including the new additions"
     )
     assert [room["id"] for room in rooms] == [
-        "proximity", "boundless", "half-alive"
-    ], "Keep the three-act emotional sequence"
+        "proximity", "pulse", "half-alive", "boundless"
+    ], "Move from encounters through struggle and mortality into an open, peaceful ending"
     duplicate_of = data["selection"]["duplicate_of"]
-    assert sum(len(room["ids"]) for room in rooms) == len(works) - len(duplicate_of)
     reviewed_duplicates = {
         "31": 30, "33": 35, "34": 35, "39": 38, "51": 52,
         "81": 82, "83": 82, "89": 85, "113": 112,
@@ -190,81 +187,73 @@ def check_i_a_multitude(data):
         "29": 28, "88": 85, "86": 85, "84": 82, "90": 91,
         "32": 30, "74": 75, "133": 134, "135": 134, "132": 130,
         "158": 156, "159": 161, "160": 161, "45": 44, "50": 49, "129": 128,
+        "139": 144,
     }
-    assert reviewed_duplicates.items() <= duplicate_of.items(), (
-        "Keep omitted near-duplicates mapped directly to an exhibited counterpart"
-    )
-    water_sequence = [139, 144, 23, 22, 28, 76, 77, 87, 85, 82, 91, 25, 1]
-    mountain_sequence = [162, 30, 72, 93, 35, 75, 134, 130]
-    life_sequence = [
-        12, 24, 11, 10, 8, 9, 127, 78, 128, 36, 155, 156,
-        161, 115, 163,
+    assert duplicate_of == reviewed_duplicates, "Keep reviewed omissions and their retained counterparts"
+    assert sum(len(room["ids"]) for room in rooms) == 147
+
+    # Subject boundaries were reviewed from the actual images, not filenames.
+    encounters = [
+        14, 141, 171, 172, 175, 169, 170, 116, 117, 119, 173, 121, 13, 7, 174,
+        15, 16, 118, 123, 26, 147, 124, 125, 17, 18, 21, 3, 120, 70, 122, 154,
+        148, 71, 65, 66, 145, 151, 67, 68, 69, 165, 166, 167, 168, 140, 143,
+        146, 27, 79, 80, 92, 112, 114, 110, 108, 107, 137, 138, 95, 96,
     ]
-    forest_sequence = [
-        2, 152, 153, 55, 56, 61, 41, 40, 37, 63, 46, 47, 38,
-        42, 43, 48, 49, 52, 53, 54, 44, 57, 58, 59, 60,
-        64, 62, 177,
+    street = [5, 6, 106, 105, 136, 149, 97, 104, 103, 99, 100, 98, 111, 150, 164, 94]
+    body = [179, 181, 183, 180, 182, 73, 101, 102]
+    life = [12, 24, 8, 9, 127, 78, 128, 36, 155, 115, 163]
+    forest = [
+        2, 152, 153, 55, 56, 61, 40, 38, 42, 43, 48, 49, 52, 53, 54, 44,
+        57, 58, 59, 60, 64, 177, 62,
     ]
-    body_sequence = [179, 181, 183, 180, 182, 73, 101, 102]
-    # These subject boundaries were checked against the actual photographs.
-    reviewed_subjects = {
-        "proximity": ({
-            3, 4, 5, 6, 7, 13, 15, 16, 17, 18, 19, 20, 21, 26, 27,
-            65, 66, 69, 79, 80, 92, 94, 95, 96, 97, 98, 99, 100,
-            103, 104, 105, 106, 108, 109, 110, 112, 114, 116, 117,
-            119, 120, 123, 124, 125, 136, 137, 138, 140, 142, 143,
-            145, 146, 147, 148, 149, 164, 165, 166, 167, 168, 169, 170,
-            171, 172, 174, 175,
-        } | {14, 67, 68, 70, 71, 107, 111, 118, 121, 122,
-             141, 150, 151, 154, 173}) - {4, 19, 20, 109, 142},
-        "boundless": set(water_sequence + mountain_sequence),
-        "half-alive": set(life_sequence + forest_sequence + body_sequence),
-    }
-    for room in rooms:
-        assert set(room["ids"]) == reviewed_subjects[room["id"]], (
-            f"Recheck the subjects assigned to room {room['id']}; do not mix unrelated photographs"
+    water = [144, 23, 22, 28, 76, 77, 87, 85, 82, 91, 25, 1]
+    distant = [11, 10, 156, 161]
+    woodland = [37, 63, 41, 46, 47]
+    mountains = [30, 72, 93, 35, 134, 130, 75, 162]
+    reviewed_sequences = [
+        encounters, street + body, life + forest, water + distant + woodland + mountains,
+    ]
+    for room, expected in zip(rooms, reviewed_sequences):
+        assert room["ids"] == expected, f"Recheck the reviewed subject sequence in {room['id']}"
+        assert sum(bool(panel.get("guide")) for panel in room["hang"]) <= 3, (
+            "Keep wall guides sparse and leave room for the photographs"
         )
-    assert rooms[0]["ids"].index(151) == rooms[0]["ids"].index(149) + 1, (
-        "Keep the dancer beside the solitary moving figure in the opening room"
+    first, pain, mortality, peaceful = rooms
+    assert first["ids"].index(151) == first["ids"].index(145) + 1, (
+        "The dancer belongs with the people in the opening chapter"
     )
-    landscape = rooms[1]
-    assert landscape["ids"] == water_sequence + mountain_sequence, (
-        "The merged landscape room must move continuously from water to mountains"
-    )
-    transitions = [panel for panel in landscape["hang"] if panel.get("guide")]
-    assert len(transitions) == 1 and transitions[0]["ids"][0] == mountain_sequence[0]
-    assert transitions[0]["anchor"] == "mountains"
-    assert transitions[0]["guide"]["text"] == data["guide"], (
-        "Keep the mountain guide at the transition into mountain photographs"
-    )
-    final = rooms[-1]
-    assert final["title"] == {
-        "zh": "一半活着，一半已经死去", "en": "Half Alive, Half Already Dead"
-    }
-    assert final["ids"] == life_sequence + forest_sequence + body_sequence, (
-        "Keep life, forest, and the concluding body sequence in continuous, separate blocks"
-    )
-    assert [panel["ids"] for panel in final["hang"][-5:]] == [
+    assert pain["title"] == {"zh": "我与我之间", "en": "Between Me and Myself"}
+    assert [panel["ids"] for panel in pain["hang"][-5:]] == [
         [179, 181], [183, 180], [182], [73], [101, 102]
-    ], "Keep the floral portraits before the cover and close on the dissolving faces"
-    assert final["quote"]["text"] == {
+    ], "Keep the body portraits and the cover together in the struggle chapter"
+    assert mortality["ids"][-1] == 62 and peaceful["ids"][-1] == 162
+    assert "寂静" not in peaceful["title"]["zh"]
+    assert all(len(panel["ids"]) == 1 for panel in peaceful["hang"]), (
+        "Distant figures and landscapes need a complete, single hanging"
+    )
+    distant_people = {171, 172, 173, 65, 66, 167, 137, 138, 79, 80} | set(street)
+    assert all(len(panel["ids"]) == 1
+               for room in (first, pain) for panel in room["hang"]
+               if distant_people.intersection(panel["ids"])), "Do not shrink distant figures into pairs"
+
+    mountain_guides = [panel for panel in peaceful["hang"] if panel.get("anchor") == "mountains"]
+    assert len(mountain_guides) == 1 and mountain_guides[0]["ids"] == [30]
+    assert mountain_guides[0]["guide"]["text"] == data["guide"], (
+        "Preserve the artist's composed guide at the beginning of the mountain sequence"
+    )
+    assert mortality["quote"]["text"] == {
         "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
-    }, "Preserve the artist's Half Alive questions as the final room guide"
-
-    desire = [panel for panel in final["hang"] if panel.get("anchor") == "desire"]
-    assert len(desire) == 1 and desire[0]["ids"] == [73], (
-        "Place The Worm at the cover portrait, before the final clear-to-blurred faces"
-    )
-    assert desire[0]["anchor"] == "desire"
+    }, "Preserve Half Alive in the life-and-death chapter"
+    desire = [panel for panel in pain["hang"] if panel.get("anchor") == "desire"]
+    assert len(desire) == 1 and desire[0]["ids"] == [179, 181]
     worm = Path("content/blogs/蠕虫.md").read_text().rsplit("\n---\n", 1)[-1]
     assert normalized(desire[0]["guide"]["text"]["zh"]) == normalized(worm), (
-        "Preserve the artist's final stanza of The Worm without rewriting the poem"
+        "Keep the artist's final stanza of The Worm intact in the desire chapter"
     )
     assert desire[0]["guide"]["source"] == {
         "zh": "弗朗摩斯 · 《蠕虫》（节选）", "en": "Francis Du · The Worm (excerpt)"
-    }, "Credit the desire guide to The Worm, separately from Half Alive"
-
+    }
 
 datasets = {entry["id"]: check_collection_data(entry) for entry in registry}
 for entry in registry:
@@ -282,6 +271,7 @@ for prefix, language, lang, author, other_author in languages:
     for hub_url in ("/gallery/",):
         hub = Page(published_page(hub_url, prefix))
         hub.exhibition_shell(language, author, other_author)
+        assert "Exhibitions" in hub.visible_text, "Keep the exhibition hub aligned with the home navigation"
         assert not hub.classed("figure", "ex-work"), "The collection shelf is cover-only"
         assert not hub.matching("section", "id", "statement"), "The guide belongs inside its collection"
         assert not hub.matching("section", "id", "floorplan"), "Room navigation belongs inside its collection"
@@ -350,6 +340,10 @@ for prefix, language, lang, author, other_author in languages:
                     continue
                 assert normalized(panel["guide"]["text"][lang]) in page.visible_text
                 assert normalized(panel["guide"]["source"][lang]) in page.visible_text
+                if panel["guide"].get("url"):
+                    assert any(unquote(a.get("href", "")) == panel["guide"]["url"] for a in page.matching("a")), (
+                        "A philosophical wall guide must link to its credited source"
+                    )
                 guide_position = next(i for i, (tag, attrs) in enumerate(page.tags)
                                       if tag == "section" and attrs.get("id") == panel["anchor"])
                 first_image = next(i for i, (tag, attrs) in enumerate(page.tags)

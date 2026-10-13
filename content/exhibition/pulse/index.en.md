@@ -1,8 +1,7 @@
 ---
-title: "The Tremor That Remains"
-description: "The Tremor That Remains. I, a Multitude, a photography exhibition by Francis Du."
+title: "Between Me and Myself"
+description: "Between Me and Myself. I, a Multitude, a photography exhibition by Francis Du."
 url: /en/gallery/i-a-multitude/pulse/
-draft: true
 type: gallery
 layout: exhibition
 exhibition: true

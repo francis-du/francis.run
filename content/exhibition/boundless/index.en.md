@@ -1,6 +1,6 @@
 ---
-title: "A Silence Vaster Than Me"
-description: "A Silence Vaster Than Me. I, a Multitude, a photography exhibition by Francis Du."
+title: "All Things Breathe with Me"
+description: "All Things Breathe with Me. I, a Multitude, a photography exhibition by Francis Du."
 url: /en/gallery/i-a-multitude/boundless/
 aliases:
   - /gallery/i-a-multitude/veiling/

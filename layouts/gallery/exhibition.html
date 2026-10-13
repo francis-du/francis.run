@@ -10,7 +10,7 @@
 <body class="exhibition">
 <a class="ex-skip" href="#main-content">{{ if $en }}Skip to exhibition{{ else }}跳至展览{{ end }}</a>
 <header class="ex-mast">
-<a href="{{ "/gallery/" | relLangURL }}">← {{ if $en }}Collections{{ else }}影集{{ end }}</a>
+<a href="{{ "/gallery/" | relLangURL }}">← Exhibitions</a>
 <a class="ex-brand" href="{{ $owner.RelPermalink }}">{{ $owner.Title }} <span>{{ $author }}</span></a>
 <nav aria-label="{{ if $en }}Language{{ else }}语言{{ end }}">{{ range .Translations }}<a href="{{ .RelPermalink }}" lang="{{ .Language.Lang }}">{{ .Language.Label }}</a>{{ end }}</nav>
 </header>
@@ -53,7 +53,8 @@
 {{ with .guide }}
 <section class="ex-reading ex-room-intro"{{ with $panel.anchor }} id="{{ . }}"{{ end }}>
 <blockquote>{{ index .text $lang }}</blockquote>
-<p class="ex-credit">{{ index .source $lang }}</p>
+{{ $url := .url | default "" }}{{ if hasPrefix $url "#" }}{{ $url = printf "%s%s" $owner.RelPermalink $url }}{{ else if hasPrefix $url "/" }}{{ $url = $url | relLangURL }}{{ end }}
+<p class="ex-credit">{{ if $url }}<a href="{{ $url }}">{{ index .source $lang }} ↗</a>{{ else }}{{ index .source $lang }}{{ end }}</p>
 </section>
 {{ end }}
 <section class="ex-wall" aria-label="{{ if $en }}Wall{{ else }}悬挂{{ end }} {{ add $i 1 }}">
@@ -72,7 +73,7 @@
 {{ end }}{{ end }}
 {{ end }}
 </main>
-<footer class="ex-footer"><span>© {{ $author }}</span><a href="{{ $owner.RelPermalink }}">{{ $owner.Title }} · {{ if $en }}Photography{{ else }}摄影展{{ end }}</a></footer>
+<footer class="ex-footer"><span>© {{ $author }}</span><a href="{{ $owner.RelPermalink }}">{{ $owner.Title }} · {{ if $en }}Exhibition{{ else }}展览{{ end }}</a></footer>
 <dialog id="ex-viewer" aria-label="{{ if $en }}Photograph viewer{{ else }}作品近看{{ end }}">
 <div class="ex-viewer-tools"><button type="button" data-prev aria-label="{{ if $en }}Previous photograph{{ else }}上一件作品{{ end }}">←</button><p id="ex-viewer-count" aria-live="polite"></p><button type="button" data-next aria-label="{{ if $en }}Next photograph{{ else }}下一件作品{{ end }}">→</button><button type="button" data-close>{{ if $en }}Close{{ else }}关闭{{ end }} ×</button></div><img id="ex-viewer-image" alt=""><p id="ex-viewer-caption"></p>
 </dialog>

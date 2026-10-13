@@ -42,6 +42,7 @@
       65,
       66,
       145,
+      151,
       67,
       68,
       69,
@@ -63,345 +64,10 @@
       107,
       137,
       138,
-      136,
-      149,
-      151,
-      97,
-      104,
-      103,
-      105,
-      106,
-      5,
-      6,
-      99,
-      100,
-      98,
-      111,
-      150,
       95,
-      94,
-      96,
-      164
+      96
     ],
     "number": "01",
-    "hang": [
-      {
-        "ids": [
-          14
-        ]
-      },
-      {
-        "ids": [
-          141
-        ]
-      },
-      {
-        "ids": [
-          171,
-          172
-        ]
-      },
-      {
-        "ids": [
-          175
-        ]
-      },
-      {
-        "ids": [
-          169,
-          170
-        ]
-      },
-      {
-        "ids": [
-          116,
-          117
-        ]
-      },
-      {
-        "ids": [
-          119
-        ]
-      },
-      {
-        "ids": [
-          173,
-          121
-        ]
-      },
-      {
-        "ids": [
-          13
-        ]
-      },
-      {
-        "ids": [
-          7
-        ]
-      },
-      {
-        "ids": [
-          174
-        ]
-      },
-      {
-        "ids": [
-          15,
-          16
-        ]
-      },
-      {
-        "ids": [
-          118
-        ]
-      },
-      {
-        "ids": [
-          123
-        ]
-      },
-      {
-        "ids": [
-          26
-        ]
-      },
-      {
-        "ids": [
-          147
-        ]
-      },
-      {
-        "ids": [
-          124,
-          125
-        ]
-      },
-      {
-        "ids": [
-          17
-        ]
-      },
-      {
-        "ids": [
-          18
-        ]
-      },
-      {
-        "ids": [
-          21
-        ]
-      },
-      {
-        "ids": [
-          3
-        ]
-      },
-      {
-        "ids": [
-          120
-        ]
-      },
-      {
-        "ids": [
-          70
-        ]
-      },
-      {
-        "ids": [
-          122,
-          154
-        ]
-      },
-      {
-        "ids": [
-          148
-        ]
-      },
-      {
-        "ids": [
-          71
-        ]
-      },
-      {
-        "ids": [
-          65,
-          66
-        ]
-      },
-      {
-        "ids": [
-          145
-        ]
-      },
-      {
-        "ids": [
-          67,
-          68
-        ]
-      },
-      {
-        "ids": [
-          69
-        ]
-      },
-      {
-        "ids": [
-          165
-        ]
-      },
-      {
-        "ids": [
-          166,
-          167
-        ]
-      },
-      {
-        "ids": [
-          168
-        ]
-      },
-      {
-        "ids": [
-          140
-        ]
-      },
-      {
-        "ids": [
-          143
-        ]
-      },
-      {
-        "ids": [
-          146
-        ]
-      },
-      {
-        "ids": [
-          27
-        ]
-      },
-      {
-        "ids": [
-          79,
-          80
-        ]
-      },
-      {
-        "ids": [
-          92
-        ]
-      },
-      {
-        "ids": [
-          112
-        ]
-      },
-      {
-        "ids": [
-          114
-        ]
-      },
-      {
-        "ids": [
-          110
-        ]
-      },
-      {
-        "ids": [
-          108
-        ]
-      },
-      {
-        "ids": [
-          107
-        ]
-      },
-      {
-        "ids": [
-          137,
-          138
-        ]
-      },
-      {
-        "ids": [
-          136
-        ]
-      },
-      {
-        "ids": [
-          149
-        ]
-      },
-      {
-        "ids": [
-          151
-        ]
-      },
-      {
-        "ids": [
-          97,
-          104
-        ]
-      },
-      {
-        "ids": [
-          103
-        ]
-      },
-      {
-        "ids": [
-          105
-        ]
-      },
-      {
-        "ids": [
-          106
-        ]
-      },
-      {
-        "ids": [
-          5
-        ]
-      },
-      {
-        "ids": [
-          6
-        ]
-      },
-      {
-        "ids": [
-          99,
-          100
-        ]
-      },
-      {
-        "ids": [
-          98
-        ]
-      },
-      {
-        "ids": [
-          111,
-          150
-        ]
-      },
-      {
-        "ids": [
-          95
-        ]
-      },
-      {
-        "ids": [
-          94,
-          96
-        ]
-      },
-      {
-        "ids": [
-          164
-        ]
-      }
-    ],
     "quote": {
       "text": {
         "zh": "我向众生伸出手，触到的却是自己的陌生。\n我与我隔着一生，又在同一次呼吸里重逢。",
@@ -412,196 +78,120 @@
         "en": "Curatorial note"
       },
       "url": ""
-    }
-  },
-  {
-    "id": "boundless",
-    "title": {
-      "zh": "寂静比我辽阔",
-      "en": "A Silence Vaster Than Me"
     },
-    "ids": [
-      139,
-      144,
-      23,
-      22,
-      28,
-      76,
-      77,
-      87,
-      85,
-      82,
-      91,
-      25,
-      1,
-      162,
-      30,
-      72,
-      93,
-      35,
-      75,
-      134,
-      130
-    ],
-    "number": "02",
     "hang": [
+      { "ids": [14] },
+      { "ids": [141] },
+      { "ids": [171] },
+      { "ids": [172] },
+      { "ids": [175] },
+      { "ids": [169, 170] },
+      { "ids": [116, 117] },
+      { "ids": [119] },
+      { "ids": [173] },
+      { "ids": [121] },
+      { "ids": [13] },
+      { "ids": [7] },
+      { "ids": [174] },
+      { "ids": [15, 16] },
+      { "ids": [118] },
+      { "ids": [123] },
+      { "ids": [26] },
+      { "ids": [147] },
       {
         "ids": [
-          139,
-          144
-        ]
-      },
-      {
-        "ids": [
-          23,
-          22
-        ]
-      },
-      {
-        "ids": [
-          28
-        ]
-      },
-      {
-        "ids": [
-          76,
-          77
-        ]
-      },
-      {
-        "ids": [
-          87
-        ]
-      },
-      {
-        "ids": [
-          85
-        ]
-      },
-      {
-        "ids": [
-          82
-        ]
-      },
-      {
-        "ids": [
-          91
-        ]
-      },
-      {
-        "ids": [
-          25
-        ]
-      },
-      {
-        "ids": [
-          1
-        ]
-      },
-      {
-        "ids": [
-          162
+          124,
+          125
         ],
         "guide": {
           "text": {
-            "zh": "未见此山时，此山与尔同归于寂。来见此山时，则此山一时明了起来。此心无外物，此色无色，此相无相，在灵台方寸间，即见真如。",
-            "en": "Before you see this mountain, it rests with you in stillness. When you come to see it, the mountain becomes clear in an instant. Nothing lies outside this heart-mind. Colour is without colour; form is without form. Within the small chamber of the mind, suchness appears."
+            "zh": "天地万物与人原是一体。",
+            "en": "Heaven, earth, all things, and human beings are originally one."
           },
           "source": {
-            "zh": "弗朗摩斯 · 山的导览",
-            "en": "Francis Du · Mountain guide"
+            "zh": "王阳明 · 《传习录》",
+            "en": "Wang Yangming · Chuanxilu"
+          },
+          "url": "https://zh.wikisource.org/wiki/傳習錄/卷下#274"
+        },
+        "anchor": "one-body"
+      },
+      { "ids": [17] },
+      { "ids": [18] },
+      { "ids": [21] },
+      { "ids": [3] },
+      { "ids": [120] },
+      { "ids": [70] },
+      { "ids": [122, 154] },
+      { "ids": [148] },
+      { "ids": [71] },
+      { "ids": [65] },
+      { "ids": [66] },
+      { "ids": [145] },
+      { "ids": [151] },
+      { "ids": [67, 68] },
+      { "ids": [69] },
+      { "ids": [165] },
+      { "ids": [166] },
+      { "ids": [167] },
+      { "ids": [168] },
+      { "ids": [140] },
+      { "ids": [143] },
+      { "ids": [146] },
+      { "ids": [27] },
+      { "ids": [79] },
+      { "ids": [80] },
+      { "ids": [92] },
+      {
+        "ids": [
+          112
+        ],
+        "guide": {
+          "text": {
+            "zh": "我与众生互为过客。\n每一次擦肩，都在我之中留下回声。",
+            "en": "We pass through one another's lives.\nEvery passing leaves an echo within me."
+          },
+          "source": {
+            "zh": "策展札记",
+            "en": "Curatorial note"
           },
           "url": ""
         },
-        "anchor": "mountains"
+        "anchor": "encounters"
       },
-      {
-        "ids": [
-          30
-        ]
-      },
-      {
-        "ids": [
-          72
-        ]
-      },
-      {
-        "ids": [
-          93
-        ]
-      },
-      {
-        "ids": [
-          35
-        ]
-      },
-      {
-        "ids": [
-          75
-        ]
-      },
-      {
-        "ids": [
-          134
-        ]
-      },
-      {
-        "ids": [
-          130
-        ]
-      }
+      { "ids": [114] },
+      { "ids": [110] },
+      { "ids": [108] },
+      { "ids": [107] },
+      { "ids": [137] },
+      { "ids": [138] },
+      { "ids": [95] },
+      { "ids": [96] }
     ]
   },
   {
-    "id": "half-alive",
+    "id": "pulse",
     "title": {
-      "zh": "一半活着，一半已经死去",
-      "en": "Half Alive, Half Already Dead"
+      "zh": "我与我之间",
+      "en": "Between Me and Myself"
     },
     "ids": [
-      12,
-      24,
-      11,
-      10,
-      8,
-      9,
-      127,
-      78,
-      128,
-      36,
-      155,
-      156,
-      161,
-      115,
-      163,
-      2,
-      152,
-      153,
-      55,
-      56,
-      61,
-      41,
-      40,
-      37,
-      63,
-      46,
-      47,
-      38,
-      42,
-      43,
-      48,
-      49,
-      52,
-      53,
-      54,
-      44,
-      57,
-      58,
-      59,
-      60,
-      64,
-      62,
-      177,
+      5,
+      6,
+      106,
+      105,
+      136,
+      149,
+      97,
+      104,
+      103,
+      99,
+      100,
+      98,
+      111,
+      150,
+      164,
+      94,
       179,
       181,
       183,
@@ -611,215 +201,36 @@
       101,
       102
     ],
+    "number": "02",
     "quote": {
       "text": {
-        "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
-        "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?"
+        "zh": "身体是一个巨大的理性，是有着同一意义的多样性，是战争与和平，是羊群与牧人。",
+        "en": "The body is a big sagacity, a plurality with one sense, a war and a peace, a flock and a shepherd."
       },
       "source": {
-        "zh": "弗朗摩斯 · 《半活》",
-        "en": "Francis Du · Half Alive"
+        "zh": "尼采 · 《查拉图斯特拉如是说·蔑视身体者》（本展译）",
+        "en": "Friedrich Nietzsche · Thus Spake Zarathustra, “The Despisers of the Body” (Thomas Common trans.)"
       },
-      "url": ""
+      "url": "https://www.gutenberg.org/files/1998/1998-h/1998-h.htm"
     },
-    "number": "03",
     "hang": [
+      { "ids": [5] },
+      { "ids": [6] },
+      { "ids": [106] },
+      { "ids": [105] },
+      { "ids": [136] },
+      { "ids": [149] },
+      { "ids": [97] },
+      { "ids": [104] },
+      { "ids": [103] },
       {
         "ids": [
-          12
-        ]
-      },
-      {
-        "ids": [
-          24
-        ]
-      },
-      {
-        "ids": [
-          11
-        ]
-      },
-      {
-        "ids": [
-          10
-        ]
-      },
-      {
-        "ids": [
-          8,
-          9
-        ]
-      },
-      {
-        "ids": [
-          127
-        ]
-      },
-      {
-        "ids": [
-          78
-        ]
-      },
-      {
-        "ids": [
-          128
-        ]
-      },
-      {
-        "ids": [
-          36
-        ]
-      },
-      {
-        "ids": [
-          155
-        ]
-      },
-      {
-        "ids": [
-          156
-        ]
-      },
-      {
-        "ids": [
-          161
-        ]
-      },
-      {
-        "ids": [
-          115,
-          163
-        ]
-      },
-      {
-        "ids": [
-          2
-        ]
-      },
-      {
-        "ids": [
-          152,
-          153
-        ]
-      },
-      {
-        "ids": [
-          55,
-          56
-        ]
-      },
-      {
-        "ids": [
-          61
-        ]
-      },
-      {
-        "ids": [
-          41
-        ]
-      },
-      {
-        "ids": [
-          40
-        ]
-      },
-      {
-        "ids": [
-          37,
-          63
-        ]
-      },
-      {
-        "ids": [
-          46,
-          47
-        ]
-      },
-      {
-        "ids": [
-          38
-        ]
-      },
-      {
-        "ids": [
-          42
-        ]
-      },
-      {
-        "ids": [
-          43
-        ]
-      },
-      {
-        "ids": [
-          48
-        ]
-      },
-      {
-        "ids": [
-          49
-        ]
-      },
-      {
-        "ids": [
-          52
-        ]
-      },
-      {
-        "ids": [
-          53
-        ]
-      },
-      {
-        "ids": [
-          54
-        ]
-      },
-      {
-        "ids": [
-          44
-        ]
-      },
-      {
-        "ids": [
-          57,
-          58
-        ]
-      },
-      {
-        "ids": [
-          59
-        ]
-      },
-      {
-        "ids": [
-          60
-        ]
-      },
-      {
-        "ids": [
-          64
-        ]
-      },
-      {
-        "ids": [
-          62
-        ]
-      },
-      {
-        "ids": [
-          177
-        ]
-      },
-      {
-        "ids": [
-          179,
-          181
+          99
         ],
         "guide": {
           "text": {
-            "zh": "我在万物里认出我，也在万物里失去我。\n此刻，生与死借同一副身体相拥。",
-            "en": "In all things I recognise myself, and in all things I lose myself.\nHere, life and death borrow the same body for their embrace."
+            "zh": "我听见我呼唤我，却无法替这个声音命名。\n渴望将我抱紧，也将我撕开。",
+            "en": "I hear myself calling myself, yet cannot give this voice a name.\nLonging holds me close, and tears me open."
           },
           "source": {
             "zh": "策展札记",
@@ -827,22 +238,18 @@
           },
           "url": ""
         },
-        "anchor": "embodiment"
+        "anchor": "unnamed-voice"
       },
+      { "ids": [100] },
+      { "ids": [98] },
+      { "ids": [111] },
+      { "ids": [150] },
+      { "ids": [164] },
+      { "ids": [94] },
       {
         "ids": [
-          183,
-          180
-        ]
-      },
-      {
-        "ids": [
-          182
-        ]
-      },
-      {
-        "ids": [
-          73
+          179,
+          181
         ],
         "guide": {
           "text": {
@@ -857,12 +264,244 @@
         },
         "anchor": "desire"
       },
+      { "ids": [183, 180] },
+      { "ids": [182] },
+      { "ids": [73] },
+      { "ids": [101, 102] }
+    ]
+  },
+  {
+    "id": "half-alive",
+    "title": {
+      "zh": "一半活着，一半已经死去",
+      "en": "Half Alive, Half Already Dead"
+    },
+    "ids": [
+      12,
+      24,
+      8,
+      9,
+      127,
+      78,
+      128,
+      36,
+      155,
+      115,
+      163,
+      2,
+      152,
+      153,
+      55,
+      56,
+      61,
+      40,
+      38,
+      42,
+      43,
+      48,
+      49,
+      52,
+      53,
+      54,
+      44,
+      57,
+      58,
+      59,
+      60,
+      64,
+      177,
+      62
+    ],
+    "number": "03",
+    "quote": {
+      "text": {
+        "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
+        "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?"
+      },
+      "source": {
+        "zh": "弗朗摩斯 · 《半活》",
+        "en": "Francis Du · Half Alive"
+      },
+      "url": ""
+    },
+    "hang": [
+      { "ids": [12] },
+      { "ids": [24] },
+      { "ids": [8] },
+      { "ids": [9] },
+      { "ids": [127] },
+      { "ids": [78] },
+      { "ids": [128] },
+      { "ids": [36] },
+      { "ids": [155] },
+      { "ids": [115] },
+      { "ids": [163] },
       {
         "ids": [
-          101,
-          102
-        ]
-      }
+          2
+        ],
+        "guide": {
+          "text": {
+            "zh": "我在万物里认出我，也在万物里失去我。\n此刻，生与死借同一副身体相拥。",
+            "en": "In all things I recognise myself, and in all things I lose myself.\nHere, life and death borrow the same body for their embrace."
+          },
+          "source": {
+            "zh": "策展札记",
+            "en": "Curatorial note"
+          },
+          "url": ""
+        },
+        "anchor": "embodiment"
+      },
+      { "ids": [152, 153] },
+      { "ids": [55, 56] },
+      { "ids": [61] },
+      { "ids": [40] },
+      { "ids": [38] },
+      { "ids": [42] },
+      { "ids": [43] },
+      { "ids": [48] },
+      { "ids": [49] },
+      { "ids": [52] },
+      { "ids": [53] },
+      { "ids": [54] },
+      { "ids": [44] },
+      { "ids": [57] },
+      { "ids": [58] },
+      { "ids": [59] },
+      { "ids": [60] },
+      { "ids": [64] },
+      {
+        "ids": [
+          177
+        ],
+        "guide": {
+          "text": {
+            "zh": "无相者：于相而离相。",
+            "en": "Formlessness: to be amid forms without clinging to them."
+          },
+          "source": {
+            "zh": "《六祖坛经·定慧品》（节选）",
+            "en": "Platform Sutra · Concentration and Wisdom (excerpt)"
+          },
+          "url": "https://zh.wikisource.org/wiki/六祖壇經/定慧品"
+        },
+        "anchor": "formlessness"
+      },
+      { "ids": [62] }
+    ]
+  },
+  {
+    "id": "boundless",
+    "title": {
+      "zh": "万物与我同息",
+      "en": "All Things Breathe with Me"
+    },
+    "ids": [
+      144,
+      23,
+      22,
+      28,
+      76,
+      77,
+      87,
+      85,
+      82,
+      91,
+      25,
+      1,
+      11,
+      10,
+      156,
+      161,
+      37,
+      63,
+      41,
+      46,
+      47,
+      30,
+      72,
+      93,
+      35,
+      134,
+      130,
+      75,
+      162
+    ],
+    "number": "04",
+    "quote": {
+      "text": {
+        "zh": "我不再急于回答，哪一个是我。\n此刻，万物与我同息。",
+        "en": "I am no longer in haste to answer which of these is me.\nFor this moment, all things breathe with me."
+      },
+      "source": {
+        "zh": "策展札记",
+        "en": "Curatorial note"
+      },
+      "url": ""
+    },
+    "hang": [
+      { "ids": [144] },
+      { "ids": [23] },
+      { "ids": [22] },
+      { "ids": [28] },
+      { "ids": [76] },
+      { "ids": [77] },
+      { "ids": [87] },
+      { "ids": [85] },
+      { "ids": [82] },
+      { "ids": [91] },
+      { "ids": [25] },
+      { "ids": [1] },
+      { "ids": [11] },
+      { "ids": [10] },
+      { "ids": [156] },
+      { "ids": [161] },
+      {
+        "ids": [
+          37
+        ],
+        "guide": {
+          "text": {
+            "zh": "我松开自己的名字，仍与万物同在。\n此刻，我与我之间，也有了天空。",
+            "en": "I loosen my hold on my name, and remain among all things.\nIn this moment, there is sky between me and myself."
+          },
+          "source": {
+            "zh": "策展札记",
+            "en": "Curatorial note"
+          },
+          "url": ""
+        },
+        "anchor": "breathing"
+      },
+      { "ids": [63] },
+      { "ids": [41] },
+      { "ids": [46] },
+      { "ids": [47] },
+      {
+        "ids": [
+          30
+        ],
+        "guide": {
+          "text": {
+            "zh": "未见此山时，此山与尔同归于寂。来见此山时，则此山一时明了起来。此心无外物，此色无色，此相无相，在灵台方寸间，即见真如。",
+            "en": "Before you see this mountain, it rests with you in stillness. When you come to see it, the mountain becomes clear in an instant. Nothing lies outside this heart-mind. Colour is without colour; form is without form. Within the small chamber of the mind, suchness appears."
+          },
+          "source": {
+            "zh": "弗朗摩斯 · 山的导览",
+            "en": "Francis Du · Mountain guide"
+          },
+          "url": ""
+        },
+        "anchor": "mountains"
+      },
+      { "ids": [72] },
+      { "ids": [93] },
+      { "ids": [35] },
+      { "ids": [134] },
+      { "ids": [130] },
+      { "ids": [75] },
+      { "ids": [162] }
     ]
   }
 ]
