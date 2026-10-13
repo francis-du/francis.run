@@ -205,7 +205,7 @@ def check_i_a_multitude(data):
         42, 43, 48, 49, 52, 53, 54, 44, 57, 58, 59, 60,
         64, 62, 177,
     ]
-    body_sequence = [101, 102, 179, 183, 180, 181, 182, 151, 73]
+    body_sequence = [101, 102, 73, 179, 183, 180, 181, 182, 151]
     # These subject boundaries were checked against the actual photographs.
     reviewed_subjects = {
         "proximity": ({
@@ -241,7 +241,7 @@ def check_i_a_multitude(data):
     assert final["ids"] == life_sequence + forest_sequence + body_sequence, (
         "Keep life, forest, and the concluding body sequence in continuous, separate blocks"
     )
-    assert final["hang"][-1]["ids"] == [73], "The cover photograph must close on its own"
+    assert final["hang"][-1]["ids"] == [151], "The reaching figure must close on its own"
     assert final["quote"]["text"] == {
         "zh": "我到底\n是活着，还是正在死去\n是死去，还是等待着重生",
         "en": "Am I, after all,\nalive, or in the midst of dying?\nDead, or awaiting rebirth?",
