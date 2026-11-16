@@ -113,7 +113,8 @@
 	{{- $main := resources.Get "css/main.css" -}}
 	{{- $dark := resources.Get "css/dark.css" -}}
 	{{- $search := resources.Get "css/search.css" -}}
-	{{- $css := slice $normalize $main $dark $search | resources.Concat "css/bundle.css" -}}
+	{{- $articleTOC := resources.Get "css/article-toc.css" -}}
+	{{- $css := slice $normalize $main $dark $search $articleTOC | resources.Concat "css/bundle.css" -}}
 	{{- if hugo.IsProduction -}}
 		{{- $css = $css | minify -}}
 	{{- end -}}

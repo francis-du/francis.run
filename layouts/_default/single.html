@@ -3,7 +3,9 @@
 {{ partial "header.html" . }}
 {{- $isGallery := eq .Type "gallery" -}}
 {{- $isArticle := eq .Section "blogs" -}}
-<body{{ if $isGallery }} class="gallery-page"{{ end }}>
+{{- $articleTOC := "" -}}
+{{- if $isArticle }}{{ $articleTOC = partial "article-toc.html" . }}{{ end -}}
+<body{{ if $isGallery }} class="gallery-page"{{ else if $articleTOC }} class="article-with-toc"{{ end }}>
 	{{- if $isArticle }}
 	<div class="reading-progress" aria-hidden="true"><span id="reading-progress-bar"></span></div>
 	{{- end }}
@@ -28,8 +30,10 @@
 				</div>
 			</div>
 
-			{{- if $isArticle }}
-				{{- partial "article-toc.html" . -}}
+			{{- if $articleTOC }}
+			<div class="article-layout">
+				{{ $articleTOC }}
+				<div class="article-main">
 			{{- end }}
 
 			<div class="markdown">
@@ -56,6 +60,10 @@
 				{{- if .Site.Params.comment -}}
 					{{- partial "utteranc.html" . -}}
 				{{- end -}}
+			{{- end }}
+			{{- if $articleTOC }}
+				</div>
+			</div>
 			{{- end }}
 		</main>
 	</div>

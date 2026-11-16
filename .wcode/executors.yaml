@@ -1,0 +1,16 @@
+schema_version: 1
+executors:
+  - id: article-toc-property
+    stage: property
+    languages: [java-script]
+    program: node
+    args: [tests/article-toc.cjs, property]
+    cwd: .
+    timeout_seconds: 60
+  - id: article-toc-mutation
+    stage: mutation
+    languages: [java-script]
+    program: node
+    args: [tests/article-toc.cjs, mutation]
+    cwd: .
+    timeout_seconds: 60

@@ -12,6 +12,14 @@ document.addEventListener("DOMContentLoaded", function(){
     window.addEventListener("resize", updateProgress);
   }
 
+  var articleToc = document.querySelector(".article-toc");
+  if (articleToc) {
+    var desktopToc = window.matchMedia("(min-width: 1180px)");
+    var syncTocLayout = function () { articleToc.open = desktopToc.matches; };
+    syncTocLayout();
+    desktopToc.addEventListener("change", syncTocLayout);
+  }
+
   if (!toggle) { return; }
 
   var scheme = "light";

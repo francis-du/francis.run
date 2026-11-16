@@ -25,10 +25,12 @@
 - schema_version: 1
   id: AC-A11Y-001
   title: Generated pages expose accessible structural navigation
-  statement: The production build contains a localized skip link targeting main-content, semantic header/main/footer landmarks on representative pages, an h1 page title on archive pages, a named pagination navigation landmark when pagination is present, the official Cloudflare AI Search modal and chat components with keyboard entry points, a localized native-details table of contents on long blog articles but not short/non-blog pages, localized article-only copy-code enhancement assets without changing rendered code content, stable localized H2/H3 permalink anchors that reuse TOC fragment IDs, dark-mode overrides for every inline Chroma token color currently emitted by blog content, and localized root/English 404 pages using the shared shell with noindex metadata.
+  statement: The production build contains a localized skip link targeting main-content, semantic header/main/footer landmarks on representative pages, an h1 page title on archive pages, a named pagination navigation landmark when pagination is present, the official Cloudflare AI Search modal and chat components with keyboard entry points, a single localized native-details table of contents with an accurate H2/H3 entry count on long blog articles, a sticky left column on wide screens and compact folding on narrow screens, while short/non-blog pages retain their single-column layout, localized article-only copy-code enhancement assets without changing rendered code content, stable localized H2/H3 permalink anchors that reuse TOC fragment IDs, dark-mode overrides for every inline Chroma token color currently emitted by blog content, and localized root/English 404 pages using the shared shell with noindex metadata.
   verification:
     - kind: check
       id: make-check
+    - kind: check
+      id: make-test
 
 - schema_version: 1
   id: AC-SEARCH-001

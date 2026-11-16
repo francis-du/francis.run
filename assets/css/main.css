@@ -453,34 +453,6 @@ pre {
     letter-spacing: -0.02em;
 }
 .article-meta { display: flex; gap: 18px; margin-top: 13px; color: var(--text-faint); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.article-toc {
-    margin: -8px 0 30px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: var(--bg-soft);
-}
-.article-toc summary {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 11px 14px;
-    color: var(--text-soft);
-    font-size: 0.83rem;
-    font-weight: 650;
-    cursor: pointer;
-    list-style-position: inside;
-}
-.article-toc summary:hover { color: var(--accent); }
-.article-toc summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: var(--radius-sm); }
-.article-toc summary small { color: var(--text-faint); font-size: 0.72rem; font-weight: 500; }
-.article-toc-body { padding: 0 14px 13px; border-top: 1px solid var(--border); }
-.article-toc #TableOfContents { margin-top: 11px; }
-.article-toc #TableOfContents ul { margin: 0; padding-left: 18px; list-style: none; }
-.article-toc #TableOfContents ul ul { margin-top: 4px; padding-left: 16px; }
-.article-toc #TableOfContents li { margin: 4px 0; }
-.article-toc #TableOfContents a { color: var(--text-soft); font-size: 0.82rem; line-height: 1.45; }
-.article-toc #TableOfContents a:hover { color: var(--accent); }
 .reading-progress { position: fixed; top: 0; left: 0; z-index: 20; width: 100%; height: 3px; }
 .reading-progress span { display: block; width: 0; height: 100%; background: var(--accent); transition: width 0.08s linear; }
 .markdown { font-size: 1.02rem; }

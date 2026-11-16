@@ -13,7 +13,7 @@ AI_SEARCH_URL := $(if $(findstring francisdu.com,$(SITE_HOST)),https://ai.franci
 HUGO_CACHE_FLAG = $(if $(HUGO_CACHE_DIR),--cacheDir "$(HUGO_CACHE_DIR)",)
 HUGO_BUILD_FLAGS = --gc --minify $(HUGO_CACHE_FLAG) --baseURL "$(SITE_BASE_URL)"
 
-.PHONY: check build cloudflare social-cards
+.PHONY: check test build cloudflare social-cards
 
 # Authoring helper for the committed social preview cards. Uses macOS system
 # fonts so Chinese and English titles render without bundling font binaries.
@@ -275,6 +275,12 @@ check:
 	python3 tools/check_exhibition.py $(BUILD_DIR)
 	test "$$(find $(BUILD_DIR) -type f | wc -l | tr -d ' ')" -le "$(CLOUDFLARE_FILE_LIMIT)"
 	test -z "$$(find $(BUILD_DIR) -type f -size +$(CLOUDFLARE_MAX_FILE_BYTES)c -print -quit)"
+
+# Focused behavior tests complement the site build and output checks in check.
+# Native full verification runs both targets without rebuilding the site twice.
+test:
+	node tests/article-toc.cjs property
+	node tests/article-toc.cjs mutation
 
 build:
 	hugo $(HUGO_BUILD_FLAGS) --cleanDestinationDir --destination public

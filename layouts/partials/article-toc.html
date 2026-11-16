@@ -1,9 +1,10 @@
-{{- $headingCount := len .Fragments.Identifiers -}}
+{{- $toc := .Fragments.ToHTML 2 3 false -}}
+{{- $headingCount := len (findRE "<a " $toc) -}}
 {{- if ge $headingCount 4 -}}
 <details class="article-toc">
-	<summary><span>{{ i18n "articleToc" }}</span><small>{{ printf (i18n "articleTocSections") $headingCount }}</small></summary>
+	<summary><span id="article-toc-heading">{{ i18n "articleToc" }}</span><small>{{ printf (i18n "articleTocSections") $headingCount }}</small></summary>
 	<div class="article-toc-body">
-		{{ .Fragments.ToHTML 2 3 false }}
+		{{ replace $toc "<nav id=\"TableOfContents\">" "<nav id=\"TableOfContents\" aria-labelledby=\"article-toc-heading\">" | safeHTML }}
 	</div>
 </details>
 {{- end -}}
