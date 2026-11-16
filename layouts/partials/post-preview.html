@@ -1,27 +1,29 @@
+{{- $page := .Page -}}
+{{- $headingLevel := .HeadingLevel -}}
 <div class="post-header">
 	<div class="meta">
-		<div class="date">
-			<span class="day">{{ dateFormat "02" .Date }}</span>
-			<span class="rest">{{ if eq .Site.Language.Lang "zh-cn" }}{{ .Date.Format "2006年1月" }}{{ else }}{{ .Date | time.Format "Jan 2006" }}{{ end }}</span>
-		</div>
+		<time class="date" datetime="{{ $page.Date.Format "2006-01-02" }}">
+			<span class="day">{{ dateFormat "02" $page.Date }}</span>
+			<span class="rest">{{ if eq $page.Site.Language.Lang "zh-cn" }}{{ $page.Date.Format "2006年1月" }}{{ else }}{{ $page.Date | time.Format "Jan 2006" }}{{ end }}</span>
+		</time>
 	</div>
 	<div class="matter">
 		<div class="post-kicker">
-			{{ with .Params.tags }}{{ with index . 0 }}<span>{{ . }}</span><i aria-hidden="true"></i>{{ end }}{{ end }}
-			<span>{{ printf (i18n "readingTime") .ReadingTime }}</span>
+			{{ with $page.Params.tags }}{{ with index . 0 }}<span>{{ . }}</span><i aria-hidden="true"></i>{{ end }}{{ end }}
+			<span>{{ printf (i18n "readingTime") $page.ReadingTime }}</span>
 		</div>
-		<h4 class="title small">
-			<a href="{{ .RelPermalink }}">{{.Title}}{{ if .Draft }}<sup class="draft-label">DRAFT</sup>{{ end }}</a>
-		</h4>
+		{{ if eq $headingLevel 3 }}<h3 class="title small">{{ else }}<h2 class="title small">{{ end }}
+			<a href="{{ $page.RelPermalink }}">{{ $page.Title }}{{ if $page.Draft }}<sup class="draft-label">DRAFT</sup>{{ end }}</a>
+		{{ if eq $headingLevel 3 }}</h3>{{ else }}</h2>{{ end }}
 		<span class="description">
-			{{ if isset .Params "description" }}
-				{{ .Description }}
-			{{ else if gt (countrunes (.Content | plainify)) 120 }}
-				{{ slicestr (.Content | plainify) 0 120 }}...
+			{{ if isset $page.Params "description" }}
+				{{ $page.Description }}
+			{{ else if gt (countrunes ($page.Content | plainify)) 120 }}
+				{{ slicestr ($page.Content | plainify) 0 120 }}...
 			{{ else }}
-				{{ .Content | plainify }}
+				{{ $page.Content | plainify }}
 			{{ end }}
 		</span>
 	</div>
-	<span class="post-arrow" aria-hidden="true">↗</span>
+	<span class="post-arrow" aria-hidden="true">→</span>
 </div>

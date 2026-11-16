@@ -50,7 +50,10 @@
   responsibilities:
     - provide keyboard skip navigation and semantic header main footer landmarks on generated pages
     - keep the site title as the primary heading only on the home page and expose page titles as the primary heading on inner pages
-    - expose pagination as a named navigation landmark without changing normal visual layout
+    - expose pagination as a named navigation landmark while preserving its navigation behavior
+    - maintain the warm light palette and green accent with readable secondary text and keyboard focus in light and dark themes
+    - give the newest home-page article restrained prominence and keep list spacing and narrow-screen metadata clear around titles
+    - distinguish article heading levels without changing their semantics or anchor targets
     - provide one native-details table of contents for blog articles with at least four H2/H3 entries, as a sticky left sidebar on desktop and a compact disclosure on narrow screens
     - add localized keyboard-accessible copy controls to highlighted code blocks without modifying code content
     - expose stable H2/H3 article permalink anchors without changing Hugo heading IDs or table-of-contents targets
@@ -63,6 +66,8 @@
   implementation:
     - kind: file
       path: layouts/index.html
+    - kind: file
+      path: layouts/partials/post-preview.html
     - kind: file
       path: layouts/404.html
     - kind: file
@@ -132,6 +137,7 @@
   responsibilities:
     - preserve hugo-shortcode-gallery rendering and lightbox behavior
     - keep gallery pages separate from article-only UI
+    - honor reduced-motion preferences for thumbnail transitions and hover scaling
   constraints:
     - CONSTRAINT-GALLERY-COMPATIBILITY
     - CONSTRAINT-DESIGN-SYNC

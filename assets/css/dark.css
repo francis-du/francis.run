@@ -5,7 +5,7 @@ html.dark {
     --bg-code: #232329;
     --text: #e4e4e7;
     --text-soft: #a1a1aa;
-    --text-faint: #71717a;
+    --text-faint: #93939e;
     --border: #2a2a30;
     --border-strong: #35353d;
     --accent: #74d69b;      /* light green */
@@ -28,11 +28,6 @@ html.dark .site-description a:hover { color: var(--text-soft); text-decoration: 
 
 html.dark .site-title a { color: var(--text); }
 
-html.dark .recent-posts .post-header,
-html.dark .list .post-header { background: rgba(31, 31, 36, 0.76); }
-
-html.dark .recent-posts .post-header:hover,
-html.dark .list .post-header:hover { background: #232328; }
 html.dark .button.primary { color: #17221c; }
 html.dark .tag-cloud a { background: rgba(31, 31, 36, 0.76); }
 

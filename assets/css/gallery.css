@@ -27,14 +27,14 @@
 .gallery-page .markdown > h2 + p + .gallery-wrapper .jg-entry {
     border-radius: 2px;
 }
-@media (prefers-reduced-motion: reduce) {
-    .gallery-page .jg-entry img { transition: none !important; }
-    .gallery-page .jg-entry img:hover { transform: none; }
-}
 .gallery-page .justified-gallery a.galleryImg { background-image: none; }
 .gallery-page .justified-gallery > .jg-entry { border-radius: 8px; }
 .gallery-page .jg-entry img { transition: transform .25s ease-in-out !important; }
 .gallery-page .jg-entry img:hover { transform: scale(1.1); }
+@media (prefers-reduced-motion: reduce) {
+    .gallery-page .jg-entry img { transition: none !important; }
+    .gallery-page .jg-entry img:hover { transform: none; }
+}
 .gallery-page .markdown > blockquote {
     margin: 42px 0 14px;
     padding: 0 0 10px;

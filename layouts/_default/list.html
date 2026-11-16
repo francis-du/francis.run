@@ -11,18 +11,21 @@
 		{{ partial "head.html" . }}
 
 		<main id="main-content">
-		{{ if isset .Data "Term" }}
-			<h1>{{ .Data.Term }}</h1>
-		{{ else }}
-		<h1 class="page-title">{{ .Name }}</h1>
-		{{ end }}
-		
+		<div class="page-heading">
+			{{ if isset .Data "Term" }}
+				<h1 class="page-title">{{ .Data.Term }}</h1>
+			{{ else }}
+				<h1 class="page-title">{{ .Name }}</h1>
+			{{ end }}
+			{{ with .Description }}<p>{{ . }}</p>{{ end }}
+		</div>
+
 		{{ .Content }}
 
 		<ul class="posts flat">
 			{{- range $paginator.Pages -}}
 			<li class="post">
-				{{ partial "post-preview.html" . }}
+				{{ partial "post-preview.html" (dict "Page" . "HeadingLevel" 2) }}
 			</li>
 			{{- end -}}
 		</ul>

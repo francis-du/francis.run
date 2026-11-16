@@ -11,12 +11,13 @@
 			<span class="eyebrow">{{ i18n "tag" }}</span>
 			<h1 class="page-title"># {{ .Title }}</h1>
 			<p>{{ printf (i18n "articleCount") (len .Pages) }}</p>
+			{{ with .Description }}<p>{{ . }}</p>{{ end }}
 		</div>
 
 		<ul class="posts flat">
 			{{ range .Pages.ByDate.Reverse }}
 			<li class="post">
-				{{ partial "post-preview.html" . }}
+				{{ partial "post-preview.html" (dict "Page" . "HeadingLevel" 2) }}
 			</li>
 			{{ end }}
 		</ul>
