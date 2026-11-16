@@ -1,7 +1,7 @@
 ---
 title: "wcode 是怎么从一个 MCP Bridge 变成现在这样的"
 date: 2026-09-12T05:40:00+08:00
-lastmod: 2026-09-17
+lastmod: 2026-11-16T23:25:00+08:00
 draft: false
 url: /blog/what-is-wcode/
 translationKey: what-is-wcode
@@ -20,6 +20,8 @@ images:
 <p class="project-logo"><a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode 文档"><img src="/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"></a></p>
 
 <p class="project-links"><a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener">GitHub ↗</a><a href="https://wcode.francis.run/zh/docs/" target="_blank" rel="noopener">文档 ↗</a></p>
+
+> 2026 年 11 月 16 日更新：公开发布版已到 0.9.15，新增[近期迭代文章](/blog/wcode-v0-9-15/)和[研究预印本](https://wcode.francis.run/zh/docs/paper/)入口。下文截图来自较早版本，权限与工作台说明已按 0.9.15 更新。
 
 我做 wcode 的起点，其实不是想再做一个 Coding Agent。
 
@@ -103,7 +105,7 @@ wcode 会把检查结果和当时的代码、设计版本关联起来。界面�
 
 wcode 可以把这类要求写进仓库的 `.wcode/` 目录。文档把它们称为 Design State，里面记录需求、组件、约束和验收条件。之后查项目、分析一次修改的影响时，可以把这些要求一起带出来。
 
-工程观测台默认打开架构页面。从这里可以看组件对应哪些源码、关联哪些需求，以及分析工具发现了哪些依赖。
+工程观测台把需求、组件、源码、变更和验证记录连在一起。结构和图谱视图可以看源码归属、相关需求，以及分析工具发现的依赖。每条关系仍保留自己的来源和精度，显示出来不代表实现已经满足需求。
 
 ![wcode 工程架构页面：查看组件、源码归属、需求与依赖关系](/img/wcode/wcode-intro-architecture.png)
 
@@ -113,24 +115,24 @@ wcode 可以把这类要求写进仓库的 `.wcode/` 目录。文档把它们称
 
 wcode 围绕选定的 Workspace 工作，也就是这次允许访问的项目范围。文件操作会检查路径、受保护位置和不安全的链接，已有文件的修改还要检查内容指纹。
 
-命令另有规则。常见、有明确边界的开发命令可以直接运行；需要额外信任的操作，会进入本地授权流程。访问页面可以查看具体请求，由操作者决定是否允许。更宽的会话授权或 Full Access，也需要操作者明确选择。
+命令执行有独立的策略。截至 0.9.15，命令策略和授权默认宽松，更严格的限制取决于操作者配置。只做被动检查时，文档给出的组合是 `--read-only --no-exec --no-semantic`，其中 `--no-exec` 仍覆盖会话命令授权。具体边界要按当前[安全文档](https://wcode.francis.run/zh/docs/security/)配置，不能假设每条命令都会弹出人工审批。
 
 <figure class="content-image">
   <img src="/img/wcode/wcode-intro-security-boundary.zh-CN.svg" alt="AI 客户端到本地仓库之间的检查：连接认证、命令授权和文件访问范围" width="1600" height="920" loading="lazy" decoding="async">
-  <figcaption>能连接到 wcode，不等于可以执行任意命令或访问任意文件。</figcaption>
+  <figcaption>早期版本中连接、命令与文件访问的分层示意。当前命令默认值和可选限制见上文；这张图不代表操作系统沙箱保证。</figcaption>
 </figure>
 
 ![wcode 访问管理页面：查看当前项目的权限和待处理授权请求](/img/wcode/wcode-intro-access.png)
 
 本地客户端可以用 stdio 启动 wcode；远程客户端通过 OAuth 连接运行中的服务。这两种接法提供同一套仓库能力。文件操作发生在仓库所在机器，使用云端模型时，读出的代码仍会作为工具结果交给对应客户端。
 
-wcode 的这些检查属于工具和仓库层，并不等同于操作系统沙箱。
+文件检查发生在仓库工具这一层。操作系统沙箱按命令选择启用，后端不可用时可能回退为直接执行。要看实际执行方式与操作者配置；编辑文件时的 SHA 检查不能限制任意子进程的行为。
 
 ## 界面里能看到什么
 
 我主要用界面确认工作进行到哪里。
 
-终端面板能看到连接、当前项目、任务和授权请求。按 `W` 打开工程观测台，按 `O` 打开设置页面。观测台里可以看架构、当前修改、需求和项目文件，也可以查看前面提到的验证记录。
+终端面板能看到连接、当前项目、任务和授权状态。按 `W` 打开工程观测台，按 `O` 打开设置页面。当前观测台提供对象导航、中央页面、检查器，以及共享的 Problems、Jobs、Logs、Evidence 抽屉。可以从需求状态查到检查、任务输出和源码，同时保留工作区与版本身份。
 
 任务慢下来时，**任务活动**页面会更有用。它把排队时间和实际执行时间分开，也显示子进程和资源使用情况。一个命令迟迟没结束，可能是在等运行机会，也可能是真的执行了很久，处理办法不一样。
 

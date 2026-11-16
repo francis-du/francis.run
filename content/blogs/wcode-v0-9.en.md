@@ -1,7 +1,7 @@
 ---
 title: "wcode 0.9.0"
 date: 2026-10-02T21:45:00+08:00
-lastmod: 2026-10-03T01:36:11+08:00
+lastmod: 2026-11-16T23:25:00+08:00
 draft: false
 url: blog/wcode-v0-9/
 aliases: ["/blog/wcode-parallel-work/"]
@@ -17,6 +17,8 @@ tags:
 ---
 
 [![wcode](/img/wcode/wcode-logo.svg)](https://wcode.francis.run/)
+
+> November 16 update: the follow-up, [Catching Up on wcode: 0.9.0 to 0.9.15](/en/blog/wcode-v0-9-15/), covers the releases since this post. The article below remains a record of 0.9.0.
 
 wcode 0.9.0 adds multi-agent task claims and change acceptance, and reorganizes the web and terminal workbenches. Tasks can carry a write scope, check results are tied to code revisions, and failures and pending work have a shared entry point.
 

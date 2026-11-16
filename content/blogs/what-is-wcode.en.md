@@ -1,7 +1,7 @@
 ---
 title: "How wcode Grew Past the MCP Bridge I Started With"
 date: 2026-09-12T05:41:00+08:00
-lastmod: 2026-09-17
+lastmod: 2026-11-16T23:25:00+08:00
 draft: false
 url: blog/what-is-wcode/
 translationKey: what-is-wcode
@@ -20,6 +20,8 @@ images:
 <p class="project-logo"><a href="https://wcode.francis.run/" target="_blank" rel="noopener" title="wcode documentation"><img src="/img/wcode/wcode-logo.svg" alt="wcode" width="320" height="96"></a></p>
 
 <p class="project-links"><a href="https://github.com/francis-du/wcode" target="_blank" rel="noopener">GitHub ↗</a><a href="https://wcode.francis.run/docs/" target="_blank" rel="noopener">Docs ↗</a></p>
+
+> Updated November 16, 2026: the latest public release is 0.9.15. See the [release catch-up](/en/blog/wcode-v0-9-15/) and the [research preprint](https://wcode.francis.run/docs/paper/). Screenshots below come from earlier versions; the permission and workbench descriptions have been updated for 0.9.15.
 
 I did not start wcode because I wanted to build another coding agent.
 
@@ -103,7 +105,7 @@ On this blog, Chinese pages stay at the root and English pages live under `/en/`
 
 wcode can record these requirements under `.wcode/` in the repository. The documentation calls this Design State: requirements, components, constraints, and acceptance criteria. Later tasks can retrieve them while inspecting the project or assessing a change.
 
-The Engineering Observatory opens on its architecture view. It shows which source belongs to a component, related requirements, and dependencies found by the analysis tools.
+The Engineering Observatory connects requirements, components, source, changes, and verification. Its structure and graph views show source ownership, related requirements, and dependencies found by the analysis tools. A displayed relationship keeps its provenance and precision; it is not automatically proof that the implementation satisfies the requirement.
 
 ![wcode Engineering architecture page: components, source ownership, requirements, and dependencies](/img/wcode/wcode-intro-architecture.png)
 
@@ -113,24 +115,24 @@ These records need maintenance as the project changes. A diagram does not establ
 
 wcode works within a selected Workspace: the project scope available for this task. File operations check paths, protected locations, and unsafe links. Edits to existing files also check the content fingerprint.
 
-Commands have their own rules. Common development commands with bounded behavior can run directly. Operations requiring additional trust go through local authorization, where the operator can inspect and allow the request. Broader session grants and Full Access also require an explicit operator choice.
+Command execution has a separate policy surface. In 0.9.15, command policy and authorization are permissive by default; stricter behavior depends on the operator's configuration. The documented passive-inspection combination is `--read-only --no-exec --no-semantic`. In particular, `--no-exec` overrides session command grants. Configure the command boundary using the current [security reference](https://wcode.francis.run/docs/security/), rather than assuming every command will prompt for approval.
 
 <figure class="content-image">
   <img src="/img/wcode/wcode-intro-security-boundary.svg" alt="Checks between an AI client and the repository: connection authentication, command authorization, and file access" width="1600" height="920" loading="lazy" decoding="async">
-  <figcaption>Connecting to wcode does not grant permission to run arbitrary commands or access arbitrary files.</figcaption>
+  <figcaption>An earlier illustration of the separate connection, command, and file-access layers. Current command defaults and optional restrictions are described above; the illustration is not a sandbox guarantee.</figcaption>
 </figure>
 
 ![wcode Access management page: the current project's permissions and pending authorization requests](/img/wcode/wcode-intro-access.png)
 
 A local client can start wcode over stdio. A remote client uses OAuth to connect to a running service. Both reach the same repository tools. File operations happen on the repository's machine; with a cloud model, code that is read still reaches the corresponding client as a tool result.
 
-These are controls at the repository and tool layer. They are not equivalent to an operating-system sandbox.
+File guards operate at the repository-tool layer. An operating-system sandbox is selected per command, and an unavailable backend can fall back to direct execution. Check the actual execution mode and operator configuration; an editing SHA does not constrain an arbitrary subprocess.
 
 ## What the interface is useful for
 
 I mainly use the interface to see where the work has got to.
 
-The terminal dashboard shows connections, the selected project, tasks, and authorization requests. `W` opens the Engineering Observatory; `O` opens Setup Hub. The Observatory contains architecture, current changes, requirements, project files, and verification records.
+The terminal dashboard shows connections, the selected project, tasks, and authorization state. `W` opens the Engineering Observatory; `O` opens Setup Hub. The current Observatory has object navigation, a central view, an inspector, and shared Problems, Jobs, Logs, and Evidence drawers. Requirement state can lead to checks, job output, and source; workspace and revision identity remain visible.
 
 When a task slows down, **Task activity** is useful. It separates time spent waiting in a queue from time spent executing, and shows child processes and resource use. Waiting for capacity and running an expensive command are different problems.
 

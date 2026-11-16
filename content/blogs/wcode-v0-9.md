@@ -1,7 +1,7 @@
 ---
 title: "wcode 0.9.0"
 date: 2026-10-02T21:45:00+08:00
-lastmod: 2026-10-03T01:36:11+08:00
+lastmod: 2026-11-16T23:25:00+08:00
 draft: false
 url: /blog/wcode-v0-9/
 aliases: ["/blog/wcode-parallel-work/"]
@@ -17,6 +17,8 @@ tags:
 ---
 
 [![wcode](/img/wcode/wcode-logo.svg)](https://wcode.francis.run/)
+
+> 11 月 16 日更新：后续十五个补丁版本的进展已整理在 [wcode 近况：从 0.9.0 到 0.9.15](/blog/wcode-v0-9-15/)。以下保留 0.9.0 当时的版本记录。
 
 wcode 0.9.0 增加了多 Agent 任务领取和改动验收，重新整理了 Web 与终端工作台。任务可以分配写入范围，检查结果会绑定代码版本，失败和待处理项也有了统一入口。
 
